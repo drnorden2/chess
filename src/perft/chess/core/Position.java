@@ -90,8 +90,11 @@ public class Position {
 		//System.out.println("WARNING!!!!!!!!!!!!!EXPENSIVE");
 		
 		for(int i=0;i<64;i++) {
-			if(this.fields[i].getPiece()!=null) {
-				this.fields[i].removePseudoMoves(this.fields[i].getPiece(), -1, -1);				
+			Piece piece = this.fields[i].getPiece();
+			if(piece!=null) {
+				int movesIndex = piece.getMoveIndex();
+				Move[][] moves = position.moveManager.getRawMoves(movesIndex);
+				this.fields[i].addRemovePseudoMoves(piece,moves, -1,-1,true);
 			}
 			this.fields[i].callBacks.removeAll();
 		}
@@ -174,6 +177,7 @@ public class Position {
 	}
 		
 	public static int counter=0;
+	boolean experimental = false;
 	public void setMove(int index) {
 			//String start =this.toString();
 			Move move= getMove(index);
@@ -195,9 +199,10 @@ public class Position {
 			allMovesLists.get(getLevel()).clear(); 		
 			bl.undo();
 			this.takeTurn();
-			
+			experimental =true;
 			
 			*/
+			
 			
 			
 			
@@ -214,12 +219,11 @@ public class Position {
 			
 			
 			
+			
+			
+			
 			/*
-			
-			
-			
-			
-			
+			experimental =false;
 			String cur  = this.toString();
 			
 			if(!cur.equals(ref)) {
@@ -235,7 +239,6 @@ public class Position {
 	
 				throw new RuntimeException("different"+this.wtfIteration);
 			}
-			
 			*/
 
 			

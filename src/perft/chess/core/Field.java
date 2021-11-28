@@ -62,15 +62,17 @@ public class Field implements IndexedElement {
 		Piece piece = this.piece.get();
 		int movesIndex = piece.getMoveIndex();
 		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
-		addPseudoMoves(piece,moves, -1,-1,-1);
+		addRemovePseudoMoves(piece,moves, -1,-1,false);
 	}
 
-	public void unStageAllMoves(Piece oldPiece) {
-		this.removePseudoMoves(oldPiece,-1,-1);
+	public void unStageAllMoves(Piece piece) {
+		int movesIndex = piece.getMoveIndex();
+		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
+		addRemovePseudoMoves(piece,moves, -1,-1,true);
 	}
 
 
-
+/*
 	public int unStagePieceToReduceAttack(Piece oldPiece,int kingPos) {
 		int counter = pseudoMoves.size();
 		for (int i=0;i<counter;i++) {
@@ -81,7 +83,7 @@ public class Field implements IndexedElement {
 		}
 		return 0;
 	}
-
+*/
 	
 	public int getPseudoMoveCount() {
 		return pseudoMoves.size();
@@ -94,11 +96,10 @@ public class Field implements IndexedElement {
 		return pseudoMoves.contains(index);
 	}
 
-	public void addPseudoMoves(Piece piece, Move[][] moves, int ii, int jj, int callbackType) {
-		//System.out.println("addPseudoMoves(Piece piece("+piece+"),Move[][] moves("+moves.length+"),int ii("+ii+"), int jj("+jj+"), boolean onlyCallBack("+onlyCallBack+") ");
+	
+	public void addRemovePseudoMoves(Piece piece, Move[][] moves, int ii, int jj, boolean onlyRemove) {
 
 		int color = piece.getColor();
-		
 		int newPos;
 		int iiMax =moves.length;
 		
@@ -110,63 +111,75 @@ public class Field implements IndexedElement {
 		if(jj==-1) {
 			jj=0;
 		}
-
-		/*
-		//these are the pawns below the baseline
-		if(piece.getType()==Piece.PIECE_TYPE_PAWN && moves.length==0) {
-			return;
-		}*/
 			
 		for (int i = ii; i < iiMax; i++) {
+			boolean remove = onlyRemove;
+
 			for (int j = jj; j < moves[i].length; j++) {
 				Move move = moves[i][j];
 				newPos = move.getNewPos();
-				if(move.getMoveType()!=Move.MOVE_TYPE_KING_SENSING) {
-					if(move.isNoPromotionOrQueen()) {	
-						if (move.isAttackerMove()) {
-							position.attackTable[color].incr(newPos);
+				
+				
+				if(move.isNoPromotionOrQueen()) {
+					if(!remove) {
+						if(position.fields[newPos].registerCallback(move.getFieldCB())) {
+							Position.registerCount++;
+							if(move.isAttackerMove() ) {
+								position.attackTable[color].incr(newPos);
+							}
+						}
+					}else {
+						if(position.fields[newPos].unRegisterCallback(move.getFieldCB())) {
+							Position.unRegisterCount++;
+							if(move.isAttackerMove() ) {
+								position.attackTable[color].decr(newPos);
+							}
+						}else {
+							break;
 						}
 					}
-					if (isPseudoMove(piece, move)) {
-						pseudoMoves.add(move);
-					}
-						
 				}
 				
-				Position.registerCount++;
-				if(move.isNoPromotionOrQueen()) {	
-					position.fields[newPos].registerCallback(move.getFieldCB());
+				if(move.getMoveType()!=Move.MOVE_TYPE_KING_SENSING) {
+					if (!remove && isPseudoMove(piece, move)) {
+						pseudoMoves.add(move);
+					}else {
+						pseudoMoves.remove(move);
+					}
 				}
 				
 				//exit ray!
 				if (position.fields[newPos].getPiece() != null) {
-					break;
+					if(!remove && jj==-1) {// this is a real add
+						break;
+					}
+					remove=true;
 				}
 			}
 		}
 	}
-	
 	private boolean isPseudoMove(Piece piece, Move move) {
 		//O.ENTER("isPseudoMove");
 		boolean isPossible = true;		
 		int moveType = move.getMoveType();
 		int oldPos = move.getOldPos();
 		int newPos = move.getNewPos();
+		boolean isOtherPiece =false;
+		boolean sameColor = false;
 		Piece otherPiece = position.fields[newPos].getPiece();
-
+		
+		if(otherPiece!=null) {
+			isOtherPiece =true;
+			sameColor = otherPiece.getColor()==piece.getColor();
+		}
+		
 		switch (moveType) {
 		case Move.MOVE_TYPE_PUSH_BEAT:
-			if (otherPiece != null) {
-				if (piece.getColor() == otherPiece.getColor()) {
-					isPossible = false;
-				}
-			}
+			isPossible = !isOtherPiece || isOtherPiece && !sameColor;
 			break;
 		case Move.MOVE_TYPE_PAWN_PUSH_CONVERT:
 		case Move.MOVE_TYPE_PAWN_PUSH:
-			if (otherPiece != null) {
-				isPossible = false;
-			}
+			isPossible = !isOtherPiece;
 			break;
 		case Move.MOVE_TYPE_ROCHADE:
 			if (piece.isTouched()) { // king was touched
@@ -188,7 +201,7 @@ public class Field implements IndexedElement {
 			}
 			break;
 		case Move.MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE:
-			if (otherPiece == null && position.enPassantePos.get() != -1 && position.enPassantePos.get() == newPos) {
+			if (!isOtherPiece && position.enPassantePos.get() != -1 && position.enPassantePos.get() == newPos) {
 				int twoPushPawnPos = move.getPos(move.getRank(oldPos), move.getFile(newPos));
 				Piece pawnToRemove = position.fields[twoPushPawnPos].getPiece();
 				if(pawnToRemove !=null &&pawnToRemove.getType()==Piece.PIECE_TYPE_PAWN && pawnToRemove.getColor()!=piece.getColor()){
@@ -197,15 +210,13 @@ public class Field implements IndexedElement {
 				}else {
 					isPossible = false;					
 				}
-			}else if (otherPiece == null || piece.getColor() == otherPiece.getColor()) {
-				isPossible = false;
+			}else  {
+				isPossible = isOtherPiece && !sameColor;
 			}
 			break;
 		case Move.MOVE_TYPE_PAWN_BEAT_CONVERT:
 		case Move.MOVE_TYPE_PAWN_BEAT:
-			if (otherPiece == null || piece.getColor() == otherPiece.getColor()) {
-				isPossible = false;
-			}
+				isPossible = isOtherPiece && !sameColor;
 			break;
 		}
 		return isPossible;		
@@ -215,47 +226,7 @@ public class Field implements IndexedElement {
 		return this.piece.get();
 	}
 
-	void removePseudoMoves(Piece piece,int ii, int jj) {
-			
-		int movesIndex = piece.getMoveIndex();
-		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
-		int color = piece.getColor();
-		int iiMax =moves.length;
-		if(moves.length==0) {
-			return;
-		}
-		if(ii==-1) {
-			ii=0;
-		}else {
-			iiMax =ii+1;			//update trigger for a direction
-		}
-		if(jj==-1) {
-			jj=0;
-		}
-	
-		// go overall Moves not blocked by Ray 
-		for (int i = ii; i < Math.min(iiMax,moves.length); i++) {
-			for (int j = jj; j < moves[i].length; j++) {
-				Move move = moves[i][j];				
-				removePseudoMove(move, color);
-			}
-		}
-	}
 
-	private void removePseudoMove(Move move, int color) {
-		pseudoMoves.remove(move);
-		// check if this is a real remove
-		if (move.isNoPromotionOrQueen()) {
-			int newPos = move.getNewPos();
-			if(position.fields[newPos].unRegisterCallback(move.getFieldCB())) {
-				if(move.isAttackerMove() ) {
-					position.attackTable[color].decr(newPos);				
-				}
-				Position.unRegisterCount++;
-			}
-		}
-	}
-	
 	@Override
 	public int getElementIndex() {
 		// TODO Auto-generated method stub
@@ -269,8 +240,8 @@ public class Field implements IndexedElement {
 		return this.file;
 	}
 	
-	public void registerCallback(FieldCallback cb) {
-		callBacks.add(cb);
+	public boolean registerCallback(FieldCallback cb) {
+		return callBacks.add(cb);
 	}
 	public boolean isPosRegistered(int pos) {
 		return callBacks.contains(pos);
@@ -301,47 +272,6 @@ public class Field implements IndexedElement {
 	public boolean unRegisterCallback(FieldCallback cur) {
 		return callBacks.remove(cur);
 	}
-/*	
-	public void simNotifyCallBack(int notifyType, int color, int notPos, boolean isKnight, int kingPos,boolean isKingMove) {
-		FieldCallback[] fieldCBBuffer = new FieldCallback[64];//@TODO Dynamic !!!!!!!!!!!!!!!!!!!!!!!1
-
-		int callBackCount = 0;
-		FieldCallback kingCB =null;
-		for (int i = 0; i < callBacks.size(); i++) {
-			FieldCallback cb= callBacks.getElement(i);			
-			if(cb.getElementIndex()==kingPos) {
-				kingCB=cb;
-				continue;
-			}
-
-			// no need to update the own folks in case of simulation
-			Piece piece =cb.getField().getPiece();
-			if((piece ==null  || cb.getField().getPiece().getColor()==color)) {
-				continue;
-			}
-
-			boolean pieceCouldAttackKing =MoveManager.isPieceAttacker[piece.getMoveIndex()][kingPos];
-			if(!pieceCouldAttackKing) {
-				continue;
-			}
-			fieldCBBuffer[callBackCount++] =cb; 			
-			
-			
-			//these are rays that are currently blocked by pos
-		}
-		
-		if(kingCB!=null) {
-			notifyCallBack(kingCB, notifyType, color);			   
-		}else if(!isKingMove){
-			return;
-		}
-		
-		for (int i=0;i<callBackCount;i++) {
-			FieldCallback cb = fieldCBBuffer[i];
-			notifyCallBack(cb, notifyType, color);			   			
-		}
-	}
-*/	
 		
 	
 	
@@ -411,16 +341,18 @@ public class Field implements IndexedElement {
 	
 	 void notifyFieldChange(int ii, int jj,  int callbackType) {
 		Piece piece = this.getPiece();
-		
 		if (piece != null) {
-			this.removePseudoMoves(piece,ii, jj);
+			//this.removePseudoMoves(piece,ii, jj);
 			int movesIndex = piece.getMoveIndex();
 			Move[][] moves = position.moveManager.getRawMoves(movesIndex);
-			this.addPseudoMoves(piece, moves, ii, jj,callbackType);
+			if(position.wtfIteration==1823 && this.getElementIndex()==54) {
+				System.out.println("WTF Here");
+			}
+			this.addRemovePseudoMoves(piece, moves, ii, jj,false);
 		}
 	}
 	 
-	 
+ 
 	 
 	 
 	public String toString() {

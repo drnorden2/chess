@@ -39,21 +39,16 @@ public class BLIndexedList <T extends IndexedElement>{
 	}
 	
 	public boolean add(T element){
-		//if(debug)System.out.println("add("+element.getElementIndex()+")");
-		//checkConsistency("AddStart");
 		int elementIndex = element.getElementIndex();
-		int curCounter = counter.get();
 		if(position.get(elementIndex )!=-1) {
 			return false;
-			//System.out.println("WARNING: already added:"+elementIndex );return;
-			//throw new RuntimeException("WARNING: already added:"+indexedPiece);
 		}else{
+			int curCounter = counter.get();
 			elements.set(curCounter,element);
 			position.set(elementIndex ,curCounter);
 			counter.set(++curCounter);			
+			return true;
 		}
-		//checkConsistency("Add End");
-		return true;
 	}
 	
 
@@ -76,28 +71,19 @@ public class BLIndexedList <T extends IndexedElement>{
 	}
 		
 	public boolean remove(T element) {
-		//if(debug)System.out.println("remove("+element.getElementIndex()+")");
-		//checkConsistency("removeStart");
+	
 		int elementIndex= element.getElementIndex();
 		int toDeletePosition = position.get(elementIndex);
-		if(toDeletePosition  ==-1) {
+		if(toDeletePosition ==-1) {
 			return false;
 		}
-		
-		
 		int curCounter =counter.get();
 		if(curCounter == 0) {
-			//System.out.println("WARNING: remove from empty List:"+elementIndex);
 			return false;
 		}else {
 			counter.set(--curCounter);//--
 			T filler = elements.get(curCounter); 
 		
-			//elements.set(curCounter,null); /Stale!
-			
-			if(filler==null) {
-				System.out.println("WTF! No filler at:"+curCounter);//@todo remove me
-			}
 			int fillerElementIndex = filler.getElementIndex();
 			
 			if(curCounter>0) {// otherwise last removed
@@ -108,7 +94,6 @@ public class BLIndexedList <T extends IndexedElement>{
 		
 		}
 		return true;
-		//checkConsistency("removeEnd");
 	}
 	
 	

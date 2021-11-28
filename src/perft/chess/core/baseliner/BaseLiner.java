@@ -5,7 +5,7 @@ import perft.chess.core.datastruct.ArrayStackInt;
 public class BaseLiner {
 	private static final int OBJ_TOUCHED_LIST = 0;
 	
-	private int level =1;
+	int level =1;
 	private int registry1 =1;
 	private int registry2 =1;
 	

@@ -34,20 +34,15 @@ public class IndexedListInt {
 		}
 		
 		public boolean add(int element){
-			//if(debug)System.out.println("add("+element.getElementIndex()+")");
-			//checkConsistency("AddStart");
 			int elementIndex = element;
-			int curCounter = counter;
 			if(position[elementIndex]!=-1) {
 				return false;
-				//System.out.println("WARNING: already added:"+elementIndex );return;
-				//throw new RuntimeException("WARNING: already added:"+indexedPiece);
 			}else{
+				int curCounter = counter;
 				elements[curCounter]= element;
 				position[elementIndex] =curCounter;
 				counter=++curCounter;			
 			}
-			//checkConsistency("Add End");
 			return true;
 		}
 		
