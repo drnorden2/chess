@@ -65,13 +65,7 @@ public class BLIndexedList <T extends IndexedElement>{
 		counter.set(0);
 	}
 	
-	
-	public void removeAllX() {
-		int elementCount = this.size();
-		for(int i =0;i<elementCount;i++) {
-			removeFirstElement();
-		}
-	}
+/*	
 	public T removeFirstElement() {
 		T element = elements.get(0);
 		if(element==null) {
@@ -80,7 +74,7 @@ public class BLIndexedList <T extends IndexedElement>{
 		this.remove(element);
 		return element;
 	}
-		
+*/		
 	public boolean remove(T element) {
 		//if(debug)System.out.println("remove("+element.getElementIndex()+")");
 		//checkConsistency("removeStart");

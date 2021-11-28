@@ -21,79 +21,9 @@ public class Test {
 	private static boolean useBulk = true;
 
 	public static void main(String[] args) {
-		test(2,1797,"r4knr/p1ppqPb1/bn4p1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQ - 0 1");
-		
-		///compare();
-		//d5e6
-		//test(1,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		
-		//test(5,203255191,"r3k2r/p1ppqpb1/bn2Pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 0 1");
-		if(true)return;
- 		
-		//test(5,197413067,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/P1N2Q1p/1PPBBPPP/R3K2R b KQkq -");
-		
-		//Mismatch for Move:e8e7: (ref:2223)!=(cur:2226)
-		//Error in Move:e8e7
-		//test(2,2223,"r2q3r/p1ppkpb1/bn2Pnp1/4N3/1p2P3/P1N2Q1p/1PPBBPPP/R3K2R w KQ - 0 1");
-		
-		//Mismatch for Move:d5e6: (ref:90167)!=(cur:90170)
-		//test(3,90167,"r2qk2r/p1pp1pb1/bn2Pnp1/4N3/1p2P3/P1N2Q1p/1PPBBPPP/R3K2R b KQkq - 0 1");
-		
-		
-		//Mismatch for Move:e7d8: (ref:3966078)!=(cur:3966081)		
-		//test(4,3966078,"r2qk2r/p1pp1pb1/bn2pnp1/3PN3/1p2P3/P1N2Q1p/1PPBBPPP/R3K2R w KQkq - 0 1");
-		
-		
-		
-		//failed : a2a3:197413079(0)
-		//SF	 : a2a3:197413067
-		//test(new String[]{},kiwiPete6_a2a3(),5,197413067,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/P1N2Q1p/1PPBBPPP/R3K2R b KQkq -");
-		
-		
-		//test(2, 3, "4PKR1/4PPP1/8/8/8/r7/8/7k w - -");
-		//test(4, 2, "k7/Pp6/1P6/8/1p6/6p1/2P3Pp/7K w - - 0 1");
-		//test(2, 2, "4PKR1/4PPP1/8/8/8/8/8/7k w - - ");		
-		//test(3,400,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-		
-		
-		//test(10,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		
-		
-		//test(new String[]{"d5e6","a6c4"},null,5,103000,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		//test(new String[]{"e5g4"},null ,5,3415992,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		//test(new String[]{},kiwiPete5() ,5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		//test(new String[]{},kiwiPete5() ,5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		/*
-		test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		*/
-		
-		test(2,1797,"r4knr/p1ppqPb1/bn4p1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQ - 0 1");
-		
-		test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		
 		test(6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		
-		test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		
-		test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-			 
-		test(6,119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-		
-		test(3, 62379, "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
-	
-		test(3, 89890, "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
-		
-		test(4, 1274206, "r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq -");
-	
-		test(4, 2, "k7/Pp6/1P6/8/1p6/6p1/2P3Pp/7K w - - 0 1");
-		
-		test(1, 1, "7K/8/8/8/8/8/8/k5r w - -");
 
-		test(2, 2, "4PKR1/4PPP1/8/8/8/p7/8/7k w - -");
-	
-		 
-	
+		if(true)return ;
 		
 		test(2, 3, "4PKR1/4PPP1/8/8/8/r7/8/7k w - -");
 		
@@ -146,10 +76,16 @@ public class Test {
 		test(2, 199, "r3k3/8/8/8/8/8/8/R3K3 w q - 0 1");
 
 		test(3, 273, "8/P1k5/K7/8/8/8/8/8 w - - 0 1");
-		
+	
+		test(3, 918, "8/3p4/8/k1P4Q/8/8/8/6K1 b - - 0 1");
+
+		test(3, 1150, "8/2p5/8/k2P3Q/8/8/8/6K1 b - - 0 1");
+
 		test(2, 1141, "r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1");
 		
 		test(4, 1329, "8/P1k5/K7/8/8/8/8/8 w - - 0 1");
+
+		test(2, 1797,"r4knr/p1ppqPb1/bn4p1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQ - 0 1");
 			
 		test(6, 2217, "K1k5/8/P7/8/8/8/8/8 w - - 0 1");
 
@@ -186,9 +122,12 @@ public class Test {
 		test(6, 1134888, "3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1");
 	
 		test(6, 3821001, "2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1");
-
-		test(5, 4865609,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-
+		
+		//test(5, 4865609,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		
+		test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		
+		
 	}
 	
 	

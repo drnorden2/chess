@@ -67,12 +67,6 @@ public class IndexedList <T extends IndexedElement>{
 	}
 	
 	
-	public void removeAllX() {
-		int elementCount = this.size();
-		for(int i =0;i<elementCount;i++) {
-			removeFirstElement();
-		}
-	}
 	public T removeFirstElement() {
 		T element = elements[0];
 		this.remove(element);

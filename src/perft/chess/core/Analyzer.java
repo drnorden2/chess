@@ -122,7 +122,7 @@ public class Analyzer {
 	}
 	@Override
 	public String toString() {
-		//System.out.println("EXPENSIVE");
+		System.out.println("EXPENSIVE");
 		Long.numberOfTrailingZeros(0L);
 		String[] board = this.getBoardToString();
 		String[] attackW = this.getAttackToString(Piece.COLOR_WHITE);

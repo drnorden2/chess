@@ -86,12 +86,6 @@ public class BaseLiner {
 		return (ArrayStackInt)varStacks[OBJ_TOUCHED_LIST].get();
 	}
 
-	//@@TODO touching and untouching (idea untouch => untouch sensitive touchlist
-	void setObj(int index, Object value) {
-		if(varStacks[index].addAndTouched(value)) {
-			touchedList.add(index);
-		}
-	}
 	
 	void setObjTouchless(int index, Object value) {
 		varStacks[index].addAndTouched(value);
@@ -104,7 +98,36 @@ public class BaseLiner {
 	int getChanges(int index) {
 		return varStacks[index].stackSize();
 	}
+
+	int getInt(int index) {
+		return varStacksInt[index-totalObj].get();
+	}
 	
+	
+	int getChangesInt(int index) {
+		return varStacksInt[index-totalObj].stackSize();
+	}
+	
+	public int incrementIndexCounter(int indexCounterID) {
+		return indexCounters[indexCounterID]++;
+	}
+	public int resetCounter(int indexCounterID) {
+		return indexCounters[indexCounterID]=0;
+	}
+	public int getCounter(int indexCounterID) {
+		return indexCounters[indexCounterID];
+	}
+
+	
+	
+	
+	//@@TODO touching and untouching (idea untouch => untouch sensitive touchlist
+	void setObj(int index, Object value) {
+		if(varStacks[index].addAndTouched(value)) {
+			touchedList.add(index);
+		}
+	}
+
 	void setInt(int index, int value) {
 		if(varStacksInt[index-totalObj].addAndTouched(value)) {
 			touchedList.add(index);
@@ -133,23 +156,5 @@ public class BaseLiner {
 		varStacksInt[index-totalObj].addAndTouched(value);
 	}
 	
-	int getInt(int index) {
-		return varStacksInt[index-totalObj].get();
-	}
-	
-	
-	int getChangesInt(int index) {
-		return varStacksInt[index-totalObj].stackSize();
-	}
-	
-	public int incrementIndexCounter(int indexCounterID) {
-		return indexCounters[indexCounterID]++;
-	}
-	public int resetCounter(int indexCounterID) {
-		return indexCounters[indexCounterID]=0;
-	}
-	public int getCounter(int indexCounterID) {
-		return indexCounters[indexCounterID];
-	}
 	
 }

@@ -29,8 +29,8 @@ public class LegalMoveTester {
 		for(int i=0;i<allPiecesOfCurCol.size();i++) {
 			Piece piece = allPiecesOfCurCol.getElement(i);
 			
-			if(position.wtfIteration== 13  && piece.getPosition()==5 ){
-				System.out.println("3rd WTFUCKER!");
+			if(position.wtfIteration== 121  && piece.getPosition()==34 ){
+				System.out.println("3rd WTHacker!");
 			}
 			
 			int oldPos = piece.getPosition();
@@ -246,9 +246,15 @@ public class LegalMoveTester {
 				
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
 				Move move = field.getPseudoMove(ii);
-				//assumption: no enpassante case! 
-				if(this.rescueMap[move.getNewPos()]) {
-					position.addLegalMove(move);
+				//enpassante case relevant!
+				if(move.getNewPos()==enpassantePos ) {
+					if(!isMovePinnedOrNotPreventingCheckEXPENSIVE(move, curColor, true)) {
+						position.addLegalMove(move);		
+					}
+				}else {
+					if(this.rescueMap[move.getNewPos()]) {
+						position.addLegalMove(move);
+					}
 				}
 			}
 		}else if(pinner!=null && kingAttacks !=0) {

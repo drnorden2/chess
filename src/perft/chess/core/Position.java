@@ -195,9 +195,9 @@ public class Position {
 			allMovesLists.get(getLevel()).clear(); 		
 			bl.undo();
 			this.takeTurn();
+			
+			
 			*/
-			
-			
 			
 			
 			
@@ -214,8 +214,8 @@ public class Position {
 			
 			
 			
+			/*
 			
-/*			
 			
 			
 			
@@ -236,11 +236,11 @@ public class Position {
 				throw new RuntimeException("different"+this.wtfIteration);
 			}
 			
-			
+			*/
 
 			
-	*/		
-/*			
+	
+	/*		
 		}catch(Exception e) {
 			O.UT("Error Moving: is it Simulated?" +bl.isAlreadyInSimulation);
 			throw e;
