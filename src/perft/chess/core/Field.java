@@ -119,8 +119,8 @@ public class Field implements IndexedElement {
 				Move move = moves[i][j];
 				newPos = move.getNewPos();
 				if(move.getMoveType()!=Move.MOVE_TYPE_KING_SENSING) {
-					if (move.isAttackerMove()) {
-						if(move.isNoPromotionOrQueen()) {	
+					if(move.isNoPromotionOrQueen()) {	
+						if (move.isAttackerMove()) {
 							position.attackTable[color].incr(newPos);
 						}
 					}
@@ -131,7 +131,9 @@ public class Field implements IndexedElement {
 				}
 				
 				Position.registerCount++;
-				position.fields[newPos].registerCallback(move.getFieldCB());
+				if(move.isNoPromotionOrQueen()) {	
+					position.fields[newPos].registerCallback(move.getFieldCB());
+				}
 				
 				//exit ray!
 				if (position.fields[newPos].getPiece() != null) {
