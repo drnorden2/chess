@@ -23,7 +23,7 @@ public class Test {
 	public static void main(String[] args) {
 		 	
 		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-		test(6,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		
 		if(true)return;
 		test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
@@ -162,31 +162,32 @@ public class Test {
 		double time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
 		boolean correct = games == nodes;
 
-		
 		System.out.println(headLine);
 		System.out.print("game\n"+game.toString());
+		System.out.println("");
+		System.out.println("  Delta:"+Position.counter);
+		int hash2= game.getBoard().getHash();
+		System.out.println("  Hashes:"+hash1+"/"+hash2);
+		System.out.println("");
+		System.out.println("  Callbacks:");
+		System.out.println("  Reg:   "+Position.registerCount+":  ("+(int)(Position.registerCount/game.getMoveCounter())+"/move)  ("+((int)((Position.registerCount/(time*10))/10))+"/s)");
+		System.out.println("  UnReg: " +Position.unRegisterCount+":  ("+(int)(Position.unRegisterCount/game.getMoveCounter())+"/move)  ("+((int)((Position.unRegisterCount/(time*10))/10))+"/s)");
+		System.out.println("");
+		System.out.println("  Nodes (bulk: "+useBulk+"):");
+		System.out.println("  Real Nodes: "+game.getMoveCounter()+":  "+(int)(game.getMoveCounter()/time)+"/s");
+		System.out.println("  Bulk Nodes: "+games +":  "+(int)(games/time)+"/s");
+		
+		System.out.println("");
+		System.out.println("  FEN:\""+fen+"\"");
+		System.out.println("  Depth: "+ depth);
+		System.out.println("  Time: "+ time +"s");
 		if(correct) {
 			System.out.print("[OK]: ");
 		}else {
 			System.out.print("[FAILED]: ");
 		}
 		System.out.println("("+games+" of "+nodes+")");
-		System.out.println("  FEN:\""+fen+"\"");
-		System.out.println("  Time: "+ time +"s");
-		System.out.println("  Depth: "+ depth);
-		System.out.println("");
-		System.out.println("  Nodes (bulk: "+useBulk+"):");
-		System.out.println("  Real Nodes: "+game.getMoveCounter()+":  "+(int)(game.getMoveCounter()/time)+"/s");
-		System.out.println("  Bulk Nodes: "+games +":  "+(int)(games/time)+"/s");
-		System.out.println("");
-		System.out.println("  Callbacks:");
-		System.out.println("  Reg:   "+Position.registerCount+":  ("+(int)(Position.registerCount/game.getMoveCounter())+"/move)  ("+((int)((Position.registerCount/(time*10))/10))+"/s)");
-		System.out.println("  UnReg: " +Position.unRegisterCount+":  ("+(int)(Position.unRegisterCount/game.getMoveCounter())+"/move)  ("+((int)((Position.unRegisterCount/(time*10))/10))+"/s)");
-
-		System.out.println("\nDelta:"+Position.counter);
-		int hash2= game.getBoard().getHash();
-		System.out.println("Hahses:"+hash1+"/"+hash2);
-		
+				
 		
 		if(!correct) {
 			System.exit(-1);

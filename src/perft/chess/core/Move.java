@@ -45,9 +45,9 @@ public class Move implements IndexedElement{
 	private final int oldPos;
 	private final int newPos;
 	
-	private int ii;
-	private int jj;
-	private FieldCallback fieldCB;
+	private final int ii;
+	private final int jj;
+	private final FieldCallback fieldCB;
 	
 	private final int moveType;
 	private final int elementIndex;
@@ -81,6 +81,11 @@ public class Move implements IndexedElement{
 	
 	public Move(int color, BaseLiner bl,int callbackType, int oldPos, int newPos, int moveType,int dirX, int dirY,int promotePieceType, int rookPos, int dirOfRochade) {
 		//this.bl = bl;
+		this.elementIndex=-1;
+		
+		this.ii =-1;
+		this.jj =-1;
+		this.fieldCB=null;
 		this.color = color;
 		this.oldPos= oldPos;
 		this.newPos = newPos;
@@ -91,7 +96,6 @@ public class Move implements IndexedElement{
 		this.callbackType = callbackType;
 		this.dirX=dirX;
 		this.dirY=dirY;
-		elementIndex = bl.incrementIndexCounter(Move.INDEX_Counter_ID);
 		if(rookPos==-1) {
 			rookMove = null;
 		}else {
@@ -144,6 +148,33 @@ public class Move implements IndexedElement{
 		this.isKingSensing = (moveType==Move.MOVE_TYPE_KING_SENSING);
 		this.isRochade = this.dirOfRochade!=0;
 	}
+	
+	
+	public Move (Move move, int ii, int jj, FieldCallback cb) {
+		this.ii =-1;
+		this.jj =-1;
+		this.fieldCB=cb;
+		
+		this.elementIndex=ii*8+jj;
+		this.oldPos = move.oldPos;
+		this.newPos = move.newPos;
+		this.moveType = move.moveType;
+		this.promotePieceType = move.promotePieceType;
+		this.rookPos = move.rookPos;
+		this.dirOfRochade = move.dirOfRochade;
+		this.rookMove = move.rookMove;
+		this.isTwoSquarePush = move.isTwoSquarePush;
+		this.enPassanteSquare = move.enPassanteSquare;
+		this.enPassantePawnPos = move.enPassantePawnPos;
+		this.isAttackerMove = move.isAttackerMove;
+		this.isKingSensing = move.isKingSensing;
+		this.isRochade = move.isRochade;
+		this.callbackType = move.callbackType;
+		this.dirX = move.dirX;
+		this.dirY = move.dirY;
+		this.color = move.color;
+	}
+
 	public int getElementIndex() {
 		return this.elementIndex;
 	}
@@ -258,15 +289,6 @@ public class Move implements IndexedElement{
 	}
 	public int getJJ() {
 		return jj;
-	}
-	public void setII(int ii) {
-		this.ii=ii;
-	}
-	public void setJJ(int jj) {
-		this.jj =jj;
-	}
-	public void setFieldCallBack(FieldCallback fieldCB) {
-		this.fieldCB = fieldCB;
 	}
 	public FieldCallback  getFieldCB() {
 		return fieldCB;

@@ -27,7 +27,7 @@ public class FieldCallback implements IndexedElement{
 	
 	
 	
-	public FieldCallback(Field field, Move move){
+	public FieldCallback(Field field, Move move, int ii, int jj){
 		this.field=field;
 		this.moveIndex = move.getElementIndex();
 		this.dirX = move.getDirX();
@@ -37,18 +37,13 @@ public class FieldCallback implements IndexedElement{
 		if(callbackType==FieldCallback.CALLBACK_TYPE_ROCHADE_TEST) {
 			this.jj = -1;
 		}else {
-			this.jj = move.getJJ();
+			this.jj = jj;
 		}
 		if(move.isPromotion()) {//@todo: think about optimization 
 			this.ii = -1;
 		}else {
-			this.ii = move.getII();
+			this.ii = ii;
 		}
-		
-		
-		
-		
-		
 		this.elementIndex = move.getOldPos();
 	}
 

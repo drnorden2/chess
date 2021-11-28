@@ -249,11 +249,12 @@ public class MoveManager {
 			}
 			Move[] moves =new Move[moveCounter];
 			for(int j=0;j<moves.length;j++) {
+				/*
 				curMoves[i][j].setII(validRayCursor);
 				curMoves[i][j].setJJ(j);
-				curMoves[i][j].setFieldCallBack(new FieldCallback(this.position.fields[curMoves[i][j].getOldPos()],curMoves[i][j]));
-
-				moves[j] = curMoves[i][j];
+				curMoves[i][j].setFieldCallBack(new FieldCallback(this.position.fields[curMoves[i][j].getOldPos()],curMoves[i][j]));*/
+				FieldCallback cb = new FieldCallback(this.position.fields[curMoves[i][j].getOldPos()],curMoves[i][j],validRayCursor,j);
+				moves[j] = new Move(curMoves[i][j],validRayCursor,j,cb);
 				
 			}
 			finalMoves[validRayCursor++]=moves;

@@ -26,7 +26,8 @@ public class Field implements IndexedElement {
 	public final static int MOVE_IS_PINNED=2;
 	public final static int MOVE_IS_UNCLEAR=3;
 	static int optimizationCounter=0;
-
+	FieldCallback[] fieldCBBuffer = new FieldCallback[64];//@TODO Dynamic !!!!!!!!!!!!!!!!!!!!!!!1
+	
 //	private static boolean isalreadyInNotification=false;
 
 		
@@ -39,7 +40,7 @@ public class Field implements IndexedElement {
 		
 		this.position = position;
 		this.piece = new BLVariable<Piece>(this.bl, null);
-		pseudoMoves = new BLIndexedList<Move>(this.bl, 16 * 28, 6000);// TBD reduce
+		pseudoMoves = new BLIndexedList<Move>(this.bl, 36, 18*7);// TBD reduce
 		callBacks = new BLIndexedList<FieldCallback>(bl, 64, 64);
 	}
 
@@ -276,7 +277,6 @@ public class Field implements IndexedElement {
 	
 	
 	public void notifyCallBacks(int notifyType, int color, int notPos, boolean isKnight, int kingPos) {
-		FieldCallback[] fieldCBBuffer = new FieldCallback[64];//@TODO Dynamic !!!!!!!!!!!!!!!!!!!!!!!1
 		int callBackCount = 0;
 		// invocation of callbacks
 		for (int i = 0; i < callBacks.size(); i++) {

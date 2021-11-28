@@ -43,12 +43,14 @@ public class BaseLiner {
 	public int getCurrOffsetRegister(int x) {
 		int cur = registry1;
 		registry1  +=x;
+		//System.out.println("Grown to: "+registry1+" by:"+x);
 		return cur;
 	}
 
 	public int getCurrOffsetRegisterInt(int x) {
 		int cur = registry2;
 		registry2  +=x;
+		//System.out.println("Grown to: "+registry2+" by:"+x);
 		return cur;
 	}
 
