@@ -90,6 +90,9 @@ public class Field implements IndexedElement {
 	public Move getPseudoMove(int index) {
 		return pseudoMoves.getElement(index);
 	}
+	public boolean containsPseudoMove(int index) {
+		return pseudoMoves.contains(index);
+	}
 
 	public void addPseudoMoves(Piece piece, Move[][] moves, int ii, int jj, int callbackType) {
 		//System.out.println("addPseudoMoves(Piece piece("+piece+"),Move[][] moves("+moves.length+"),int ii("+ii+"), int jj("+jj+"), boolean onlyCallBack("+onlyCallBack+") ");

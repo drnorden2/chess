@@ -12,7 +12,7 @@ public class BLVariable<T> {
 		this.bl = bl;
 		bL_Index = bl.getCurrOffsetRegister(1);
 	}
-	public void setTouchless(T value) {
+	private void setTouchless(T value) {
 		bl.setObjTouchless(bL_Index, value);
 	}
 
