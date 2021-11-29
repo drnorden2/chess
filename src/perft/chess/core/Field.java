@@ -11,11 +11,14 @@ public class Field implements IndexedElement {
 	private final int rank;
 	private final BaseLiner bl;
 	//** under baseline **/
-	private final BLVariable<Piece> piece;
 	
+	
+	private final BLVariable<Piece> piece;
 	private final BLIndexedList<Move> pseudoMoves;
-	private final Position position;
 	BLIndexedList<FieldCallback> callBacks;
+	
+	
+	private final Position position;
 	public final static int NOTIFY_NOW_EMPTY =0;
 	public final static int NOTIFY_NOW_OCCUPIED =1;
 	public final static int NOTIFY_NOW_REPLACED =2;
@@ -26,10 +29,7 @@ public class Field implements IndexedElement {
 	public final static int MOVE_IS_PINNED=2;
 	public final static int MOVE_IS_UNCLEAR=3;
 	static int optimizationCounter=0;
-	FieldCallback[] fieldCBBuffer = new FieldCallback[64];//@TODO Dynamic !!!!!!!!!!!!!!!!!!!!!!!1
-	
-//	private static boolean isalreadyInNotification=false;
-
+	FieldCallback[] fieldCBBuffer = new FieldCallback[64];
 		
 
 	public Field(BaseLiner bl, Position position, int pos) {

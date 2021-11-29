@@ -5,6 +5,7 @@ import perft.chess.core.baseliner.BLIndexedList;
 public class LegalMoveTester {
 	private final Position position;
 	private final boolean[] rescueMap=new boolean[64];
+	
 	public LegalMoveTester(Position position) {
 		this.position=position;
 	}

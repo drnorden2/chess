@@ -1,33 +1,32 @@
 package perft.chess.core.datastruct;
 
-
-public class ArrayStackInt {
-	private int[]  stack;
+public class ArrayStack <T>{
+	private T[]  stack;
 	private int head=-1;
-	public ArrayStackInt(int size) {
-		stack = new int[size];
+	public ArrayStack(T[] stack) {
+		this.stack = stack;
 	}
 	
-	public void add(int val) {
+	public void add(T val) {
 		stack[++head] = val;
 	}
 	
-	public int get(int i) {
+	public T get(int i) {
 		return stack[i];
 	}
-	public int get() {
+	public T get() {
 		return stack[head];
 	}
-	public int remove() {
+	public T remove() {
 		if(head ==-1) {
 			System.out.println("HFGAIDL!");
-			return -1;
+			return null;
 		}
-		int val = stack[head];
+		T val = stack[head];
 		head--;
 		return val;
 	}
-	public ArrayStackInt reset() {
+	public ArrayStack reset() {
 		head=-1;
 		return this;
 	}

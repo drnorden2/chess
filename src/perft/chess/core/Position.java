@@ -3,12 +3,13 @@ package perft.chess.core;
 
 
 import perft.chess.core.baseliner.BLArrayInt;
+
 import perft.chess.core.baseliner.BLVariableInt;
 import perft.chess.core.baseliner.BLVariable;
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.baseliner.BLIndexedList;
 import perft.chess.core.o.O;
-import java.util.ArrayList;
+import perft.chess.core.datastruct.ArrayStack;
 
 
 public class Position {
@@ -23,8 +24,8 @@ public class Position {
 	private final Zobrist zobrist;
  
 	
-	
-	final BaseLiner bl = new BaseLiner(7000,13000,6,2000);
+	final int depth = 6;
+	final BaseLiner bl = new BaseLiner(7000,13000,depth,2000);
 	final MoveManager moveManager;
 	int color=Piece.COLOR_WHITE;
     int movesPlayed = 0;
@@ -39,8 +40,8 @@ public class Position {
 	private final Piece[] kingPieces = new Piece[2];
 	
 	final BLIndexedList<Piece>[] allPieces= new BLIndexedList[2];
-	//final IndexedList<Move> [] allMoves =new IndexedList[2];
-	ArrayList<ArrayList<Move>> allMovesLists =new ArrayList<ArrayList<Move>>();
+
+	ArrayStack<ArrayStack<Move>> allMovesLists = new ArrayStack<ArrayStack<Move>>(new ArrayStack[depth]);
 
 	public final BLVariableInt  enPassantePos;
 	public final BLVariableInt[]  isCheck = new BLVariableInt[2];
@@ -49,7 +50,6 @@ public class Position {
 	
 
 	
-	//private MoveManager moveMngr = new MoveManager();
 	
 	public Position() {
 		Position.position = this;
@@ -72,9 +72,10 @@ public class Position {
 		isCheck[Piece.COLOR_BLACK] = new BLVariableInt(bl,this.GAME_STATE_NORMAL);
 		isCheck[Piece.COLOR_WHITE] = new BLVariableInt(bl,this.GAME_STATE_NORMAL);
 		zobrist= new Zobrist(bl);
-	
-		for(int i=0;i<1000;i++) {
-			this.allMovesLists.add(new ArrayList<Move>(100));
+		
+		for(int i=0;i<depth;i++) {
+			ArrayStack<Move> allMoves = new ArrayStack<Move>(new Move[36*16]);
+			this.allMovesLists.add(allMoves);
 		}
 		
 		
@@ -133,7 +134,7 @@ public class Position {
 		}
 		//O.EXIT("initialEval");
 		int level = getLevel();
-		this.allMovesLists.get(level).clear();
+		this.allMovesLists.get(level).reset();
 		
 		
 	}
@@ -169,7 +170,7 @@ public class Position {
 	}
 
 	public void unSetMove(int index) {
-		allMovesLists.get(getLevel()).clear();; 
+		allMovesLists.get(getLevel()).reset();; 
 		bl.undo();
 		takeTurn();		
 		movesPlayed--;
