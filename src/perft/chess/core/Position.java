@@ -21,10 +21,10 @@ public class Position {
 	public static final int GAME_STATE_NORMAL=0;
 	public static final int GAME_STATE_CHECK=1;
 	private final Zobrist zobrist;
-
+ 
 	
 	
-	final BaseLiner bl = new BaseLiner(7000,13000,102,2000);
+	final BaseLiner bl = new BaseLiner(7000,13000,6,2000);
 	final MoveManager moveManager;
 	int color=Piece.COLOR_WHITE;
     int movesPlayed = 0;

@@ -74,7 +74,7 @@ public class MoveManager {
 											//4 options rook, bishop, knight and queen 
 											for(int j=0;j<4;j++) {
 												int promotePieceType = j+1; //bishop, knight, rook, queen
-												curMoves[3+(4*i)+j] = new Move[] {new Move(color,bl,callbackType ,oldMove.getOldPos(),oldMove.getNewPos(), moveType,0,0,promotePieceType)}; 
+												curMoves[3+(4*i)+j] = new Move[] {new Move(color,callbackType ,oldMove.getOldPos(),oldMove.getNewPos(), moveType,0,0,promotePieceType)}; 
 											}
 										}
 									}
@@ -114,11 +114,11 @@ public class MoveManager {
 									int oldPos = getPos(rank,file);
 									int newPos = getPos(rank,file+2*dir);
 									int rookPos = getPos(rank,file+((i==0)?3:-4));
-									curMoves[i][1] = new Move(color,bl,FieldCallback.CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, Move.MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
+									curMoves[i][1] = new Move(color,FieldCallback.CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, Move.MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
 									int counter =2;
 									
 									for (int j = oldPos + dir*3; j != rookPos+dir; j = j + dir) {
-										curMoves[i][counter++] = new Move(color,bl,FieldCallback.CALLBACK_TYPE_ROCHADE_TEST , oldPos,j, Move.MOVE_TYPE_KING_SENSING,dir, 0);
+										curMoves[i][counter++] = new Move(color,FieldCallback.CALLBACK_TYPE_ROCHADE_TEST , oldPos,j, Move.MOVE_TYPE_KING_SENSING,dir, 0);
 										//O.UT("added at "+i+","+(counter-1)+" "+curMoves[i+8][counter-1]);
 									}								
 								}
@@ -131,7 +131,7 @@ public class MoveManager {
 						
 						case Piece.PIECE_TYPE_ANY:
 							//public Move(BaseLiner bl,int callbackType, int oldPos, int newPos, int moveType) {
-							curMoves[0] = new Move[] {new Move(color,bl,FieldCallback.CALLBACK_TYPE_OTHER , getPos(rank,file),getPos(rank,file), Move.MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
+							curMoves[0] = new Move[] {new Move(color,FieldCallback.CALLBACK_TYPE_OTHER , getPos(rank,file),getPos(rank,file), Move.MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
 							break;
 						
 						}
@@ -173,7 +173,7 @@ public class MoveManager {
 					if(cb == FieldCallback.CALLBACK_TYPE_BEAT_RAY && last) {
 						cb = FieldCallback.CALLBACK_TYPE_BEAT_ONE;
 					}
-					Move curMove = new Move(color,bl,cb ,oldPos, newPos, moveType,dirX,dirY); ;
+					Move curMove = new Move(color,cb ,oldPos, newPos, moveType,dirX,dirY); ;
 					
 					curMoves[ray+rayOffset][cursor++] = curMove;
 				} else {
@@ -232,6 +232,7 @@ public class MoveManager {
 		
 		Move[][] finalMoves=new Move[rayCounter][];
 		int validRayCursor =0;
+		int moveIndex=0;
 		for (int i = 0; i < curMoves.length; i++) {// MoveRays
 			if(curMoves[i][0]==null) {
 				continue;
@@ -254,7 +255,7 @@ public class MoveManager {
 				curMoves[i][j].setJJ(j);
 				curMoves[i][j].setFieldCallBack(new FieldCallback(this.position.fields[curMoves[i][j].getOldPos()],curMoves[i][j]));*/
 				FieldCallback cb = new FieldCallback(this.position.fields[curMoves[i][j].getOldPos()],curMoves[i][j],validRayCursor,j);
-				moves[j] = new Move(curMoves[i][j],validRayCursor,j,cb);
+				moves[j] = new Move(curMoves[i][j],cb,validRayCursor,j,moveIndex++);
 				
 			}
 			finalMoves[validRayCursor++]=moves;

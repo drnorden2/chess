@@ -40,10 +40,10 @@ public class Field implements IndexedElement {
 		
 		this.position = position;
 		this.piece = new BLVariable<Piece>(this.bl, null);
-		pseudoMoves = new BLIndexedList<Move>(this.bl, 36, 18*7);// TBD reduce
+		pseudoMoves = new BLIndexedList<Move>(this.bl, 36, 36);// TBD reduce
 		callBacks = new BLIndexedList<FieldCallback>(bl, 64, 64);
 	}
-
+ 
 		
 	// Field reference to Piece and pos of piece
 	public void stagePiece(Piece pieceObj) {
