@@ -1,7 +1,5 @@
 package perft.chess.core.datastruct;
 
-import java.lang.reflect.Array;
-
 public class IndexedList <T extends IndexedElement>{
 
 	

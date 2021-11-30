@@ -49,7 +49,6 @@ public class Piece implements IndexedElement{
 		if(type == Piece.PIECE_TYPE_KING) {
 			this.position.setKing(color,this);
 		}
-		//this.allMoves = new IndexedList<Move>(bl, 16*28, 16*28*64); //toBeReduced
 		this.isTouchedFromBeginning = touched;
 	}
 	public void isUntouched() {

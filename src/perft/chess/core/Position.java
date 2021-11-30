@@ -5,7 +5,6 @@ package perft.chess.core;
 import perft.chess.core.baseliner.BLArrayInt;
 
 import perft.chess.core.baseliner.BLVariableInt;
-import perft.chess.core.baseliner.BLVariable;
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.baseliner.BLIndexedList;
 import perft.chess.core.o.O;
@@ -21,10 +20,10 @@ public class Position {
 	
 	public static final int GAME_STATE_NORMAL=0;
 	public static final int GAME_STATE_CHECK=1;
-	private final Zobrist zobrist;
+	//private final Zobrist zobrist;
  
 	
-	final int depth = 6;
+	final int depth = 8000;
 	final BaseLiner bl = new BaseLiner(7000,13000,depth,2000);
 	final MoveManager moveManager;
 	int color=Piece.COLOR_WHITE;
@@ -36,16 +35,11 @@ public class Position {
 	/**under base line**/
 	final Field[] fields = new Field[64];
 	final BLArrayInt[] attackTable = new BLArrayInt[2];
-	final BLArrayInt[] kingTable = new BLArrayInt[2];
-	private final Piece[] kingPieces = new Piece[2];
-	
+	private final Piece[] kingPieces = new Piece[2];	
 	final BLIndexedList<Piece>[] allPieces= new BLIndexedList[2];
-
 	ArrayStack<ArrayStack<Move>> allMovesLists = new ArrayStack<ArrayStack<Move>>(new ArrayStack[depth]);
-
 	public final BLVariableInt  enPassantePos;
 	public final BLVariableInt[]  isCheck = new BLVariableInt[2];
-	public final BLVariable<String>  moveSeq;
 	
 	
 
@@ -66,12 +60,12 @@ public class Position {
 
 		attackTable[Piece.COLOR_BLACK] = new BLArrayInt(bl, 64, 0);
 		attackTable[Piece.COLOR_WHITE] = new BLArrayInt(bl, 64, 0);
-		kingTable[Piece.COLOR_BLACK] = new BLArrayInt(bl, 64, 0);
-		kingTable[Piece.COLOR_WHITE] = new BLArrayInt(bl, 64, 0);
+
+		
 		
 		isCheck[Piece.COLOR_BLACK] = new BLVariableInt(bl,this.GAME_STATE_NORMAL);
 		isCheck[Piece.COLOR_WHITE] = new BLVariableInt(bl,this.GAME_STATE_NORMAL);
-		zobrist= new Zobrist(bl);
+		//zobrist = new Zobrist(bl);
 		
 		for(int i=0;i<depth;i++) {
 			ArrayStack<Move> allMoves = new ArrayStack<Move>(new Move[36*16]);
@@ -80,15 +74,14 @@ public class Position {
 		
 		
 		this.enPassantePos = new BLVariableInt(bl,-1);
-		this.moveSeq = new BLVariable<String>(bl,"");
 	}
 	
 	public int getHash() {
-		return zobrist.getHash();
+		return 0;//zobrist.getHash();
 	}
 	
 	public void initialEval() {
-		//System.out.println("WARNING!!!!!!!!!!!!!EXPENSIVE");
+		System.out.println("WARNING!!!!!!!!!!!!!EXPENSIVE");
 		
 		for(int i=0;i<64;i++) {
 			Piece piece = this.fields[i].getPiece();
@@ -122,15 +115,15 @@ public class Position {
 				this.moveBeforeBaseLine(moves[0][0]);
 			}
 		}
-		zobrist.reset();
+		//zobrist.reset();
 
 		int enpassante = this.enPassantePos.get();
 		if(enpassante !=-1) {
-			zobrist.HASH(enpassante,null);
+			//zobrist.HASH(enpassante,null);
 		}
 		for (int i = 0; i < 64; i++) {
 			Piece piece = fields[i].getPiece();
-			zobrist.HASH(i,piece);
+			//zobrist.HASH(i,piece);
 		}
 		//O.EXIT("initialEval");
 		int level = getLevel();
@@ -275,7 +268,7 @@ public class Position {
 		int oldEnpassantePos =enPassantePos.get();
 		if(oldPos!=newPos) {
 			if(oldEnpassantePos !=-1) {
-				zobrist.HASH(oldEnpassantePos,null);		
+				//zobrist.HASH(oldEnpassantePos,null);		
 				enPassantePos.set(-1);
 				fields[oldEnpassantePos].notifyCallBacks(Field.NOTIFY_NOW_EMPTY,(color+1)%2,oldPos,false,-1);
 			}
@@ -290,7 +283,7 @@ public class Position {
 			
 			Field enPassanteField  = null;
 			//remove old
-			zobrist.HASH(oldPos,piece);
+			//zobrist.HASH(oldPos,piece);
 			oldField.unStagePiece(piece );
 			oldField.unStageAllMoves(piece );
 			
@@ -300,7 +293,7 @@ public class Position {
 			Piece otherPiece = newField.getPiece();
 			boolean isKnight = false;
 			if(otherPiece!=null) {
-				zobrist.HASH(newPos,otherPiece);
+				//zobrist.HASH(newPos,otherPiece);
 				replace =true;
 				newField.unStageAllMoves(otherPiece);
 				newField.unStagePiece(otherPiece);
@@ -316,7 +309,7 @@ public class Position {
 					if (move.isEnpassanteMove()&& move.getNewPos()==oldEnpassantePos){// other field is empty =>ergo enpassante
 						enPassanteField = fields[move.getEnPassantePawnPos()];				
 						otherPiece = enPassanteField.getPiece();
-						zobrist.HASH(move.getEnPassantePawnPos(),otherPiece);
+						//zobrist.HASH(move.getEnPassantePawnPos(),otherPiece);
 						enPassanteField.unStagePiece(otherPiece);
 						enPassanteField.unStageAllMoves(otherPiece);					
 						finalTakeFromBoard(otherPiece);
@@ -329,13 +322,8 @@ public class Position {
 			newField.stagePiece(piece);
 			//newField.unStageAllMoves(piece);
 			newField.stagePseudoMoves();
-			zobrist.HASH(newPos,piece);
+			//zobrist.HASH(newPos,piece);
 			
-			/*
-			if(piece.getType()==Piece.PIECE_TYPE_ROOK && !isPieceTouched) {
-				fields[Move.getPos(Move.getRank(oldPos), Move._E)].notifyFieldChange(-1, -1,-1);	
-			}*/
-
 			newField.notifyCallBacks(replace?Field.NOTIFY_NOW_REPLACED:Field.NOTIFY_NOW_OCCUPIED,piece.getColor(),oldPos,false,-1); 
 			
 			// Move rook to new position in rochade before reevaluation of King (new rook position will block one king move!
@@ -346,7 +334,7 @@ public class Position {
 		//dynamic enPassante handling							
 		if(move.isTwoSquarePush()) {
 			enPassantePos.set(move.getEnPassanteSquare());
-			zobrist.HASH(move.getEnPassanteSquare(),null);
+			//zobrist.HASH(move.getEnPassanteSquare(),null);
 			//WTF@TODO needeD?
 			fields[move.getEnPassanteSquare()].notifyCallBacks(Field.NOTIFY_NOW_OCCUPIED, piece.getColor(),oldPos,false,-1);
 		}
