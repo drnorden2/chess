@@ -106,7 +106,7 @@ public class IndexedListInt {
 			int ADD =0;
 			int REMOVE =1;
 			
-			IndexedList <IndexedInt>cList = new <IndexedInt>IndexedList (new IndexedInt [16*28], 16*28*64);
+			IndexedList <IndexedInt>cList = new <IndexedInt>IndexedList (IndexedInt.class, 16*28, 16*28*64);
 //			test(cList,new IndexedInt(1),REMOVE);
 			test(cList,new IndexedInt(1),ADD);
 			test(cList,new IndexedInt(1),ADD);

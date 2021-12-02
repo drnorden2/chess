@@ -1,5 +1,7 @@
 package perft.chess.core.datastruct;
 
+import java.lang.reflect.Array;
+
 public class IndexedList <T extends IndexedElement>{
 
 	
@@ -8,7 +10,8 @@ public class IndexedList <T extends IndexedElement>{
 	private T[] elements; 
 	private int[] position; 
 	
-	public IndexedList ( T[]elements, int indexRange) {
+	public IndexedList (Class<T> clazz, int size , int indexRange) {
+		elements = (T[]) Array.newInstance(clazz, size());
 		counter=0;
 		this.elements = elements;
 		position = new int[indexRange];
@@ -100,76 +103,6 @@ public class IndexedList <T extends IndexedElement>{
 		//checkConsistency("removeEnd");
 	}
 	
-	public static void mainX(String[] args) {
-		int ADD =0;
-		int REMOVE =1;
-		
-		IndexedList <IndexedInt>cList = new <IndexedInt>IndexedList (new IndexedInt [16*28], 16*28*64);
-//		test(cList,new IndexedInt(1),REMOVE);
-		test(cList,new IndexedInt(1),ADD);
-		test(cList,new IndexedInt(1),ADD);
-		test(cList,new IndexedInt(1),REMOVE);
-		test(cList,new IndexedInt(1),ADD);
-		test(cList,new IndexedInt(2),ADD);
-		test(cList,new IndexedInt(1),REMOVE);
-		test(cList,new IndexedInt(1),REMOVE);
-		test(cList,new IndexedInt(1),ADD);
-	}	
-	
-	public static void test(IndexedList cList,IndexedInt indexedPiece,int mode) {
-		int ADD =0;
-		int REMOVE =1;
-		if(mode == ADD) {
-			System.out.println("adding "+indexedPiece);
-			cList.add(indexedPiece);
-		}else if(mode == REMOVE) {
-			System.out.println("removing "+indexedPiece);
-			cList.remove(indexedPiece);
-		}
-		System.out.println(cList);
-	}
-	
-	
-	public String toString() {
-		String result =">";
-		for(int i =0;i<counter;i++) {
-			result += ( elements[i].getElementIndex() +", ");
-		}
-		result +="\n"+position.toString();
-		result +="\n"+elements.toString();
-		return result;
-	}
-
-	static class IndexedInt implements IndexedElement{
-		private int myInt;
-		public IndexedInt (int myInt) {
-			this.myInt = myInt;
-		}
-		public int getElementIndex() {
-			return myInt;
-		}
-		public String toString () {
-			return ""+myInt;
-		}
-	}
-	
-	private int testCounter=0;
-	public void checkConsistency(String label) {
-		if(label.equals("AddStart") && this.elements.length > 1000) {
-			testCounter++;
-		}
-		for(int i=0;i<counter;i++) {
-			T filler = elements[i];
-			if(filler==null) {
-				System.out.println(label);
-				System.out.println("WTF! CONSISTENCY after "+testCounter+ "- No filler at:"+i);//@todo remove me
-				System.out.println("Counter:"+counter +" El:"+elements.toString());
-				System.exit(0);
-			}
-		}
-		System.out.println("Counter:"+counter +" El:"+elements.toString());
-	}
-
 }
 
 

@@ -19,6 +19,7 @@ public class BaseLiner {
 	public static boolean isAlreadyInSimulation =false;
 
 	//100000,100,500)
+	
 	public BaseLiner (int totalObj, int totalInt, int maxLevel,int maxLocalChanges){
 		this.totalObj = totalObj;
 		registry2 = totalObj;
