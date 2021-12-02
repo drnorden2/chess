@@ -1,11 +1,16 @@
 package perft.chess.core;
 import static perft.chess.core.Move.*;
+import perft.chess.core.baseliner.BLIndexedListBB;
+
+
+import java.util.ArrayList;
 
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.o.O;
 
 public class MoveManager {
 	private static Move[][][] moves= new Move[1280][][];
+	private static BLIndexedListBB<Move>[] pseudoMoveSets = new BLIndexedListBB[1280];
 	private final BaseLiner bl;
 	private final Position position;
 	public static final int[][] trackBack = new int[64][64]; 
@@ -140,13 +145,15 @@ public class MoveManager {
 				}
 			}
 		}
-		
 		generatePieceAttacker();
 		generateTrackBack();
 	}
-
+	
 	public Move[][] getRawMoves (int index) {
 		return this.moves[index];
+	}
+	public BLIndexedListBB getPseudoMoves (int index) {
+		return this.pseudoMoveSets[index];
 	}
 
 	private void generateMoves(Move[][] curMoves, int color, int[][]  dirs, int rayOffset,int file, int rank,int maxSteps,int moveType, int callbackType) {
@@ -221,6 +228,8 @@ public class MoveManager {
 		return (file >= 0 && file <= 7 && rank >= 0 && rank <= 7);
 	}
 
+	
+		
 	private void addMoves(Move curMoves[][], int offset,int index) {
 		int rayCounter=0;
 
@@ -232,7 +241,10 @@ public class MoveManager {
 		
 		Move[][] finalMoves=new Move[rayCounter][];
 		int validRayCursor =0;
-		int moveIndex=0;
+		ArrayList <Move>list = new ArrayList<Move> ();
+		
+		
+		
 		for (int i = 0; i < curMoves.length; i++) {// MoveRays
 			if(curMoves[i][0]==null) {
 				continue;
@@ -250,16 +262,16 @@ public class MoveManager {
 			}
 			Move[] moves =new Move[moveCounter];
 			for(int j=0;j<moves.length;j++) {
-				/*
-				curMoves[i][j].setII(validRayCursor);
-				curMoves[i][j].setJJ(j);
-				curMoves[i][j].setFieldCallBack(new FieldCallback(this.position.fields[curMoves[i][j].getOldPos()],curMoves[i][j]));*/
 				FieldCallback cb = new FieldCallback(this.position.fields[curMoves[i][j].getOldPos()],curMoves[i][j],validRayCursor,j);
-				moves[j] = new Move(curMoves[i][j],cb,validRayCursor,j,moveIndex++);
-				
+				moves[j] = new Move(curMoves[i][j],cb,validRayCursor,j,list.size());
+				list.add(moves[j]);
 			}
 			finalMoves[validRayCursor++]=moves;
 		}
+		Move[] allElements = new Move[list.size()];
+		list.toArray(allElements);
+		
+		this.pseudoMoveSets[offset+index] = new BLIndexedListBB<Move>(bl,allElements);
 		MoveManager.moves[offset+index]=finalMoves;
 	}
 
@@ -284,19 +296,7 @@ public class MoveManager {
 				}else {
 					trackBack[i][j]=j;
 				}			
-				/*
-				if(trackBack[i][j]==j) {
-					out+=" __";
-				}else {
-					String str ="    "+ trackBack[i][j];
-					out +=(str.substring(str.length()-3));
-				}
-				if((j+1)%8==0){
-					out+="\n";
-				}*/
 			}
-			//System.out.println(out+"\n");
-			//System.out.println("\n***************************************\n");
 		}	
 	}
 	

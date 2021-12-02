@@ -10,8 +10,9 @@ public class BLIndexedListBB <T extends IndexedElement>{
 	private final T[] allElements;
 	private final BaseLiner bl;
 	
-	public BLIndexedListBB (BaseLiner bl, T[] allElements,int deep) {
-		this.bits = new BLVariable<Long>(bl);
+	public BLIndexedListBB (BaseLiner bl, T[] allElements) {
+		this.bits = new BLVariable<Long>(bl,0L);
+
 		curBB = new BitBoard(0L);
 		this.allElements = allElements;
 		this.bl = bl;
