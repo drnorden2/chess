@@ -36,25 +36,25 @@ public class BitBoard {
 		bits &= ~(1L << pos);
 
 	}
-	public int get(int pos) {
-		return (int)((bits >> pos) & 1L);
+	public boolean get(int pos) {
+		return (int)((bits >> pos) & 1L)==1;
 	}
 
 	public void toggle(int pos) {
 		bits ^= 1L << pos;
 	}
-
+	public int popCount() {
+		return Long.bitCount(bits);
+	}
+	
 	public void updateIndices(int[] indices) {
 		indices[0] = 0;
 		long copy = this.bits;
 
 		while (copy != 0){
-			//System.out.println("before:"+new BitBoard(copy));
-			int idx = 63-Long.numberOfLeadingZeros(copy); // square index from 0..63
-			//System.out.println("Index:"+idx);
+			int idx = 63-Long.numberOfLeadingZeros(copy); 
 			indices[++indices[0]] = idx;
 			copy &= ~(1L << idx);
-			//System.out.println("after:"+new BitBoard(copy)+"\n\n");
 		}
 	}
 	
@@ -96,4 +96,14 @@ public class BitBoard {
 		}
 		return out;
 	}
+	public void reset() {
+		this.bits=0L;
+	}
+	public void reset(long bits) {
+		this.bits=bits;
+	}
+	public long getBits() {
+		return bits;
+	}
+	
 }
