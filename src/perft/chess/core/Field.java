@@ -13,10 +13,9 @@ public class Field implements IndexedElement {
 	//** under baseline **/
 	
 	
-	BLIndexedList<FieldCallback> callBacks;
 	private final BLVariable<Piece> piece;
-	private BLIndexedListBB<Move> pseudoMoves; 
-	
+	private final BLIndexedList<Move> pseudoMoves;
+	BLIndexedList<FieldCallback> callBacks;
 	
 	
 	private final Position position;
@@ -41,7 +40,8 @@ public class Field implements IndexedElement {
 		
 		this.position = position;
 		this.piece = new BLVariable<Piece>(this.bl, null);
-		callBacks = new BLIndexedList<FieldCallback>(bl, 64, 64);		
+		pseudoMoves = new BLIndexedList<Move>(this.bl, 36, 36);// TBD reduce
+		callBacks = new BLIndexedList<FieldCallback>(bl, 64, 64);
 	}
  
 		
@@ -49,14 +49,13 @@ public class Field implements IndexedElement {
 	public void stagePiece(Piece pieceObj) {
 		this.piece.set(pieceObj);
 		pieceObj.setPosition(this.pos);
-		int movesIndex = pieceObj.getMoveIndex();
-		pseudoMoves = (position.moveManager.getPseudoMoves(movesIndex));
 	}
 
 
 	public void unStagePiece(Piece pieceObj) {
 		pieceObj.setPosition(-1);
 		this.piece.set(null);
+		
 	}
 
 	// fields current Pseudomoves (until end of Ray) and Attacks
@@ -73,8 +72,21 @@ public class Field implements IndexedElement {
 		addRemovePseudoMoves(piece,moves, -1,-1,true);
 	}
 
+
+/*
+	public int unStagePieceToReduceAttack(Piece oldPiece,int kingPos) {
+		int counter = pseudoMoves.size();
+		for (int i=0;i<counter;i++) {
+			Move move = pseudoMoves.getElement(i);
+			if( move.getNewPos() == kingPos && move.isAttackerMove() ){
+				return -1;
+			}
+		}
+		return 0;
+	}
+*/
+	
 	public int getPseudoMoveCount() {
-		System.out.println("Field("+this.pos+"): "+pseudoMoves.size());
 		return pseudoMoves.size();
 	}
 
@@ -103,7 +115,7 @@ public class Field implements IndexedElement {
 			
 		for (int i = ii; i < iiMax; i++) {
 			boolean remove = onlyRemove;
-			this.pseudoMoves.reload();
+
 			for (int j = jj; j < moves[i].length; j++) {
 				Move move = moves[i][j];
 				newPos = move.getNewPos();
@@ -333,6 +345,9 @@ public class Field implements IndexedElement {
 			//this.removePseudoMoves(piece,ii, jj);
 			int movesIndex = piece.getMoveIndex();
 			Move[][] moves = position.moveManager.getRawMoves(movesIndex);
+			if(position.wtfIteration==1823 && this.getElementIndex()==54) {
+				System.out.println("WTF Here");
+			}
 			this.addRemovePseudoMoves(piece, moves, ii, jj,false);
 		}
 	}
