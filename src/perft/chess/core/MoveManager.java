@@ -271,7 +271,7 @@ public class MoveManager {
 		Move[] allElements = new Move[list.size()];
 		list.toArray(allElements);
 		
-		this.pseudoMoveSets[offset+index] = new BLIndexedListBB<Move>(bl,allElements);
+		this.pseudoMoveSets[offset+index] = new BLIndexedListBB<Move>(bl,allElements,100);
 		MoveManager.moves[offset+index]=finalMoves;
 	}
 

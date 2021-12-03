@@ -8,7 +8,7 @@ public class BitBoard {
 
 	long bits = ALL_ZEROS;
 
-	public static void main(String args[]) {
+	public static void mainX(String args[]) {
 		System.out.println("Bitboard: 1234567812345678123456781234567812345678123456781234567812345678");
 
 		BitBoard bb = new BitBoard(ALL_ZEROS);

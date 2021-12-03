@@ -3,61 +3,74 @@ import perft.chess.core.datastruct.BitBoard;
 import perft.chess.core.datastruct.IndexedElement;
 
 public class BLIndexedListBB <T extends IndexedElement>{
-	private final BitBoard curBB;
-	private final BLVariable<Long> bits;
-	
+	private final BitBoard[] bitBoards;	
 	private final int[] indices = new int[65];
 	private final T[] allElements;
 	private final BaseLiner bl;
+	private int level;
 	
-	public BLIndexedListBB (BaseLiner bl, T[] allElements) {
-		this.bits = new BLVariable<Long>(bl,0L);
-
-		curBB = new BitBoard(0L);
+	
+	public BLIndexedListBB (BaseLiner bl, T[] allElements,int depth) {
+		this.bitBoards= new BitBoard[depth];
+		for(int i=0;i<bitBoards.length;i++) {
+			bitBoards[i]= new BitBoard(0L);
+		}
+		level = bl.level;
 		this.allElements = allElements;
 		this.bl = bl;
 	}
 	
 	// will be triggered finally by the legalMove loop
 	public int size(){
-		Long curBits = curBB.getBits();
-		if(!curBits.equals(this.bits.get())){
-			this.bits.set(curBits);
-			curBB.updateIndices(indices);
-		}
-		return curBB.popCount();
+		bitBoards[level].updateIndices(indices);
+		return bitBoards[level].popCount();
 	}
+	
 	//has to be triggered prior to the addRemovePseudoMove
 	public void reload() {
-		curBB.reset(bits.get());//if new level reload same // if next move=>reset.
+		if(indices[0]!=-1) {
+			if(level>bl.level) {
+				//sibling
+				level = bl.level;	
+				this.bitBoards[level]=this.bitBoards[level-1];
+				bitBoards[level].updateIndices(indices);
+			}else {
+				//one deeper
+				indices[0]=-1;
+				level = bl.level;	
+				this.bitBoards[level]=this.bitBoards[level-1];
+			}
+		}
 	}
 	
 	public boolean contains(T element){
-		return curBB.get(element.getElementIndex());
+		return bitBoards[level].get(element.getElementIndex());
 	}
+	
 	public boolean contains(int elementIndex){
-		return curBB.get(elementIndex);
+		return bitBoards[level].get(elementIndex);
 	}
 	
 	public T getElement(int index){
-		return allElements[indices[indices[index]]];
+		reload();
+		bitBoards[level].updateIndices(indices);
+		return allElements[indices[index+1]];
 	}
 	
 	public T getByElementIndex(int elementIndex){
-		return this.curBB.get(elementIndex)?allElements[elementIndex]:null;
+		return this.bitBoards[level].get(elementIndex)?allElements[elementIndex]:null;
 	}
 	
 	public void add(T element){
-		this.curBB.set(element.getElementIndex());
+		this.bitBoards[level].set(element.getElementIndex());
 	}
 	
-
 	public void removeAll() {
-		curBB.reset();
-		this.indices[0]=0;
+		bitBoards[level].reset();
+		this.indices[0]=-1;
 	}
 		
 	public void remove(T element) {
-		curBB.unset(element.getElementIndex());
+		bitBoards[level].unset(element.getElementIndex());
 	}	
 }
