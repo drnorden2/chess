@@ -1,6 +1,5 @@
 package perft.chess.core.baseliner;
 
-import perft.chess.core.datastruct.ArrayStackInt;
 
 public class BLVariableInt {
 	private final int bL_Index;
