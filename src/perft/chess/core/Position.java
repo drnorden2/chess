@@ -23,7 +23,7 @@ public class Position {
 	//private final Zobrist zobrist;
  
 	
-	final int depth = 8;
+	final int depth = 8000;
 	final BaseLiner bl = new BaseLiner(30000,16000,depth,2000);
 	final MoveManager moveManager;
 	int color=Piece.COLOR_WHITE;

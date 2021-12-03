@@ -101,7 +101,7 @@ public class BaseLiner {
 		return varStacks[index];
 	}
 	BLArrayStackInt getVarStacksInt(int index) {
-		return varStacksInt[index];
+		return varStacksInt[index-totalObj];
 	}
 	
 	int getChanges(int index) {
@@ -172,3 +172,5 @@ public class BaseLiner {
 	
 	
 }
+
+

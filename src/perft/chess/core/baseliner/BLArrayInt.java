@@ -5,6 +5,7 @@ public class BLArrayInt {
 	private final int dim;
 	private final int bL_Index;
 	private final BaseLiner bl;
+	private BLArrayStackInt[] array; 
 	
 	public BLArrayInt(BaseLiner bl, int dim) {
 		this(bl, dim, -1);
@@ -14,28 +15,38 @@ public class BLArrayInt {
 		this.bl = bl;
 		bL_Index = bl.getCurrOffsetRegisterInt(dim);
 		this.dim = dim;
+		array = new BLArrayStackInt[dim];
 		for(int i=0;i<dim;i++) {
+			array[i]=bl.getVarStacksInt(bL_Index+i);
 			this.setTouchLessInt(i, nullVal);
 		}
 	}
+	
 	public void incr(int index) {
-		bl.incrInt(bL_Index+index);
+		if(array[index].incrAndTouched()) {
+			bl.touch(bL_Index+index);
+		}
 	}
 
 	public void decr(int index) {
-		bl.decrInt(bL_Index+index);
+		if(array[index].decrAndTouched()) {
+			bl.touch(bL_Index+index);
+		}
 	}
 
 	
 	public void set(int index, int value) {
-		bl.setInt(bL_Index+index, value);
+		if(array[index].addAndTouched(value)) {
+			bl.touch(bL_Index+index);
+		}
 	}
+	
 	private void setTouchLessInt(int index, int value) {
-		bl.setIntTouchlessInt(bL_Index+index, value);
+		array[index].addAndTouched(value);
 	}
 	
 	public int get(int index) {
-		return bl.getInt(bL_Index+index);
+		return array[index].get();
 	}
 	public String toString(){
 		String str="[";
