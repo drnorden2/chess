@@ -1,41 +1,53 @@
 package perft.chess.core.baseliner;
 
+import perft.chess.core.datastruct.ArrayStackInt;
+
 public class BLVariableInt {
 	private final int bL_Index;
+	private BLArrayStackInt varStack;
 	private final BaseLiner bl;
 	public BLVariableInt (BaseLiner bl, int initVal) {
 		this.bl = bl;
 		bL_Index = bl.getCurrOffsetRegisterInt(1);
+		varStack = bl.getVarStacksInt(bL_Index);
 		setTouchlessInt(initVal);
 	}
 	public BLVariableInt (BaseLiner bl) {
-		this(bl,0);
+		this(bl,0);		
 	}
 	public void setTouchlessInt(int value) {
-		bl.setIntTouchlessInt(bL_Index, value);
+		varStack.addAndTouched(value);
 	}
 
 	public void set(int value) {
-		bl.setInt(bL_Index, value);
+		if(varStack.addAndTouched(value)) {
+			bl.touch(bL_Index);
+		}
 	}
 	public int get() {
-		return bl.getInt(bL_Index);
+		return varStack.get();
 	}
 	public int getChanges() {
-		return bl.getChangesInt(bL_Index);
+		return varStack.stackSize();
 	}
 	public void decr() {
-		bl.decrInt(bL_Index);
+		if(varStack.decrAndTouched()) {
+			bl.touch(bL_Index);
+		}
 	}
 	public void incr() {
-		bl.decrInt(bL_Index);
+		if(varStack.incrAndTouched()) {
+			bl.touch(bL_Index);
+		}
 	}
 	
 	public void XOR(int value) {
-		bl.xorInt(bL_Index,value);
+		if(varStack.xorAndTouched(value)) {
+			bl.touch(bL_Index);
+		}
 	}
 	
 	public String toString() {
 		return ""+bl.getInt(bL_Index);
-	}
+	}	
 }

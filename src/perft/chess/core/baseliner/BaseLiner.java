@@ -97,11 +97,18 @@ public class BaseLiner {
 	Object getObj(int index) {
 		return varStacks[index].get();
 	}
+	BLArrayStack getVarStacksObj(int index) {
+		return varStacks[index];
+	}
+	BLArrayStackInt getVarStacksInt(int index) {
+		return varStacksInt[index];
+	}
 	
 	int getChanges(int index) {
 		return varStacks[index].stackSize();
 	}
 
+	
 	int getInt(int index) {
 		return varStacksInt[index-totalObj].get();
 	}
@@ -120,7 +127,10 @@ public class BaseLiner {
 	public int getCounter(int indexCounterID) {
 		return indexCounters[indexCounterID];
 	}
-
+	
+	public void touch(int index) {
+		touchedList.add(index);
+	}
 	
 	
 	
@@ -131,6 +141,7 @@ public class BaseLiner {
 		}
 	}
 
+	
 	void setInt(int index, int value) {
 		if(varStacksInt[index-totalObj].addAndTouched(value)) {
 			touchedList.add(index);

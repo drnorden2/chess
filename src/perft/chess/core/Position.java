@@ -34,10 +34,11 @@ public class Position {
 	
 	/**under base line**/
 	final Field[] fields = new Field[64];
-	final BLArrayInt[] attackTable = new BLArrayInt[2];
 	private final Piece[] kingPieces = new Piece[2];	
-	final BLIndexedList<Piece>[] allPieces= new BLIndexedList[2];
 	ArrayStack<ArrayStack<Move>> allMovesLists = new ArrayStack<ArrayStack<Move>>(new ArrayStack[depth]);
+	
+	final BLArrayInt[] attackTable = new BLArrayInt[2];
+	final BLIndexedList<Piece>[] allPieces= new BLIndexedList[2];
 	public final BLVariableInt  enPassantePos;
 	public final BLVariableInt[]  isCheck = new BLVariableInt[2];
 	

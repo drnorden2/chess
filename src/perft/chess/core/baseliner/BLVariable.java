@@ -3,29 +3,34 @@ package perft.chess.core.baseliner;
 public class BLVariable<T> {
 	private final int bL_Index;
 	private final BaseLiner bl;
+	private final BLArrayStack varStack;
 	public BLVariable (BaseLiner bl, T initVal) {
 		this.bl = bl;
 		bL_Index = bl.getCurrOffsetRegister(1);
+		varStack = bl.getVarStacksObj(bL_Index);
 		setTouchless(initVal);
 	}
 	public BLVariable (BaseLiner bl) {
 		this.bl = bl;
 		bL_Index = bl.getCurrOffsetRegister(1);
+		varStack = bl.getVarStacksObj(bL_Index);
 	}
 	private void setTouchless(T value) {
-		bl.setObjTouchless(bL_Index, value);
+		varStack.addAndTouched(value);
 	}
 
 	public void set(T value) {
-		bl.setObj(bL_Index, value);
+		if(varStack.addAndTouched(value)) {
+			bl.touch(bL_Index);
+		}
 	}
 	public T get() {
-		return (T) bl.getObj(bL_Index);
+		return (T)varStack.get();
 	}
 	public int getChanges() {
-		return bl.getChanges(bL_Index);
+		return varStack.stackSize();
 	}
 	public String toString() {
-		return ""+bl.getObj(bL_Index);
+		return ""+get();
 	}
 }
