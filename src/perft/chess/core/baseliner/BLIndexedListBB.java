@@ -52,7 +52,6 @@ public class BLIndexedListBB <T extends IndexedElement>{
 	}
 	
 	public T getElement(int index){
-		reload();
 		bitBoards[level].updateIndices(indices);
 		return allElements[indices[index+1]];
 	}
