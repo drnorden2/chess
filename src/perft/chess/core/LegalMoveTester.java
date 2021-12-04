@@ -11,7 +11,7 @@ public class LegalMoveTester {
 	}
 	
 
-	public void checkLegalMovesOpt(){
+	public void checkLegalMovesOpt (){
 		
 		int curColor = position.getColorAtTurn();
 		BLIndexedList<Piece> allPiecesOfCurCol = position.allPieces[curColor];
@@ -55,16 +55,6 @@ public class LegalMoveTester {
 		}
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	public void checkLegalMovesReference(){
 
@@ -206,17 +196,19 @@ public class LegalMoveTester {
 	 * Only called when not King move and not more than one attack on the king
 	 */
 	private void handleOtherPiece(Field field, Piece piece, int oldPos, int curColor, int otherColor, int kingPos, int kingAttacks, FieldCallback attacker, Move[] pseudoMoves, int pseudoMoveCount, int enpassantePos) {
-		FieldCallback pinner = this.piecePinnedBy(field, piece, oldPos, otherColor, kingPos);
+		FieldCallback oldPosRegToKing = field.getRegisteredCallbackForPos(kingPos);
+		FieldCallback pinner =null;
+		if(oldPosRegToKing!=null) {
+			pinner = this.piecePinnedBy(field,oldPosRegToKing, oldPos, otherColor, kingPos);
+		}
 		if(pinner==null && kingAttacks ==0) {
 			//all but enpassante ok!
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
 				Move move = pseudoMoves[ii];
-				if(move.getNewPos()==enpassantePos ) {
-					if(!isMovePinnedOrNotPreventingCheckEXPENSIVE(move, curColor, true)) {
-						position.addLegalMove(move);		
-					}
-				}else {
-					position.addLegalMove(move);		
+				if(!(move.getNewPos()==enpassantePos && move.isEnpassanteMove() && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
+					// does the enpassante create a self check by discovery?
+					// eighter the pawn beaten pawn or the ray of both
+					position.addLegalMove(move);			
 				}
 			}
 		}else if(pinner==null && kingAttacks !=0) {
@@ -225,12 +217,11 @@ public class LegalMoveTester {
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
 				Move move = pseudoMoves[ii];
 				//enpassante case relevant!
-				if(move.getNewPos()==enpassantePos ) {
-					if(!isMovePinnedOrNotPreventingCheckEXPENSIVE(move, curColor, true)) {
-						position.addLegalMove(move);		
-					}
-				}else {
-					if(this.rescueMap[move.getNewPos()]) {
+				if(this.rescueMap[move.getNewPos()]) {		
+					if(!(move.getNewPos()==enpassantePos && move.isEnpassanteMove()  && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
+						// does the enpassante create a self check by discovery?
+						// eighter the pawn beaten pawn or the ray of both
+						// move has to finally block on rescue map!
 						position.addLegalMove(move);
 					}
 				}
@@ -250,17 +241,15 @@ public class LegalMoveTester {
 			
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
 				Move move = pseudoMoves[ii];
-				if(move.getNewPos()==enpassantePos ) {
-					if(!isMovePinnedOrNotPreventingCheckEXPENSIVE(move, curColor, true)) {
-						position.addLegalMove(move);		
-					}
-				}else {
+				if(!(move.getNewPos()==enpassantePos && move.isEnpassanteMove() && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
+					// does the enpassante create a self check by discovery?
+					// eighter the pawn beaten pawn or the ray of both
+					// move has to finally still slide!
 					int xM=move.getDirX();
 					int yM=move.getDirY();
 					int xyM=xM*yM;
 					xM=(xM < 0) ? -xM : xM;
-					yM=(yM < 0) ? -yM : yM;
-							
+					yM=(yM < 0) ? -yM : yM;							
 					// this move is on the same axis as this threas!
 					if((Math.abs(xCB-xM ) + Math.abs(yCB-yM)==0)&&xyM ==0
 							||xyM == xyCV &&xyM !=0){
@@ -270,50 +259,76 @@ public class LegalMoveTester {
 			}			
 		}
 	}
-
+	public boolean isEnpassanteDiscovery(Field oldPosField, FieldCallback oldPosRegToKing,int oldPos, int otherColor, int kingPos, Move move, int enpassantePos) {
+		if(Move.getRank(enpassantePos)==oldPos) {
+			 // is king on same rank als OldPos? => does other field have an attacker 
+			int proxyPos = oldPos;
+			if(oldPosRegToKing==null) {
+				//Then it has to be the other
+				proxyPos = move.getEnPassantePawnPos();
+			}
+			Field proxyField = position.fields[proxyPos];
+			for(int i=0; i<proxyField.getRegisteredCallbackCount();i++){
+				FieldCallback cb = proxyField.getRegisteredCallback(i);
+				if(cb.getCallbackType() == FieldCallback.CALLBACK_TYPE_BEAT_RAY) {
+					if(cb.getColor()==otherColor) {
+						//in a straight line
+						if(cb.getDirX()!=0 &&cb.getDirY()==0) {
+							return true;			
+						}
+					}
+				}
+			}	
+		}else {// above pinner cannot be part of case2
+			 // is pawn to be beaten pinned?
+			int eppPos = move.getEnPassantePawnPos();
+			if(eppPos==-1) {
+				System.out.println("WTF");
+			}
+			Field eppField =position.fields[eppPos];
+			FieldCallback eppRegToKing= eppField.getRegisteredCallbackForPos(kingPos);
+			if(eppRegToKing!=null) {
+				FieldCallback pinner = this.piecePinnedBy(eppField,eppRegToKing, eppPos , otherColor, kingPos);
+				if(pinner!=null) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	/*
 	 * these are only the harmless non King non Enpassante moves with 1x check max
 	 */
-	public FieldCallback piecePinnedBy(Field oldPosField ,Piece piece, int oldPos, int otherColor,int kingPos) {
-		
-		// if not under check and old pos is not in sight of king => free to move!
-		FieldCallback oldPosRegToKing = oldPosField.getRegisteredCallbackForPos(kingPos);
-		boolean oldPosCanBePinned = oldPosRegToKing!=null;
-		if(!oldPosCanBePinned){
-			return null;//not pinned
-		}
+	public FieldCallback piecePinnedBy(Field oldPosField,FieldCallback oldPosRegToKing, int oldPos, int otherColor,int kingPos) {		
 		if(oldPosRegToKing.getCallbackType()==FieldCallback.CALLBACK_TYPE_CHECK_KNIGHT_ATTACK ) {
 			return null;
 		}
 		
 		//remaining cases:
 		//* isPiece Pinned? yes?=>return move pattern
-		if(oldPosCanBePinned) {
-			// the king is dependend  => now check if it is xrayed
-			for(int i=0; i<oldPosField.getRegisteredCallbackCount();i++){
-				FieldCallback cb = oldPosField.getRegisteredCallback(i);
-				//@TODO CB Should know the color!
-				if(cb.getCallbackType() == FieldCallback.CALLBACK_TYPE_BEAT_RAY) {
-					if(cb.getColor()==otherColor) {
-						//in a straight line
-						int attackerPos = cb.getElementIndex();
-						int cur = MoveManager.trackBack[kingPos][attackerPos];
-						if(cur==attackerPos) {
-							continue;
-						}
-						do {	
-							if(cur==oldPos) {
-								return cb;
-							}
-							cur = MoveManager.trackBack[kingPos][cur];
-						}while(kingPos != cur);
-							
+		// the king is dependend  => now check if it is xrayed
+		for(int i=0; i<oldPosField.getRegisteredCallbackCount();i++){
+			FieldCallback cb = oldPosField.getRegisteredCallback(i);
+			//@TODO CB Should know the color!
+			if(cb.getCallbackType() == FieldCallback.CALLBACK_TYPE_BEAT_RAY) {
+				if(cb.getColor()==otherColor) {
+					//in a straight line
+					int attackerPos = cb.getElementIndex();
+					int cur = MoveManager.trackBack[kingPos][attackerPos];
+					if(cur==attackerPos) {
 						continue;
 					}
+					do {	
+						if(cur==oldPos) {
+							return cb;
+						}
+						cur = MoveManager.trackBack[kingPos][cur];
+					}while(kingPos != cur);							
+					continue;
 				}
-			}	
-		}
+			}
+		}	
 		return null;//not pinned
 	}		
 
@@ -335,6 +350,7 @@ public class LegalMoveTester {
 	}
 	
 	public boolean isMovePinnedOrNotPreventingCheckEXPENSIVE(Move move, int colorOfMove, boolean enPassante) {
+		System.out.println("EXPENSIVE");
 		boolean isPinned =false;
 		int kingPos = position.getKingPos(colorOfMove);
 		// If king is currently of the board // no way to tell if it remains pinned
@@ -345,7 +361,6 @@ public class LegalMoveTester {
 
 		// check for every move if it brings you out of Check
 			position.bl.isAlreadyInSimulation = true;
-			//O.ENTER("Simulate for isMovePinned:"+move);
 			position.bl.startNextLevel();
 			position.moveBeforeBaseLine(move);
 			position.checkGameState(colorOfMove);
@@ -353,129 +368,9 @@ public class LegalMoveTester {
 				isPinned =true;
 			}
 			position.bl.undo();			
-			//O.EXIT("Simulate for isMovePinned:"+move+":"+isPinned);
 			position.bl.isAlreadyInSimulation = false;
 		}
-		/*
-		if(opt1!=isPinned) {
-			System.out.println("\nFailed to check"+move+" ("+opt1+"/"+isPinned+") "+position);
-			this.isMovePinnedOrNotPreventingCheck(move, colorOfMove, enPassante);
-		}*/
 		return isPinned;
 	}
 }
-
-/*
- * these are only the harmless non King non Enpassante moves with 1x check max
- */
-/*
-public boolean isOtherMovePinnedOrNotPreventingCheck(Move move, int colorOfMove, boolean enPassante) {
-	int kingPos = position.getKingPos(colorOfMove);
-	// If king is currently of the board // no way to tell if it remains pinned
-	int otherColor = (colorOfMove+1)%2;
-	boolean isCheck = position.isCheck(colorOfMove);
-			
-	int oldPos = move.getOldPos();
-	int newPos = move.getNewPos();
-	//!!always (regardless of check or not) required to be ensured that Old Pos does not open any thread to king
-	Field oldPosField = position.fields[oldPos];
-	Field newPosField = position.fields[newPos];
-	
-	
-	FieldCallback oldPosRegToKing = oldPosField.getRegisteredCallbackForPos(kingPos);
-	//new pos is only relevant for check situations, as it can kill the attacker or block the check
-	FieldCallback newPosRegToKing = newPosField .getRegisteredCallbackForPos(kingPos) ;
-	Piece piece = oldPosField.getPiece();
-	boolean oldPosCanBePinned = oldPosRegToKing!=null;
-	boolean canProtectedKing = newPosRegToKing!=null;
-	// if under check and the move does not move into sight of King (to block or beat)=> locked
-	if(isCheck && !canProtectedKing){
-		return true;//not possible
-	}
-	
-	// if not under check and old pos is not in sight of king => free to move!
-	if(!isCheck && !oldPosCanBePinned){
-		return false;//possible
-	}
-	
-	//remaining cases:
-	//* isMove Pinned? yes?=>true
-	boolean isTrappedInXray = false;
-	if(oldPosCanBePinned) {
-		// the king is dependend  => now check if it is xrayed
-		for(int i=0; i<oldPosField.getRegisteredCallbackCount();i++){
-			FieldCallback cb = oldPosField.getRegisteredCallback(i);
-			
-			//@TODO CB Should know the color!
-			if(cb.getCallbackType() == FieldCallback.CALLBACK_TYPE_BEAT_RAY) {
-				Piece attacker = position.fields[cb.getElementIndex()].getPiece();
-				if(attacker.getColor()==otherColor) {
-					boolean canAttackKing =MoveManager.isPieceAttacker[attacker.getMoveIndex()][kingPos];
-					if (canAttackKing) {
-						int xCB=cb.getDirX();
-						int yCB=cb.getDirY();
-						
-						int xM=move.getDirX();
-						int yM=move.getDirY();
-						// this move is on the same axis as this threas!
-						if((xCB*xCB-xM*xM )+ (yCB*yCB-yM*yM)!=0){
-							return true; // it is definetely pinned 
-						}else {
-							isTrappedInXray =true;
-						}
-					}
-					break; // this was the one Xrayer 
-				}
-			}
-		}	
-	}
-	
-	// oldpos is not pinned
-	
-	//* if no: isCheck?
-	//* 	if yes: does move kill an attack? => false
-	//* 	if no: does move block a check? => false
-	//* if no check => false
-	
-	
-	//if check and oldPos is Xrayed => not able to help with this move!
-	if(isCheck) {
-		if(isTrappedInXray) {
-			return true;
-		}
-		// if the newPos is visible to King
-		if(canProtectedKing) {
-			for(int i=-1; i<newPosField.getRegisteredCallbackCount();i++){
-				Piece attacker = null;
-				if(i==-1) {
-					attacker = position.fields[newPos].getPiece();
-					if(attacker ==null) {
-						continue;
-					}
-					boolean isKnight = attacker.getType()==Piece.PIECE_TYPE_KNIGHT;
-					boolean isKnightCallBack = newPosRegToKing.getCallbackType()==FieldCallback.CALLBACK_TYPE_CHECK_KNIGHT_ATTACK;
-					if(isKnight!=isKnightCallBack) {
-						continue;
-					}
-				}else {
-					FieldCallback cb = newPosField.getRegisteredCallback(i);
-					if(cb.getCallbackType() != FieldCallback.CALLBACK_TYPE_BEAT_RAY) {
-						continue;
-					}
-					attacker = position.fields[cb.getElementIndex()].getPiece();
-				}
-				//@TODO CB Should know the color!
-				if(attacker.getColor()==otherColor) {
-					boolean kingAttacked = oldPosField.getRegisteredCallbackForPos(attacker.getPosition())!=null;
-					if(kingAttacked) {
-						return false;//move to the rescue!!
-					}
-				}
-			}
-		}
-	}
-	
-	return false;// no pin of oldPos and no check 
-}
-*/
 
