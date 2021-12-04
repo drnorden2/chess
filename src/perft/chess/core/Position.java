@@ -177,7 +177,7 @@ public class Position {
 			//String start =this.toString();
 			Move move= getMove(index);
 			
-			/*
+/*		
 			bl.startNextLevel();
 			this.moveBeforeBaseLine(move);				
 			movesPlayed++;
@@ -191,12 +191,11 @@ public class Position {
 			
 			String ref = this.toString();
 			int refCount = allMovesLists.get(getLevel()).size();
-			allMovesLists.get(getLevel()).clear(); 		
+			allMovesLists.get(getLevel()).reset(); 		
 			bl.undo();
 			this.takeTurn();
 			experimental =true;
-			
-			*/
+	*/		
 			
 			
 			
@@ -212,12 +211,11 @@ public class Position {
 			
 			
 			
+		/*	
 			
 			
 			
 			
-			
-			/*
 			experimental =false;
 			String cur  = this.toString();
 			
@@ -235,7 +233,6 @@ public class Position {
 				throw new RuntimeException("different"+this.wtfIteration);
 			}
 			*/
-
 			
 	
 	/*		
@@ -264,7 +261,9 @@ public class Position {
 		Piece piece = oldField.getPiece();
 		boolean isPieceTouched = piece.isTouched();
 		
-		
+		if(oldPos!=newPos && move.getNewPos()==position.getKingPos(1) && this.color==0) {
+			System.out.println("WTF"+this.wtfIteration+" "+move+":" +this);
+		}
 		
 		int oldEnpassantePos =enPassantePos.get();
 		if(oldPos!=newPos) {
@@ -296,6 +295,7 @@ public class Position {
 			if(otherPiece!=null) {
 				//zobrist.HASH(newPos,otherPiece);
 				replace =true;
+				
 				newField.unStageAllMoves(otherPiece);
 				newField.unStagePiece(otherPiece);
 				finalTakeFromBoard(otherPiece);

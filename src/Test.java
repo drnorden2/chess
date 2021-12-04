@@ -21,12 +21,14 @@ public class Test {
 	private static boolean useBulk = true;
 
 	public static void main(String[] args) {
-		 	
+		//test(4, 10276, "8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1");
+		test(6, 1134888, "3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1");
+		//if(true)return;
+		
 		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 		test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		
-		if(true)return;
-		test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		//test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		
 		test(2, 3, "4PKR1/4PPP1/8/8/8/r7/8/7k w - -");
 		

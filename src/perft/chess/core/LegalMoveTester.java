@@ -29,12 +29,7 @@ public class LegalMoveTester {
 		}
 		
 		for(int i=0;i<allPiecesOfCurCol.size();i++) {
-			Piece piece = allPiecesOfCurCol.getElement(i);
-			
-			if(position.wtfIteration== 121  && piece.getPosition()==34 ){
-				System.out.println("3rd WTHacker!");
-			}
-			
+			Piece piece = allPiecesOfCurCol.getElement(i);	
 			int oldPos = piece.getPosition();
 			Field field = position.fields[oldPos];
 			int pseudoMoveCount =  field.getPseudoMoveList(pseudoMoves);
@@ -115,7 +110,7 @@ public class LegalMoveTester {
 				attackerPos = MoveManager.trackBack[kingPos][attackerPos];
 			}while(kingPos!=attackerPos);
 		}
-		if(position.wtfIteration==4) {
+		if(position.wtfIteration==121) {
 			System.out.print("RescuePath:\n*");
 			for(int i=0;i<64;i++) {
 				System.out.print(this.rescueMap[i]?'X':' ');
@@ -198,6 +193,11 @@ public class LegalMoveTester {
 	private void handleOtherPiece(Field field, Piece piece, int oldPos, int curColor, int otherColor, int kingPos, int kingAttacks, FieldCallback attacker, Move[] pseudoMoves, int pseudoMoveCount, int enpassantePos) {
 		FieldCallback oldPosRegToKing = field.getRegisteredCallbackForPos(kingPos);
 		FieldCallback pinner =null;
+		
+		if(position.wtfIteration== 1129){
+			System.out.println("3rd WTHacker!"+position);
+		}
+		
 		if(oldPosRegToKing!=null) {
 			pinner = this.piecePinnedBy(field,oldPosRegToKing, oldPos, otherColor, kingPos);
 		}
@@ -217,7 +217,7 @@ public class LegalMoveTester {
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
 				Move move = pseudoMoves[ii];
 				//enpassante case relevant!
-				if(this.rescueMap[move.getNewPos()]) {		
+				if(this.rescueMap[move.getNewPos()]||(move.getNewPos()==enpassantePos && move.isEnpassanteMove() && attacker.getElementIndex()==move.getEnPassantePawnPos() )) {		
 					if(!(move.getNewPos()==enpassantePos && move.isEnpassanteMove()  && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
 						// does the enpassante create a self check by discovery?
 						// eighter the pawn beaten pawn or the ray of both
@@ -260,10 +260,10 @@ public class LegalMoveTester {
 		}
 	}
 	public boolean isEnpassanteDiscovery(Field oldPosField, FieldCallback oldPosRegToKing,int oldPos, int otherColor, int kingPos, Move move, int enpassantePos) {
-		if(Move.getRank(enpassantePos)==oldPos) {
+		if(Move.getRank(kingPos)==Move.getRank(oldPos)) {
 			 // is king on same rank als OldPos? => does other field have an attacker 
 			int proxyPos = oldPos;
-			if(oldPosRegToKing==null) {
+			if(oldPosRegToKing!=null) {
 				//Then it has to be the other
 				proxyPos = move.getEnPassantePawnPos();
 			}
@@ -350,7 +350,7 @@ public class LegalMoveTester {
 	}
 	
 	public boolean isMovePinnedOrNotPreventingCheckEXPENSIVE(Move move, int colorOfMove, boolean enPassante) {
-		System.out.println("EXPENSIVE");
+		System.out.println("EXPENSIVES");
 		boolean isPinned =false;
 		int kingPos = position.getKingPos(colorOfMove);
 		// If king is currently of the board // no way to tell if it remains pinned
