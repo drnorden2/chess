@@ -152,7 +152,7 @@ public class MoveManager {
 	public Move[][] getRawMoves (int index) {
 		return this.moves[index];
 	}
-	public BLIndexedListBB getPseudoMoves (int index) {
+	public BLIndexedListBB<Move> getPseudoMoves (int index) {
 		return this.pseudoMoveSets[index];
 	}
 

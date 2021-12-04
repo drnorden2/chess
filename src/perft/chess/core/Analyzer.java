@@ -75,8 +75,11 @@ public class Analyzer {
 		for(int i=0;i<position.allPieces[color].size();i++){
 			Piece piece = position.allPieces[color].getElement(i);
 			Field field = position.fields[piece.getPosition()];
-			for(int j=0;j<field.getPseudoMoveCount();j++) {
-				Move move = field.getPseudoMove(j); 
+			Move[] pseudoMoves = new Move[64];
+			int pseudoMoveCount =  field.getPseudoMoveList(pseudoMoves);
+			
+			for(int j=0;j<pseudoMoveCount ;j++) {
+				Move move = pseudoMoves[j]; 
 				snapshot[move.getOldPos()]++;			
 				count++;
 			}

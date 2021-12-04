@@ -5,7 +5,7 @@ import perft.chess.core.baseliner.BLIndexedList;
 public class LegalMoveTester {
 	private final Position position;
 	private final boolean[] rescueMap=new boolean[64];
-	
+	private final Move[] pseudoMoves = new Move[64];
 	public LegalMoveTester(Position position) {
 		this.position=position;
 	}
@@ -18,6 +18,7 @@ public class LegalMoveTester {
 		int enpassantePos = position.enPassantePos.get();
 		int otherColor = (curColor +1)%2;
 		int kingPos = position.getKingPos(curColor);
+		
 		int kingAttacks = position.attackTable[otherColor].get(kingPos);
 		
 		FieldCallback kingAttackerCB = null;
@@ -36,15 +37,15 @@ public class LegalMoveTester {
 			
 			int oldPos = piece.getPosition();
 			Field field = position.fields[oldPos];
-			int pseudoMoveCount =  field.getPseudoMoveCount();
+			int pseudoMoveCount =  field.getPseudoMoveList(pseudoMoves);
 			if(pseudoMoveCount!=0) {
 				if(piece.getType()==Piece.PIECE_TYPE_KING) {
 					//private void handleKingPiece(Field oldKingField, int oldKingPos, int otherColor, int oldKingPosAttacks, int pseudoMoveCount,int level) {
-					this.handleKingPiece(field, oldPos, otherColor, kingAttacks,pseudoMoveCount);
+					this.handleKingPiece(field, oldPos, otherColor, kingAttacks,pseudoMoves,pseudoMoveCount);
 				}else {
 					if(kingAttacks<2) {
 						//private void handleOtherPiece(Field field, Piece piece, int oldPos, int curColor, int otherColor, int kingPos, int kingAttacks, int level, int pseudoMoveCount) {
-						this.handleOtherPiece(field, piece, oldPos, curColor, otherColor, kingPos, kingAttacks,kingAttackerCB, pseudoMoveCount,enpassantePos);
+						this.handleOtherPiece(field, piece, oldPos, curColor, otherColor, kingPos, kingAttacks,kingAttackerCB,pseudoMoves, pseudoMoveCount,enpassantePos);
 					}//otherwise there is no hope!
 				}
 			}
@@ -78,9 +79,9 @@ public class LegalMoveTester {
 			Piece piece = allPiecesOfCurCol.getElement(i);
 			int oldPos = piece.getPosition();
 			Field field = position.fields[oldPos];
-			int pseudoMoveCount =  field.getPseudoMoveCount();
+			int pseudoMoveCount =  field.getPseudoMoveList(pseudoMoves);
 			for (int ii = 0; ii < pseudoMoveCount; ii++) {
-				Move move = field.getPseudoMove(ii);
+				Move move = pseudoMoves[ii];
 				int newPos = move.getNewPos();
 				if(oldPos == kingPos && kingAttacks ==0){
 					if(move.getMoveType()!= Move.MOVE_TYPE_ROCHADE) {
@@ -115,30 +116,6 @@ public class LegalMoveTester {
 		}
 	}
 	
-	public void checkLegalMovesNotAtAll(){
-		
-		int curColor = position.getColorAtTurn();
-		BLIndexedList<Piece> allPiecesOfCurCol = position.allPieces[curColor];
-		int enpassantePos = position.enPassantePos.get();
-		int otherColor = (curColor +1)%2;
-		int kingPos = position.getKingPos(curColor);
-		int kingAttacks = position.attackTable[otherColor].get(kingPos);
-		
-		
-		// [FAILED] FEN:"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -"    w. depth:4 in 1.16s (4206432 of 4085603)
-		 for(int i=0;i<allPiecesOfCurCol.size();i++) {
-			Piece piece = allPiecesOfCurCol.getElement(i);
-			int oldPos = piece.getPosition();
-			Field field = position.fields[oldPos];
-			int pseudoMoveCount =  field.getPseudoMoveCount();
-			for (int ii = 0; ii < pseudoMoveCount; ii++) {
-				Move move = field.getPseudoMove(ii);
-				position.addLegalMove(move);
-			}
-		}
-		 
-	}
-
 	public void updateRescueMap(int kingPos, int attackerPos) {
 		if(MoveManager.trackBack[kingPos][attackerPos]==attackerPos) {
 			this.rescueMap[attackerPos]=!this.rescueMap[attackerPos];
@@ -159,9 +136,9 @@ public class LegalMoveTester {
 		}
 	}	
 
-	private void handleKingPiece(Field oldKingField, int oldKingPos, int otherColor, int oldKingPosAttacks, int pseudoMoveCount) {
+	private void handleKingPiece(Field oldKingField, int oldKingPos, int otherColor, int oldKingPosAttacks, Move[] pseudoMoves, int pseudoMoveCount) {
 		for(int ii=0;ii<pseudoMoveCount ;ii++) {
-			Move move= oldKingField.getPseudoMove(ii);
+			Move move= pseudoMoves[ii];
 			int newKingPos = move.getNewPos();
 			int newKingPosAttacks = position.attackTable[otherColor].get(newKingPos);
 			if(newKingPosAttacks!=0) {
@@ -228,12 +205,12 @@ public class LegalMoveTester {
 	/*
 	 * Only called when not King move and not more than one attack on the king
 	 */
-	private void handleOtherPiece(Field field, Piece piece, int oldPos, int curColor, int otherColor, int kingPos, int kingAttacks, FieldCallback attacker, int pseudoMoveCount, int enpassantePos) {
+	private void handleOtherPiece(Field field, Piece piece, int oldPos, int curColor, int otherColor, int kingPos, int kingAttacks, FieldCallback attacker, Move[] pseudoMoves, int pseudoMoveCount, int enpassantePos) {
 		FieldCallback pinner = this.piecePinnedBy(field, piece, oldPos, otherColor, kingPos);
 		if(pinner==null && kingAttacks ==0) {
 			//all but enpassante ok!
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
-				Move move = field.getPseudoMove(ii);
+				Move move = pseudoMoves[ii];
 				if(move.getNewPos()==enpassantePos ) {
 					if(!isMovePinnedOrNotPreventingCheckEXPENSIVE(move, curColor, true)) {
 						position.addLegalMove(move);		
@@ -246,7 +223,7 @@ public class LegalMoveTester {
 			//check rescue moves
 				
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
-				Move move = field.getPseudoMove(ii);
+				Move move = pseudoMoves[ii];
 				//enpassante case relevant!
 				if(move.getNewPos()==enpassantePos ) {
 					if(!isMovePinnedOrNotPreventingCheckEXPENSIVE(move, curColor, true)) {
@@ -272,7 +249,7 @@ public class LegalMoveTester {
 			yCB=(yCB < 0) ? -yCB : yCB;
 			
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
-				Move move = field.getPseudoMove(ii);
+				Move move = pseudoMoves[ii];
 				if(move.getNewPos()==enpassantePos ) {
 					if(!isMovePinnedOrNotPreventingCheckEXPENSIVE(move, curColor, true)) {
 						position.addLegalMove(move);		

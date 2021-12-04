@@ -6,7 +6,7 @@ public class BitBoard {
 	private static final long ALL_ZEROS = (long) 0b0000000000000000000000000000000000000000000000000000000000000000L;
 	private static final long SOME_ONES = (long) 0b0101010101010101010101010101010101010101010101010101010101010101L;
 
-	long bits = ALL_ZEROS;
+	private long bits = ALL_ZEROS;
 
 	public static void mainX(String args[]) {
 		System.out.println("Bitboard: 1234567812345678123456781234567812345678123456781234567812345678");
@@ -57,6 +57,21 @@ public class BitBoard {
 			copy &= ~(1L << idx);
 		}
 	}
+
+	public int selectList(Object[] selection, Object[] all) {
+		int count = 0;
+		long copy = this.bits;
+
+		while (copy != 0){
+			int idx = 63-Long.numberOfLeadingZeros(copy); 
+			selection[count++] = all[idx];
+			copy &= ~(1L << idx);
+		}
+		return count;
+	}
+	
+
+
 	
 	public String toString() {
 		String out = "";
