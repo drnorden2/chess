@@ -1,6 +1,7 @@
 package perft.chess.core;
 
 import perft.chess.core.baseliner.*;
+import perft.chess.core.datastruct.BitBoard;
 import perft.chess.core.datastruct.IndexedElement;
 import perft.chess.core.o.O;
 
@@ -15,8 +16,10 @@ public class Field implements IndexedElement {
 	
 	
 	private final BLVariable<Piece> piece;
-	private final BLVariable<BLIndexedListBB<Move>> pseudoMoveSet;
 	BLIndexedList<FieldCallback> callBacks;
+	
+	private final BLVariable<Long> pseudoMovesBits;
+	
 	
 	
 	private final Position position;
@@ -41,22 +44,31 @@ public class Field implements IndexedElement {
 		
 		this.position = position;
 		this.piece = new BLVariable<Piece>(this.bl, null);
-		pseudoMoveSet = new BLVariable<BLIndexedListBB<Move>>(this.bl);
+		//pseudoMoveSet = new BLVariable<BLIndexedListBB<Move>>(this.bl);
+		this.pseudoMovesBits= new BLVariable<Long>(bl,0L);
 		callBacks = new BLIndexedList<FieldCallback>(bl, 64, 64);
 	}
  
 		
 	
 	public int getPseudoMoveList(Move[] moves) {
-		load();
-		return pseudoMoveSet.get().selectList(moves);
+		Move[] all = position.moveManager.getPseudoMoves(piece.get().getMoveIndex());
+		int count = 0;
+		long copy = this.pseudoMovesBits.get();
+
+		while (copy != 0){
+			int idx = 63-Long.numberOfLeadingZeros(copy); 
+			moves[count++] = all[idx];
+			copy &= ~(1L << idx);
+		}
+		return count;
+
 	}
 
 	// Field reference to Piece and pos of piece
 		public void stagePiece(Piece pieceObj) {
 			this.piece.set(pieceObj);
 			pieceObj.setPosition(this.pos);
-			pseudoMoveSet.set(position.moveManager.getPseudoMoves(pieceObj.getMoveIndex()));
 		}
 
 	
@@ -67,11 +79,8 @@ public class Field implements IndexedElement {
 		this.piece.set(null);
 		int movesIndex = pieceObj.getMoveIndex();
 		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
-		load();
 		addRemovePseudoMoves(pieceObj,moves, -1,-1,true);
-		store();
-		pseudoMoveSet.set(null);
-		
+		this.pseudoMovesBits.set(0L);	
 	}
 
 	
@@ -81,26 +90,15 @@ public class Field implements IndexedElement {
 		Piece piece = this.piece.get();
 		int movesIndex = piece.getMoveIndex();
 		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
-		load();
 		addRemovePseudoMoves(piece,moves, -1,-1,false);
-		store();
-		
 	}
 
-
-
-
-	private void load() {
-		pseudoMoveSet.get().load();
-	}
-	private void store() {
-		pseudoMoveSet.get().store();
-	}
-	
 	
 	
 	
 	public void addRemovePseudoMoves(Piece piece, Move[][] moves, int ii, int jj, boolean onlyRemove) {
+		long pmBits = this.pseudoMovesBits.get();
+			
 		int color = piece.getColor();
 		int newPos;
 		int iiMax =moves.length;
@@ -147,9 +145,11 @@ public class Field implements IndexedElement {
 				
 				if(move.getMoveType()!=Move.MOVE_TYPE_KING_SENSING) {
 					if (!remove && isPseudoMove(piece, move)) {
-						pseudoMoveSet.get().add(move);
+						pmBits |= 1L << move.getElementIndex();//set;
+						//pseudoMoveSet.get().add(move);
 					}else {
-						pseudoMoveSet.get().remove(move);
+						pmBits &= ~(1L << move.getElementIndex());//unset
+						//pseudoMoveSet.get().remove(move);
 					}
 				}
 				
@@ -163,6 +163,8 @@ public class Field implements IndexedElement {
 				
 			}
 		}
+		this.pseudoMovesBits.set(pmBits);
+
 	}
 	private boolean isPseudoMove(Piece piece, Move move) {
 		//O.ENTER("isPseudoMove");
@@ -323,9 +325,7 @@ public class Field implements IndexedElement {
 						return;
 					}else {
 						//just flip the peudoMove
-						load();
-						this.pseudoMoveSet.get().toggle(fieldCB.getMoveIndex());
-						store();
+						this.pseudoMovesBits.set(((long)this.pseudoMovesBits.get())^1L << fieldCB.getMoveIndex());//toggle
 						optimizationCounter++;
 						return;
 					}
@@ -335,9 +335,7 @@ public class Field implements IndexedElement {
 						return;					
 					}else {
 						if(!fieldCB.isPromotion()) {
-							load();
-							this.pseudoMoveSet.get().toggle(fieldCB.getMoveIndex());
-							store();
+							this.pseudoMovesBits.set(((long)this.pseudoMovesBits.get())^1L << fieldCB.getMoveIndex());//toggle
 							optimizationCounter++;
 							return;
 						}
@@ -354,12 +352,9 @@ public class Field implements IndexedElement {
 					return;
 				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_RAY) {
 				
-					load();
-					this.pseudoMoveSet.get().toggle(fieldCB.getMoveIndex());
-					store();
+					this.pseudoMovesBits.set(((long)this.pseudoMovesBits.get())^1L << fieldCB.getMoveIndex());//toggle
 					optimizationCounter++;
-					return;
-					//toggle =true;
+					return;				
 				}
 				break;
 				
@@ -373,9 +368,7 @@ public class Field implements IndexedElement {
 		//this.removePseudoMoves(piece,ii, jj);
 		int movesIndex = piece.getMoveIndex();
 		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
-		load();
 		this.addRemovePseudoMoves(piece, moves, ii, jj,false);
-		store();
 		toggle = false;
 	}
 	 
@@ -404,5 +397,9 @@ public class Field implements IndexedElement {
         }
     }
 }
+
+
+
+
 
 

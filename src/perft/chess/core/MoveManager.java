@@ -9,8 +9,8 @@ import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.o.O;
 
 public class MoveManager {
-	private static Move[][][] moves= new Move[1280][][];
-	private static BLIndexedListBB<Move>[] pseudoMoveSets = new BLIndexedListBB[1280];
+	private static final Move[][][] moves= new Move[1280][][];
+	private static final Move[][] pseudoMoveSets = new Move[1280][];
 	private final BaseLiner bl;
 	private final Position position;
 	public static final int[][] trackBack = new int[64][64]; 
@@ -152,7 +152,7 @@ public class MoveManager {
 	public Move[][] getRawMoves (int index) {
 		return this.moves[index];
 	}
-	public BLIndexedListBB<Move> getPseudoMoves (int index) {
+	public Move[] getPseudoMoves (int index) {
 		return this.pseudoMoveSets[index];
 	}
 
@@ -270,7 +270,7 @@ public class MoveManager {
 		}
 		Move[] allElements = new Move[list.size()];
 		list.toArray(allElements);		
-		this.pseudoMoveSets[offset+index] = new BLIndexedListBB<Move>(bl,allElements,position.depth,pieceType);
+		this.pseudoMoveSets[offset+index] = allElements;
 		MoveManager.moves[offset+index]=finalMoves;
 	}
 
