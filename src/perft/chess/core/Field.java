@@ -345,7 +345,9 @@ public class Field implements IndexedElement {
 			//this.removePseudoMoves(piece,ii, jj);
 			int movesIndex = piece.getMoveIndex();
 			Move[][] moves = position.moveManager.getRawMoves(movesIndex);
+			load();
 			this.addRemovePseudoMoves(piece, moves, ii, jj,false);
+			store();
 		}
 	}
 	 

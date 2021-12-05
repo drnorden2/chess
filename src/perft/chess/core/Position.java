@@ -24,7 +24,7 @@ public class Position {
  
 	
 	final int depth = 8;
-	public final BaseLiner bl = new BaseLiner(30000,16000,depth,2000);
+	public final BaseLiner bl = new BaseLiner(6000,5000,depth,1000);
 	final MoveManager moveManager;
 	int color=Piece.COLOR_WHITE;
     int movesPlayed = 0;
@@ -176,6 +176,7 @@ public class Position {
 
 	public void setMove(int index) {
 		Move move= getMove(index);
+		/*
 		wtfIteration++;
 				
 		//String start =this.toString();
@@ -184,19 +185,19 @@ public class Position {
 			String cur  = this.toString();
 			System.out.println(cur);
 		}
-
+*/
 		
 		bl.startNextLevel();
 		this.moveBeforeBaseLine(move);				
 		this.takeTurn();
 		checkGameState(color);			
 		this.legalMoveTest.checkLegalMovesOpt();
-	
+	/*
 		String cur  = this.toString();
 		System.out.println("Move("+ this.wtfIteration+ "):"+move);
 		System.out.println(cur);
 		System.out.println("______________________");	
-
+*/
 		/*
 		
 		

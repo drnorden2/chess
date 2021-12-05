@@ -190,7 +190,7 @@ public class Fen {
 		
 		position.initialEval();
 		position.checkGameState(position.getColorAtTurn());
-		position.legalMoveTest.checkLegalMovesReference();
+		position.legalMoveTest.checkLegalMovesOpt();
 		return position;
 
 	}
