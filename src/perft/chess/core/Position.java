@@ -13,7 +13,7 @@ import perft.chess.core.datastruct.ArrayStack;
 
 public class Position {
 	private Analyzer analyzer;
-	int wtfIteration  =0;	
+	public static int wtfIteration  =0;	
 	public static Position position;
 	public LegalMoveTester legalMoveTest;
 	
@@ -24,7 +24,7 @@ public class Position {
  
 	
 	final int depth = 8;
-	final BaseLiner bl = new BaseLiner(30000,16000,depth,2000);
+	public final BaseLiner bl = new BaseLiner(30000,16000,depth,2000);
 	final MoveManager moveManager;
 	int color=Piece.COLOR_WHITE;
     int movesPlayed = 0;
@@ -173,67 +173,63 @@ public class Position {
 		
 	public static int counter=0;
 	boolean experimental = false;
+
 	public void setMove(int index) {
-			//String start =this.toString();
-			Move move= getMove(index);
-			
-/*		
-			bl.startNextLevel();
-			this.moveBeforeBaseLine(move);				
-			movesPlayed++;
-			wtfIteration++;
-			this.takeTurn();
-			this.initialEval();
-			checkGameState(position.getColorAtTurn());
-			this.legalMoveTest.checkLegalMovesReference();
-			
-			
-			
-			String ref = this.toString();
-			int refCount = allMovesLists.get(getLevel()).size();
-			allMovesLists.get(getLevel()).reset(); 		
-			bl.undo();
-			this.takeTurn();
-			experimental =true;
-	*/		
-			
-			
-			
-			
-			bl.startNextLevel();
-			this.moveBeforeBaseLine(move);				
-			this.takeTurn();
-			checkGameState(color);			
-			this.legalMoveTest.checkLegalMovesOpt();
-			
-			
-			
-			
-			
-			
-		/*	
-			
-			
-			
-			
-			experimental =false;
-			String cur  = this.toString();
-			
-			if(!cur.equals(ref)) {
-				counter++;
-				System.out.println("WARNING: Mismatch in round "+ this.wtfIteration +" after move "+move+"!!!");
+		Move move= getMove(index);
+		wtfIteration++;
 				
-				System.out.println(
-						ref+
-						"-------------------"+
-						cur+
-						"-------------------"+
-						analyzer.diffPositions(ref, cur));
+		//String start =this.toString();
+		if(this.wtfIteration==3 ) {
+			System.out.println("WTF - Move("+ this.wtfIteration+ "):"+move);
+			String cur  = this.toString();
+			System.out.println(cur);
+		}
+
+		
+		bl.startNextLevel();
+		this.moveBeforeBaseLine(move);				
+		this.takeTurn();
+		checkGameState(color);			
+		this.legalMoveTest.checkLegalMovesOpt();
 	
-				throw new RuntimeException("different"+this.wtfIteration);
-			}
-			*/
+		String cur  = this.toString();
+		System.out.println("Move("+ this.wtfIteration+ "):"+move);
+		System.out.println(cur);
+		System.out.println("______________________");	
+
+		/*
+		
+		
+		String cur  = this.toString();
+		bl.undo();
+		bl.startNextLevel();
+		this.moveBeforeBaseLine(move);				
+		movesPlayed++;
+		wtfIteration++;
+		this.takeTurn();
+		this.initialEval();
+		checkGameState(position.getColorAtTurn());
+		this.legalMoveTest.checkLegalMovesReference();
+		
+		allMovesLists.get(getLevel()).reset(); 		
+		this.takeTurn();
+		String ref = this.toString();
+		
+		
+		if(!cur.equals(ref)) {
+			counter++;
+			System.out.println("WARNING: Mismatch in round "+ this.wtfIteration +" after move "+move+"!!!");
 			
+			System.out.println(
+					"Reference:\n"+ref+
+					"-------------------\n"+
+					"DuT:\n"+cur+
+					"-------------------\n"+
+					analyzer.diffPositions(ref, cur));
+
+			throw new RuntimeException("different"+this.wtfIteration);
+		}
+		*/
 	
 	/*		
 		}catch(Exception e) {
@@ -284,9 +280,8 @@ public class Position {
 			Field enPassanteField  = null;
 			//remove old
 			//zobrist.HASH(oldPos,piece);
-			oldField.unStagePiece(piece );
-			oldField.unStageAllMoves(piece );
-			
+			oldField.unstagePiece(piece);
+				
 			
 			
 			
@@ -296,8 +291,7 @@ public class Position {
 				//zobrist.HASH(newPos,otherPiece);
 				replace =true;
 				
-				newField.unStageAllMoves(otherPiece);
-				newField.unStagePiece(otherPiece);
+				newField.unstagePiece(otherPiece);
 				finalTakeFromBoard(otherPiece);
 			 	
 			 	isKnight  = ((otherPiece.getType()==Piece.PIECE_TYPE_KNIGHT));
@@ -311,8 +305,7 @@ public class Position {
 						enPassanteField = fields[move.getEnPassantePawnPos()];				
 						otherPiece = enPassanteField.getPiece();
 						//zobrist.HASH(move.getEnPassantePawnPos(),otherPiece);
-						enPassanteField.unStagePiece(otherPiece);
-						enPassanteField.unStageAllMoves(otherPiece);					
+						enPassanteField.unstagePiece(otherPiece);
 						finalTakeFromBoard(otherPiece);
 						enPassanteField.notifyCallBacks(Field.NOTIFY_NOW_EMPTY,otherPiece.getColor(),oldPos, false,-1);
 						

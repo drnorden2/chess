@@ -14,7 +14,7 @@ public class Field implements IndexedElement {
 	
 	
 	private final BLVariable<Piece> piece;
-	private final BLIndexedList<Move> pseudoMoves;
+	private final BLVariable<BLIndexedListBB<Move>> pseudoMoveSet;
 	BLIndexedList<FieldCallback> callBacks;
 	
 	
@@ -40,74 +40,66 @@ public class Field implements IndexedElement {
 		
 		this.position = position;
 		this.piece = new BLVariable<Piece>(this.bl, null);
-		pseudoMoves = new BLIndexedList<Move>(this.bl, 36, 36);// TBD reduce
+		pseudoMoveSet = new BLVariable<BLIndexedListBB<Move>>(this.bl);
 		callBacks = new BLIndexedList<FieldCallback>(bl, 64, 64);
 	}
  
 		
-	// Field reference to Piece and pos of piece
-	public void stagePiece(Piece pieceObj) {
-		this.piece.set(pieceObj);
-		pieceObj.setPosition(this.pos);
+	
+	public int getPseudoMoveList(Move[] moves) {
+		load();
+		return pseudoMoveSet.get().selectList(moves);
 	}
 
+	// Field reference to Piece and pos of piece
+		public void stagePiece(Piece pieceObj) {
+			this.piece.set(pieceObj);
+			pieceObj.setPosition(this.pos);
+			pseudoMoveSet.set(position.moveManager.getPseudoMoves(pieceObj.getMoveIndex()));
+		}
 
-	public void unStagePiece(Piece pieceObj) {
+	
+	
+	
+	public void unstagePiece(Piece pieceObj) {
 		pieceObj.setPosition(-1);
 		this.piece.set(null);
+		int movesIndex = pieceObj.getMoveIndex();
+		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
+		load();
+		addRemovePseudoMoves(pieceObj,moves, -1,-1,true);
+		store();
+		pseudoMoveSet.set(null);
 		
 	}
 
-	public int getPseudoMoveList(Move[] moves) {
-		int size = pseudoMoves.size();
-		for(int i=0;i<size;i++) {
-			moves[i]=pseudoMoves.getElement(i);
-		}
-		return size;
-	}
+	
 	
 	// fields current Pseudomoves (until end of Ray) and Attacks
 	public void stagePseudoMoves() {
 		Piece piece = this.piece.get();
 		int movesIndex = piece.getMoveIndex();
 		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
+		load();
 		addRemovePseudoMoves(piece,moves, -1,-1,false);
-	}
-
-	public void unStageAllMoves(Piece piece) {
-		int movesIndex = piece.getMoveIndex();
-		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
-		addRemovePseudoMoves(piece,moves, -1,-1,true);
+		store();
+		
 	}
 
 
-/*
-	public int unStagePieceToReduceAttack(Piece oldPiece,int kingPos) {
-		int counter = pseudoMoves.size();
-		for (int i=0;i<counter;i++) {
-			Move move = pseudoMoves.getElement(i);
-			if( move.getNewPos() == kingPos && move.isAttackerMove() ){
-				return -1;
-			}
-		}
-		return 0;
+
+
+	private void load() {
+		pseudoMoveSet.get().load();
 	}
-*/
+	private void store() {
+		pseudoMoveSet.get().store();
+	}
 	
-	public int getPseudoMoveCount() {
-		return pseudoMoves.size();
-	}
-
-	public Move getPseudoMove(int index) {
-		return pseudoMoves.getElement(index);
-	}
-	public boolean containsPseudoMove(int index) {
-		return pseudoMoves.contains(index);
-	}
-
+	
+	
 	
 	public void addRemovePseudoMoves(Piece piece, Move[][] moves, int ii, int jj, boolean onlyRemove) {
-
 		int color = piece.getColor();
 		int newPos;
 		int iiMax =moves.length;
@@ -151,9 +143,9 @@ public class Field implements IndexedElement {
 				
 				if(move.getMoveType()!=Move.MOVE_TYPE_KING_SENSING) {
 					if (!remove && isPseudoMove(piece, move)) {
-						pseudoMoves.add(move);
+						pseudoMoveSet.get().add(move);
 					}else {
-						pseudoMoves.remove(move);
+						pseudoMoveSet.get().remove(move);
 					}
 				}
 				
@@ -353,9 +345,6 @@ public class Field implements IndexedElement {
 			//this.removePseudoMoves(piece,ii, jj);
 			int movesIndex = piece.getMoveIndex();
 			Move[][] moves = position.moveManager.getRawMoves(movesIndex);
-			if(position.wtfIteration==1823 && this.getElementIndex()==54) {
-				System.out.println("WTF Here");
-			}
 			this.addRemovePseudoMoves(piece, moves, ii, jj,false);
 		}
 	}

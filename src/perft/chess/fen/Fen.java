@@ -94,6 +94,7 @@ public class Fen {
 		Position position = new Position();
 		
 		int end = -1;
+		position.bl.isAlreadyInSimulation =true;
 		for (int i = 0; i < 8; i++) {
 			end = fen.indexOf("/");
 			if (end == -1) {
@@ -185,11 +186,11 @@ public class Fen {
 			enpassantePos = Move.getPos(rank, file) ;
 			position.enPassantePos.set(enpassantePos);
 		}
+		position.bl.isAlreadyInSimulation =false;
 		
 		position.initialEval();
 		position.checkGameState(position.getColorAtTurn());
 		position.legalMoveTest.checkLegalMovesReference();
-		
 		return position;
 
 	}

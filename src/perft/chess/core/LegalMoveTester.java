@@ -51,55 +51,6 @@ public class LegalMoveTester {
 	}
 
 	
-	public void checkLegalMovesReference(){
-
-		int curColor = position.getColorAtTurn();
-		BLIndexedList<Piece> allPiecesOfCurCol = position.allPieces[curColor];
-		int enpassantePos = position.enPassantePos.get();
-		int otherColor = (curColor +1)%2;
-		int kingPos = position.getKingPos(curColor);
-		int kingAttacks = position.attackTable[otherColor].get(kingPos);
-		
-		for(int i=0;i<allPiecesOfCurCol.size();i++) {
-			Piece piece = allPiecesOfCurCol.getElement(i);
-			int oldPos = piece.getPosition();
-			Field field = position.fields[oldPos];
-			int pseudoMoveCount =  field.getPseudoMoveList(pseudoMoves);
-			for (int ii = 0; ii < pseudoMoveCount; ii++) {
-				Move move = pseudoMoves[ii];
-				int newPos = move.getNewPos();
-				if(oldPos == kingPos && kingAttacks ==0){
-					if(move.getMoveType()!= Move.MOVE_TYPE_ROCHADE) {
-						if(position.attackTable[otherColor].get(move.getNewPos())==0){
-							position.addLegalMove(move);
-							continue;
-						}
-					}else{
-						int dir = move.getDirOfRochade();
-						int rookPos = move.getRookPos();
-						int counter = 0;
-						boolean isAttack = false;
-						for (int j = oldPos ; j != rookPos; j = j + dir) {
-							if (counter++ < 3) {
-								if (position.attackTable[otherColor].get(j) != 0) {
-									isAttack =true;
-									break;
-								}
-							}
-						}
-						if(!isAttack){
-							position.addLegalMove(move);
-							continue;
-						}     
-					}
-				}else {
-					if(move.getMoveType()!= Move.MOVE_TYPE_ROCHADE &&!isMovePinnedOrNotPreventingCheckEXPENSIVE(move, curColor, enpassantePos!=-1 )) {
-						position.addLegalMove(move);
-					}
-				}
-			}
-		}
-	}
 	
 	public void updateRescueMap(int kingPos, int attackerPos) {
 		if(MoveManager.trackBack[kingPos][attackerPos]==attackerPos) {
@@ -259,6 +210,7 @@ public class LegalMoveTester {
 			}			
 		}
 	}
+
 	public boolean isEnpassanteDiscovery(Field oldPosField, FieldCallback oldPosRegToKing,int oldPos, int otherColor, int kingPos, Move move, int enpassantePos) {
 		if(Move.getRank(kingPos)==Move.getRank(oldPos)) {
 			 // is king on same rank als OldPos? => does other field have an attacker 
@@ -348,6 +300,73 @@ public class LegalMoveTester {
 		}
 		return null;//should never happen!
 	}
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	public void checkLegalMovesReference(){
+
+		int curColor = position.getColorAtTurn();
+		BLIndexedList<Piece> allPiecesOfCurCol = position.allPieces[curColor];
+		int enpassantePos = position.enPassantePos.get();
+		int otherColor = (curColor +1)%2;
+		int kingPos = position.getKingPos(curColor);
+		int kingAttacks = position.attackTable[otherColor].get(kingPos);
+		
+		for(int i=0;i<allPiecesOfCurCol.size();i++) {
+			Piece piece = allPiecesOfCurCol.getElement(i);
+			int oldPos = piece.getPosition();
+			Field field = position.fields[oldPos];
+			int pseudoMoveCount =  field.getPseudoMoveList(pseudoMoves);
+			for (int ii = 0; ii < pseudoMoveCount; ii++) {
+				Move move = pseudoMoves[ii];
+				int newPos = move.getNewPos();
+				if(oldPos == kingPos && kingAttacks ==0){
+					if(move.getMoveType()!= Move.MOVE_TYPE_ROCHADE) {
+						if(position.attackTable[otherColor].get(move.getNewPos())==0){
+							position.addLegalMove(move);
+							continue;
+						}
+					}else{
+						int dir = move.getDirOfRochade();
+						int rookPos = move.getRookPos();
+						int counter = 0;
+						boolean isAttack = false;
+						for (int j = oldPos ; j != rookPos; j = j + dir) {
+							if (counter++ < 3) {
+								if (position.attackTable[otherColor].get(j) != 0) {
+									isAttack =true;
+									break;
+								}
+							}
+						}
+						if(!isAttack){
+							position.addLegalMove(move);
+							continue;
+						}     
+					}
+				}else {
+					if(move.getMoveType()!= Move.MOVE_TYPE_ROCHADE &&!isMovePinnedOrNotPreventingCheckEXPENSIVE(move, curColor, enpassantePos!=-1 )) {
+						position.addLegalMove(move);
+					}
+				}
+			}
+		}
+	}
+
+	
+	
 	
 	public boolean isMovePinnedOrNotPreventingCheckEXPENSIVE(Move move, int colorOfMove, boolean enPassante) {
 		System.out.println("EXPENSIVES");

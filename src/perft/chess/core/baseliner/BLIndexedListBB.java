@@ -4,17 +4,25 @@ import perft.chess.core.datastruct.IndexedElement;
 
 public class BLIndexedListBB <T extends IndexedElement>{
 	private final BitBoard bitBoard;	
+	private final BLVariable<Long> bits;
 	private final T[] allElements;
-	
-	public BLIndexedListBB (BaseLiner bl, T[] allElements,int depth) {
+	private final int pieceType;
+
+	public BLIndexedListBB (BaseLiner bl, T[] allElements,int depth,int pieceType) {
 		this.bitBoard= new BitBoard(0L);
+		this.bits = new BLVariable<Long>(bl,0L);
 		this.allElements = allElements;
+		this.pieceType = pieceType;
 	}
 	
-	// will be triggered finally by the legalMove loop
-	public int size(){
-		return bitBoard.popCount();
+	public void load() {
+		bitBoard.reset(bits.get());
 	}
+	public void store() {
+		bits.set(bitBoard.getBits());
+	}
+	
+	
 	
 	public boolean contains(T element){
 		return bitBoard.get(element.getElementIndex());
@@ -40,6 +48,12 @@ public class BLIndexedListBB <T extends IndexedElement>{
 	public void remove(T element) {
 		bitBoard.unset(element.getElementIndex());
 	}	
+	
+	// will be triggered finally by the legalMove loop
+	public int size(){
+		return bitBoard.popCount();
+	}
+	
 	
 	public int selectList(Object[] selection) {
 		return bitBoard.selectList(selection,allElements);

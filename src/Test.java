@@ -18,15 +18,20 @@ import perft.chess.core.o.O;
 
 public class Test {
 	private static ChessGameFactory factory  = new ChessGameFactory();
-	private static boolean useBulk = true;
+	private static boolean useBulk = false;
 
 	public static void main(String[] args) {
+		test(4, 2, "k7/Pp6/1P6/8/1p6/6p1/2P3Pp/7K w - - 0 1");
+
+		//		test(4, 7,"k1K5/8/8/8/8/8/8/8 w - - 0 1");
+//		test(3, 8902,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		//test(2,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		//test(6, 1134888, "3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1");
 		//test(4, 10276, "8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1");
-		test(6, 1134888, "3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1");
-		//if(true)return;
+		if(true)return;
 		
 		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-		test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+	//	test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		
 		//test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		

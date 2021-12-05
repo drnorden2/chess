@@ -140,7 +140,7 @@ public class MoveManager {
 							break;
 						
 						}
-						addMoves(curMoves, offset, getPos(rank, file));
+						addMoves(curMoves, offset, getPos(rank, file),pieceType);
 					}
 				}
 			}
@@ -230,7 +230,7 @@ public class MoveManager {
 
 	
 		
-	private void addMoves(Move curMoves[][], int offset,int index) {
+	private void addMoves(Move curMoves[][], int offset,int index, int pieceType) {
 		int rayCounter=0;
 
 		for (int i = 0; i < curMoves.length; i++) {// MoveRays
@@ -269,9 +269,8 @@ public class MoveManager {
 			finalMoves[validRayCursor++]=moves;
 		}
 		Move[] allElements = new Move[list.size()];
-		list.toArray(allElements);
-		
-		this.pseudoMoveSets[offset+index] = new BLIndexedListBB<Move>(bl,allElements,100);
+		list.toArray(allElements);		
+		this.pseudoMoveSets[offset+index] = new BLIndexedListBB<Move>(bl,allElements,position.depth,pieceType);
 		MoveManager.moves[offset+index]=finalMoves;
 	}
 
