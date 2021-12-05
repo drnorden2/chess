@@ -61,6 +61,7 @@ public class LegalMoveTester {
 				attackerPos = MoveManager.trackBack[kingPos][attackerPos];
 			}while(kingPos!=attackerPos);
 		}
+		/*
 		if(position.wtfIteration==121) {
 			System.out.print("RescuePath:\n*");
 			for(int i=0;i<64;i++) {
@@ -69,7 +70,7 @@ public class LegalMoveTester {
 					System.out.print("*\n*");
 				}
 			}
-		}
+		}*/
 	}	
 
 	private void handleKingPiece(Field oldKingField, int oldKingPos, int otherColor, int oldKingPosAttacks, Move[] pseudoMoves, int pseudoMoveCount) {
@@ -234,9 +235,6 @@ public class LegalMoveTester {
 		}else {// above pinner cannot be part of case2
 			 // is pawn to be beaten pinned?
 			int eppPos = move.getEnPassantePawnPos();
-			if(eppPos==-1) {
-				System.out.println("WTF");
-			}
 			Field eppField =position.fields[eppPos];
 			FieldCallback eppRegToKing= eppField.getRegisteredCallbackForPos(kingPos);
 			if(eppRegToKing!=null) {

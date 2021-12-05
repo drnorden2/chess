@@ -41,6 +41,11 @@ public class BLIndexedListBB <T extends IndexedElement>{
 		this.bitBoard.set(element.getElementIndex());
 	}
 	
+	public void toggle(int elementIndex){
+		this.bitBoard.toggle(elementIndex);
+	}
+	
+	
 	public void removeAll() {
 		bitBoard.reset();
 	}

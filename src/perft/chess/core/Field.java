@@ -23,6 +23,7 @@ public class Field implements IndexedElement {
 	public final static int NOTIFY_NOW_OCCUPIED =1;
 	public final static int NOTIFY_NOW_REPLACED =2;
 	public final static int NOTIFY_ATTACKER_CHANGED =3;
+	public final static int NOTIFY_NOW_OCCUPIED_ENPASSANTE_FIELD =4;
 	
 	public final static int MOVE_IS_POSSIBLE= 0;
 	public final static int MOVE_NOT_POSSIBLE=1;
@@ -112,7 +113,6 @@ public class Field implements IndexedElement {
 		if(jj==-1) {
 			jj=0;
 		}
-			
 		for (int i = ii; i < iiMax; i++) {
 			boolean remove = onlyRemove;
 
@@ -156,6 +156,7 @@ public class Field implements IndexedElement {
 					}
 					remove=true;
 				}
+				
 			}
 		}
 	}
@@ -294,33 +295,36 @@ public class Field implements IndexedElement {
 		for (int i=0;i<callBackCount;i++) {
 			FieldCallback fieldCB = fieldCBBuffer[i];
 			//System.out.println("Callback from "+notPos+" to "+fieldCB.getElementIndex()+" "+fieldCB.getCallbackType());
-			notifyCallBack(fieldCB, notifyType, color);
+			fieldCB.getField().notifyCallBack(fieldCB, notifyType, color);
 		}
 	}
 
 	
 	void notifyCallBack(FieldCallback fieldCB, int notifyType,int color) {
-		
-		Field notifiedField = fieldCB.getField();
-		Piece notifiedPiece = notifiedField.getPiece();
-		if(notifiedPiece ==null) {
-			//O.UT("WHAT JUST HAPPENED - No piece to notify?"+notifiedField.getElementIndex());
-			return;
-		}
+		Piece piece = this.getPiece();
 		int ii = fieldCB.getII();
 		int jj = fieldCB.getJJ();
 		int callbackType = fieldCB.getCallbackType();
-		int notifiedPieceColor = notifiedPiece.getColor();
+		int notifiedPieceColor = piece.getColor();
 		
 		
 		switch(notifyType) {
 			case NOTIFY_NOW_EMPTY:
 			case NOTIFY_NOW_OCCUPIED:
 				//something of the other color went out of the way where we anyways always could beat
-				if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE && color!=notifiedPieceColor) {
-					optimizationCounter++;
-					return;
-				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_AS_PAWN && color==notifiedPieceColor) {
+				/*callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_KING||*/
+				if((callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE) ) {
+					if(color!=notifiedPieceColor) {
+						optimizationCounter++;
+						return;
+					}else {
+						//just flip the peudoMove
+						load();
+						this.pseudoMoveSet.get().toggle(fieldCB.getMoveIndex());
+						store();
+						return;
+					}
+				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_PAWN && color==notifiedPieceColor) {
 					optimizationCounter++;
 					return;
 				}
@@ -334,21 +338,19 @@ public class Field implements IndexedElement {
 				}
 				break;
 		}
-		
-	    notifiedField.notifyFieldChange(ii,jj,callbackType);
+		/*
+		if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_KING) {
+			System.out.println("WTF");
+		}*/
 	    
-	}
+		
+		//this.removePseudoMoves(piece,ii, jj);
+		int movesIndex = piece.getMoveIndex();
+		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
+		load();
+		this.addRemovePseudoMoves(piece, moves, ii, jj,false);
+		store();
 	
-	 void notifyFieldChange(int ii, int jj,  int callbackType) {
-		Piece piece = this.getPiece();
-		if (piece != null) {
-			//this.removePseudoMoves(piece,ii, jj);
-			int movesIndex = piece.getMoveIndex();
-			Move[][] moves = position.moveManager.getRawMoves(movesIndex);
-			load();
-			this.addRemovePseudoMoves(piece, moves, ii, jj,false);
-			store();
-		}
 	}
 	 
  
@@ -358,24 +360,23 @@ public class Field implements IndexedElement {
 		return "Field "+pos+" w. "+this.piece.get();
 	}
 	
-	 public static String toString(Object[] a) {
-	        if (a == null)
-	            return "null";
-
-	        int iMax = a.length - 1;
-	        if (iMax == -1)
-	            return "[]";
-
-	        StringBuilder b = new StringBuilder();
-	        b.append('[');
-	        for (int i = 0; ; i++) {
-	            b.append(String.valueOf(a[i]));
-	            if (i == iMax)
-	                return b.append(']').toString();
-	            b.append("\n");
-	        }
-	    }
-
+	public static String toString(Object[] a) {
+        if (a == null) {
+        	return "null";
+        }
+        int iMax = a.length - 1;
+        if (iMax == -1) {
+            return "[]";
+        }
+        StringBuilder b = new StringBuilder();
+        b.append('[');
+        for (int i = 0; ; i++) {
+            b.append(String.valueOf(a[i]));
+            if (i == iMax)
+            return b.append(']').toString();
+        b.append("\n");
+        }
+    }
 }
 
 

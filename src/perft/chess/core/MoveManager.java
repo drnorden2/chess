@@ -44,7 +44,7 @@ public class MoveManager {
 								//moves only starting from 2nd row
 								{
 									int moveType = Move.MOVE_TYPE_PAWN_BEAT;
-									int callbackType = FieldCallback.CALLBACK_TYPE_BEAT_AS_PAWN;
+									int callbackType = FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_PAWN;
 									
 									//special case enpassante indicated by Movetype
 									if((rank ==_5 && color ==Piece.COLOR_WHITE )||(rank == _4 && color ==Piece.COLOR_BLACK)) {
@@ -71,7 +71,7 @@ public class MoveManager {
 											callbackType= FieldCallback.CALLBACK_TYPE_PUSH_ONE;
 										}else {//Beat
 											moveType=Move.MOVE_TYPE_PAWN_BEAT_CONVERT;											
-											callbackType= FieldCallback.CALLBACK_TYPE_BEAT_AS_PAWN;
+											callbackType= FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_PAWN;
 										}
 										if(curMoves[i][0]!=null) { // skip the sidewise beating 
 											Move oldMove = curMoves[i][0];
@@ -108,7 +108,7 @@ public class MoveManager {
 							//generate the sensing moves to detect pinning
 
 							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, Move.MOVE_TYPE_KING_SENSING,FieldCallback.CALLBACK_TYPE_CHECK_PIN);
-							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,1, Move.MOVE_TYPE_PUSH_BEAT,FieldCallback.CALLBACK_TYPE_OTHER);
+							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,1, Move.MOVE_TYPE_PUSH_BEAT,FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_KING);
 							generateMoves(curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 8, file, rank,1, Move.MOVE_TYPE_KING_SENSING,FieldCallback.CALLBACK_TYPE_CHECK_KNIGHT_ATTACK);
 							
 							
@@ -262,7 +262,7 @@ public class MoveManager {
 			}
 			Move[] moves =new Move[moveCounter];
 			for(int j=0;j<moves.length;j++) {
-				FieldCallback cb = new FieldCallback(this.position.fields[curMoves[i][j].getOldPos()],curMoves[i][j],validRayCursor,j);
+				FieldCallback cb = new FieldCallback(this.position.fields[curMoves[i][j].getOldPos()],curMoves[i][j],validRayCursor,j,list.size());
 				moves[j] = new Move(curMoves[i][j],cb,validRayCursor,j,list.size());
 				list.add(moves[j]);
 			}

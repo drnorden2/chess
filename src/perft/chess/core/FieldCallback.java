@@ -21,15 +21,16 @@ public class FieldCallback implements IndexedElement{
 	public final static int CALLBACK_TYPE_CHECK_KNIGHT_ATTACK = 4;
 
 	public final static int CALLBACK_TYPE_BEAT_ONE =5;
-	public final static int CALLBACK_TYPE_BEAT_AS_PAWN=6;
+	public final static int CALLBACK_TYPE_BEAT_ONE_AS_PAWN=6;
 	public final static int CALLBACK_TYPE_OTHER = 7;
 	public final static int CALLBACK_TYPE_BEAT_RAY =8;	
+	public final static int CALLBACK_TYPE_BEAT_ONE_AS_KING = 9;
 	
 	
 	
-	public FieldCallback(Field field, Move move, int ii, int jj){
+	public FieldCallback(Field field, Move move, int ii, int jj, int moveIndex){
 		this.field=field;
-		this.moveIndex = move.getElementIndex();
+		this.moveIndex = moveIndex;
 		this.dirX = move.getDirX();
 		this.dirY= move.getDirY();
 		this.color = move.getColor();

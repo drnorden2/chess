@@ -331,7 +331,7 @@ public class Position {
 			enPassantePos.set(move.getEnPassanteSquare());
 			//zobrist.HASH(move.getEnPassanteSquare(),null);
 			//WTF@TODO needeD?
-			fields[move.getEnPassanteSquare()].notifyCallBacks(Field.NOTIFY_NOW_OCCUPIED, piece.getColor(),oldPos,false,-1);
+			fields[move.getEnPassanteSquare()].notifyCallBacks(Field.NOTIFY_NOW_OCCUPIED_ENPASSANTE_FIELD, piece.getColor(),oldPos,false,-1);
 		}
 	}
 
