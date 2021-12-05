@@ -175,9 +175,9 @@ public class Position {
 	boolean experimental = false;
 
 	public void setMove(int index) {
+		wtfIteration++;
 		Move move= getMove(index);
 		/*
-		wtfIteration++;
 				
 		//String start =this.toString();
 		if(this.wtfIteration==3 ) {
@@ -185,24 +185,30 @@ public class Position {
 			String cur  = this.toString();
 			System.out.println(cur);
 		}
+
+		
+		if(this.wtfIteration==2 ) {
+			System.out.println("WTF - Move("+ this.wtfIteration+ "):"+move);
+			String cur  = this.toString();
+			System.out.println(cur);
+		}
+		String before = this.toString(); 
+
+		
+		System.out.println("Move start:"+this.wtfIteration+"-----------------------------"+this);
 */
-
-//		String before = this.toString(); 
-
+		
 		
 		bl.startNextLevel();
 		this.moveBeforeBaseLine(move);				
 		this.takeTurn();
 		checkGameState(color);			
 		this.legalMoveTest.checkLegalMovesOpt();
-	/*
-		String cur  = this.toString();
-		System.out.println("Move("+ this.wtfIteration+ "):"+move);
-		System.out.println(cur);
-		System.out.println("______________________");	
-*/
+	
+/*		
+		System.out.println("Move End:"+this.wtfIteration+"-----------------------------"+this);
+	
 		
-		/*
 		
 		String cur  = this.toString();
 		
@@ -214,7 +220,6 @@ public class Position {
 		bl.startNextLevel();
 		this.moveBeforeBaseLine(move);				
 		movesPlayed++;
-		wtfIteration++;
 		this.takeTurn();
 		this.initialEval();
 		checkGameState(position.getColorAtTurn());
@@ -238,8 +243,7 @@ public class Position {
 
 			throw new RuntimeException("different"+this.wtfIteration);
 		}
-		
-	*/
+	*/	
 	/*		
 		}catch(Exception e) {
 			O.UT("Error Moving: is it Simulated?" +bl.isAlreadyInSimulation);
@@ -275,7 +279,7 @@ public class Position {
 			if(oldEnpassantePos !=-1) {
 				//zobrist.HASH(oldEnpassantePos,null);		
 				enPassantePos.set(-1);
-				fields[oldEnpassantePos].notifyCallBacks(Field.NOTIFY_NOW_EMPTY,(color+1)%2,oldPos,false,-1);
+				fields[oldEnpassantePos].notifyCallBacks(Field.NOTIFY_NOW_EMPTY_ENPASSANTE_FIELD,(color+1)%2,oldPos,false,-1);
 			}
 		}
 		

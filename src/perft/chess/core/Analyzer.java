@@ -185,7 +185,7 @@ public class Analyzer {
 				rows[i+1]+= charBoard[i][j];
 			}
 		}
-		rows[9]=eight(statusLine);
+		rows[9]="   "+eight(statusLine);
 		return rows;
 	}
 

@@ -27,6 +27,8 @@ public class Field implements IndexedElement {
 	public final static int NOTIFY_NOW_OCCUPIED =1;
 	public final static int NOTIFY_NOW_REPLACED =2;
 	public final static int NOTIFY_NOW_OCCUPIED_ENPASSANTE_FIELD =3;
+	public final static int NOTIFY_NOW_EMPTY_ENPASSANTE_FIELD =4;
+	
 	
 	public final static int MOVE_IS_POSSIBLE= 0;
 	public final static int MOVE_NOT_POSSIBLE=1;
@@ -313,12 +315,11 @@ public class Field implements IndexedElement {
 		int callbackType = fieldCB.getCallbackType();
 		int notifiedPieceColor = piece.getColor();
 		
-		
 		switch(notifyType) {
 			case NOTIFY_NOW_EMPTY:
 			case NOTIFY_NOW_OCCUPIED:
 				//something of the other color went out of the way where we anyways always could beat
-				/*callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_KING||*/
+				//callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_KING||
 				if((callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE) ) {
 					if(color!=notifiedPieceColor) {
 						optimizationCounter++;
@@ -344,14 +345,12 @@ public class Field implements IndexedElement {
 				break;
 			case NOTIFY_NOW_REPLACED:
 				//for pushers it does not matter if something remains blocking
-				//|| callbackType==FieldCallback.CALLBACK_TYPE_PUSH_RAY suffers from on own Q on R3 beats n on R4
-				if(callbackType==FieldCallback.CALLBACK_TYPE_PUSH_ONE 
-					||callbackType==FieldCallback.CALLBACK_TYPE_PUSH_RAY
-					||callbackType==FieldCallback.CALLBACK_TYPE_KING_SENSING) {
+				if(callbackType==FieldCallback.CALLBACK_TYPE_PUSH_ONE ||
+					callbackType==FieldCallback.CALLBACK_TYPE_PUSH_RAY ||
+				    callbackType==FieldCallback.CALLBACK_TYPE_KING_SENSING ) {
 					optimizationCounter++;
 					return;
-				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_RAY) {
-				
+				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_RAY) {				
 					this.pseudoMovesBits.set(((long)this.pseudoMovesBits.get())^1L << fieldCB.getMoveIndex());//toggle
 					optimizationCounter++;
 					return;				
@@ -359,6 +358,7 @@ public class Field implements IndexedElement {
 				break;
 				
 		}
+		
 		/*
 		if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_KING) {
 			System.out.println("WTF");
