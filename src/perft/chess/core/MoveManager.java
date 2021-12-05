@@ -107,7 +107,7 @@ public class MoveManager {
 							//O.UT("KING_T "+color+"file "+file +" Rank:"+rank+" Offset:"+offset);
 							//generate the sensing moves to detect pinning
 
-							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, Move.MOVE_TYPE_KING_SENSING,FieldCallback.CALLBACK_TYPE_CHECK_PIN);
+							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, Move.MOVE_TYPE_KING_SENSING,FieldCallback.CALLBACK_TYPE_KING_SENSING);
 							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,1, Move.MOVE_TYPE_PUSH_BEAT,FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_KING);
 							generateMoves(curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 8, file, rank,1, Move.MOVE_TYPE_KING_SENSING,FieldCallback.CALLBACK_TYPE_CHECK_KNIGHT_ATTACK);
 							

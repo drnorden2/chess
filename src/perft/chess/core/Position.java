@@ -186,6 +186,9 @@ public class Position {
 			System.out.println(cur);
 		}
 */
+
+//		String before = this.toString(); 
+
 		
 		bl.startNextLevel();
 		this.moveBeforeBaseLine(move);				
@@ -198,11 +201,16 @@ public class Position {
 		System.out.println(cur);
 		System.out.println("______________________");	
 */
+		
 		/*
 		
-		
 		String cur  = this.toString();
+		
+		
 		bl.undo();
+		allMovesLists.get(getLevel()).reset(); 		
+		this.takeTurn();
+		
 		bl.startNextLevel();
 		this.moveBeforeBaseLine(move);				
 		movesPlayed++;
@@ -212,8 +220,6 @@ public class Position {
 		checkGameState(position.getColorAtTurn());
 		this.legalMoveTest.checkLegalMovesReference();
 		
-		allMovesLists.get(getLevel()).reset(); 		
-		this.takeTurn();
 		String ref = this.toString();
 		
 		
@@ -222,6 +228,8 @@ public class Position {
 			System.out.println("WARNING: Mismatch in round "+ this.wtfIteration +" after move "+move+"!!!");
 			
 			System.out.println(
+					"Before:\n"+before+
+					"-------------------\n"+
 					"Reference:\n"+ref+
 					"-------------------\n"+
 					"DuT:\n"+cur+
@@ -230,8 +238,8 @@ public class Position {
 
 			throw new RuntimeException("different"+this.wtfIteration);
 		}
-		*/
-	
+		
+	*/
 	/*		
 		}catch(Exception e) {
 			O.UT("Error Moving: is it Simulated?" +bl.isAlreadyInSimulation);
@@ -288,19 +296,19 @@ public class Position {
 			
 			Piece otherPiece = newField.getPiece();
 			boolean isKnight = false;
+			oldField.notifyCallBacks(Field.NOTIFY_NOW_EMPTY,this.color,newPos,isKnight,-1); 
+			
 			if(otherPiece!=null) {
 				//zobrist.HASH(newPos,otherPiece);
 				replace =true;
 				
-				newField.unstagePiece(otherPiece);
+			 	newField.unstagePiece(otherPiece);
 				finalTakeFromBoard(otherPiece);
 			 	
 			 	isKnight  = ((otherPiece.getType()==Piece.PIECE_TYPE_KNIGHT));
 
 			 	//flip type prior to setting it on field => for moveIndex!
-			 	oldField.notifyCallBacks(Field.NOTIFY_NOW_EMPTY,this.color,newPos,isKnight,-1); 
 			} else {
-				oldField.notifyCallBacks(Field.NOTIFY_NOW_EMPTY,this.color,newPos,false,-1); 
 				if(piece.getType()==Piece.PIECE_TYPE_PAWN) {
 					if (move.isEnpassanteMove()&& move.getNewPos()==oldEnpassantePos){// other field is empty =>ergo enpassante
 						enPassanteField = fields[move.getEnPassantePawnPos()];				

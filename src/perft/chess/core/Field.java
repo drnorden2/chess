@@ -5,6 +5,7 @@ import perft.chess.core.datastruct.IndexedElement;
 import perft.chess.core.o.O;
 
 public class Field implements IndexedElement {
+	private boolean toggle = false;
 	
 	private final int pos;
 	private final int file;
@@ -22,8 +23,7 @@ public class Field implements IndexedElement {
 	public final static int NOTIFY_NOW_EMPTY =0;
 	public final static int NOTIFY_NOW_OCCUPIED =1;
 	public final static int NOTIFY_NOW_REPLACED =2;
-	public final static int NOTIFY_ATTACKER_CHANGED =3;
-	public final static int NOTIFY_NOW_OCCUPIED_ENPASSANTE_FIELD =4;
+	public final static int NOTIFY_NOW_OCCUPIED_ENPASSANTE_FIELD =3;
 	
 	public final static int MOVE_IS_POSSIBLE= 0;
 	public final static int MOVE_NOT_POSSIBLE=1;
@@ -104,7 +104,7 @@ public class Field implements IndexedElement {
 		int color = piece.getColor();
 		int newPos;
 		int iiMax =moves.length;
-		
+		boolean iiMinusOne= ii==-1;
 		if(ii==-1) {
 			ii=0;
 		}else {
@@ -113,13 +113,17 @@ public class Field implements IndexedElement {
 		if(jj==-1) {
 			jj=0;
 		}
+//		int counter=0;//WTF
 		for (int i = ii; i < iiMax; i++) {
 			boolean remove = onlyRemove;
-
+			boolean scanning = moves[i].length-jj>1;
 			for (int j = jj; j < moves[i].length; j++) {
 				Move move = moves[i][j];
 				newPos = move.getNewPos();
-				
+/*				counter++;//WTF
+				if(toggle&&counter>1) {
+				//	throw new RuntimeException("TOGGELING");
+				}*/
 				
 				if(move.isNoPromotionOrQueen()) {
 					if(!remove) {
@@ -151,7 +155,7 @@ public class Field implements IndexedElement {
 				
 				//exit ray!
 				if (position.fields[newPos].getPiece() != null) {
-					if(!remove && jj==-1) {// this is a real add
+					if(!remove &&((scanning && toggle) ||iiMinusOne)) {// this is a real add
 						break;
 					}
 					remove=true;
@@ -322,6 +326,7 @@ public class Field implements IndexedElement {
 						load();
 						this.pseudoMoveSet.get().toggle(fieldCB.getMoveIndex());
 						store();
+						optimizationCounter++;
 						return;
 					}
 				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_PAWN) {
@@ -333,6 +338,7 @@ public class Field implements IndexedElement {
 							load();
 							this.pseudoMoveSet.get().toggle(fieldCB.getMoveIndex());
 							store();
+							optimizationCounter++;
 							return;
 						}
 					}
@@ -341,11 +347,22 @@ public class Field implements IndexedElement {
 			case NOTIFY_NOW_REPLACED:
 				//for pushers it does not matter if something remains blocking
 				//|| callbackType==FieldCallback.CALLBACK_TYPE_PUSH_RAY suffers from on own Q on R3 beats n on R4
-				if(callbackType==FieldCallback.CALLBACK_TYPE_PUSH_ONE ) {
+				if(callbackType==FieldCallback.CALLBACK_TYPE_PUSH_ONE 
+					||callbackType==FieldCallback.CALLBACK_TYPE_PUSH_RAY
+					||callbackType==FieldCallback.CALLBACK_TYPE_KING_SENSING) {
 					optimizationCounter++;
 					return;
+				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_RAY) {
+				
+					load();
+					this.pseudoMoveSet.get().toggle(fieldCB.getMoveIndex());
+					store();
+					optimizationCounter++;
+					return;
+					//toggle =true;
 				}
 				break;
+				
 		}
 		/*
 		if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_KING) {
@@ -359,7 +376,7 @@ public class Field implements IndexedElement {
 		load();
 		this.addRemovePseudoMoves(piece, moves, ii, jj,false);
 		store();
-	
+		toggle = false;
 	}
 	 
  

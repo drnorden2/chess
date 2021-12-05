@@ -130,7 +130,7 @@ public class Analyzer {
 		String[] board = this.getBoardToString();
 		String[] attackW = this.getAttackToString(Piece.COLOR_WHITE);
 		String[] attackB = this.getAttackToString(Piece.COLOR_BLACK);
-		String[] posA = this.getCallBackOfPosToString(position.getKingPos(Piece.COLOR_WHITE));
+		String[] posA = this.getCallBackOfPosToString(45);//position.getKingPos(Piece.COLOR_WHITE));
 		String[] posB = this.getCallBackOfPosToString(position.getKingPos(Piece.COLOR_BLACK));
 		String[] posC = this.getMovesToString();//this.getColorAtTurn());
 		String[] posD = this.getPseudoMovesToString(Piece.COLOR_WHITE);
@@ -177,9 +177,9 @@ public class Analyzer {
 			}
 		}
 		String[] rows =new String[10];
-		rows[0]=eight(headLine);
+		rows[0]="   "+eight(headLine);
 		for (int i = 0; i < 8; i++) {
-			rows[i+1] = "";
+			rows[i+1] = this.two(""+i*8)  +"|";
 			
 			for (int j = 0; j < 8; j++) {
 				rows[i+1]+= charBoard[i][j];
@@ -247,6 +247,9 @@ public class Analyzer {
 	}
 	private String eight(String str) {
 		return (str+"          ").substring(0,8);
+	}
+	private String two(String str) {
+		return (str+"          ").substring(0,2);
 	}
 	
 	public String diffPositions(String a, String b) {

@@ -17,7 +17,7 @@ public class FieldCallback implements IndexedElement{
 	private final int callbackType;
 	public final static int CALLBACK_TYPE_PUSH_RAY =0;
 	public final static int CALLBACK_TYPE_PUSH_ONE =1;
-	public final static int CALLBACK_TYPE_CHECK_PIN=2;
+	public final static int CALLBACK_TYPE_KING_SENSING=2;
 	public final static int CALLBACK_TYPE_ROCHADE_TEST = 3;
 	public final static int CALLBACK_TYPE_CHECK_KNIGHT_ATTACK = 4;
 
