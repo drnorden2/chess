@@ -24,7 +24,7 @@ public class Position {
  
 	
 	final int depth = 8;
-	public final BaseLiner bl = new BaseLiner(6000,5000,depth,1000);
+	public final BaseLiner bl = new BaseLiner(6000,5000,65,depth,1000);
 	final MoveManager moveManager;
 	int color=Piece.COLOR_WHITE;
     int movesPlayed = 0;
@@ -342,7 +342,6 @@ public class Position {
 		if(move.isTwoSquarePush()) {
 			enPassantePos.set(move.getEnPassanteSquare());
 			//zobrist.HASH(move.getEnPassanteSquare(),null);
-			//WTF@TODO needeD?
 			fields[move.getEnPassanteSquare()].notifyCallBacks(Field.NOTIFY_NOW_OCCUPIED_ENPASSANTE_FIELD, piece.getColor(),oldPos,false,-1);
 		}
 	}

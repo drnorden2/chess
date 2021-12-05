@@ -47,6 +47,6 @@ public class BLVariableInt {
 	}
 	
 	public String toString() {
-		return ""+bl.getInt(bL_Index);
+		return ""+get();
 	}	
 }

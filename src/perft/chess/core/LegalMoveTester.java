@@ -146,10 +146,6 @@ public class LegalMoveTester {
 		FieldCallback oldPosRegToKing = field.getRegisteredCallbackForPos(kingPos);
 		FieldCallback pinner =null;
 		
-		if(position.wtfIteration== 1129){
-			System.out.println("3rd WTHacker!"+position);
-		}
-		
 		if(oldPosRegToKing!=null) {
 			pinner = this.piecePinnedBy(field,oldPosRegToKing, oldPos, otherColor, kingPos);
 		}
@@ -260,7 +256,6 @@ public class LegalMoveTester {
 		// the king is dependend  => now check if it is xrayed
 		for(int i=0; i<oldPosField.getRegisteredCallbackCount();i++){
 			FieldCallback cb = oldPosField.getRegisteredCallback(i);
-			//@TODO CB Should know the color!
 			if(cb.getCallbackType() == FieldCallback.CALLBACK_TYPE_BEAT_RAY) {
 				if(cb.getColor()==otherColor) {
 					//in a straight line
@@ -326,7 +321,7 @@ public class LegalMoveTester {
 			Piece piece = allPiecesOfCurCol.getElement(i);
 			int oldPos = piece.getPosition();
 			Field field = position.fields[oldPos];
-			int pseudoMoveCount =  field.getPseudoMoveList(pseudoMoves);
+		int pseudoMoveCount =  field.getPseudoMoveList(pseudoMoves);
 			for (int ii = 0; ii < pseudoMoveCount; ii++) {
 				Move move = pseudoMoves[ii];
 				int newPos = move.getNewPos();

@@ -98,7 +98,7 @@ public class BLIndexedList <T extends IndexedElement>{
 	
 	
 	public static void mainX(String[] args) {
-		BaseLiner bl = new BaseLiner(1000,10,1000,10);
+		BaseLiner bl = new BaseLiner(1000,10,10,1000,10);
 		BLIndexedList <IndexedInt>il = new <IndexedInt>BLIndexedList (bl, 3, 10);
 			System.out.println("After intit: "+ il);
 		bl.startNextLevel();
@@ -119,7 +119,7 @@ public class BLIndexedList <T extends IndexedElement>{
 	public static void mainOld(String[] args) {
 		int ADD =0;
 		int REMOVE =1;
-		BaseLiner bl = new BaseLiner(100,10,1000,100);
+		BaseLiner bl = new BaseLiner(100,10,10,1000,100);
 		
 		BLIndexedList <IndexedInt>cList = new <IndexedInt>BLIndexedList (bl, 16*28, 16*28*64);
 		test(cList,new IndexedInt(1),REMOVE);

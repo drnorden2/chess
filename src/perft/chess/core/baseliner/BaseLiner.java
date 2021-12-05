@@ -8,29 +8,40 @@ public class BaseLiner {
 	int level =1;
 	private int registry1 =1;
 	private int registry2 =1;
+	private int registry3 =1;
+	
 	
 	private ArrayStackInt touchedList;
 	private ArrayStackInt[] touchedListPool;
 	private final BLArrayStack[] varStacks;
 	private final BLArrayStackInt[] varStacksInt;
+	private final BLArrayStackLong[] varStacksLong;
 	
 	private final int[] indexCounters = new int[10];
 	private final int totalObj;
+	private final int totalObjAndInt;
+	
 	public static boolean isAlreadyInSimulation =false;
 
 	//100000,100,500)
 	
-	public BaseLiner (int totalObj, int totalInt, int maxLevel,int maxLocalChanges){
+	public BaseLiner (int totalObj, int totalInt, int totalLong, int maxLevel,int maxLocalChanges){
 		this.totalObj = totalObj;
+		this.totalObjAndInt = totalObj+totalInt;
 		registry2 = totalObj;
-		
+		registry3 = totalObjAndInt ;
 		varStacks = new BLArrayStack[totalObj];
+		
 		for(int i=0;i<varStacks.length;i++) {
 			varStacks[i]= new BLArrayStack(this,maxLevel);
 		}
 		varStacksInt = new BLArrayStackInt[totalInt];
 		for(int i=0;i<varStacksInt.length;i++) {
 			varStacksInt[i]= new BLArrayStackInt(this,maxLevel);
+		}
+		varStacksLong = new BLArrayStackLong[totalLong];
+		for(int i=0;i<varStacksLong.length;i++) {
+			varStacksLong[i]= new BLArrayStackLong(this,maxLevel);
 		}
 		
 		touchedListPool = new ArrayStackInt[maxLevel];
@@ -54,7 +65,15 @@ public class BaseLiner {
 		//System.out.println("Grown to: "+registry2+" by:"+x);
 		return cur;
 	}
+	public int getCurrOffsetRegisterLong(int x) {
+		int cur = registry3;
+		registry3  +=x;
+		//System.out.println("Grown to: "+registry2+" by:"+x);
+		return cur;
+	}
 
+	
+	
 	public void startNextLevel() {
 		setOldTouchedList(touchedList);
 		touchedList = touchedListPool[++level].reset();		
@@ -70,8 +89,10 @@ public class BaseLiner {
 			int index = touchedList.remove();
 			if(index < totalObj) {
 				varStacks[index].remove();
-			}else {
+			}else if(index <totalObjAndInt){
 				varStacksInt[index-this.totalObj].remove();
+			}else {
+				varStacksLong[index-this.totalObjAndInt].remove();				
 			}
 		}
 		touchedList.reset();
@@ -85,6 +106,8 @@ public class BaseLiner {
 		}
 	}
 	
+	
+	
 	private ArrayStackInt getTouchedList() {
 		return (ArrayStackInt)varStacks[OBJ_TOUCHED_LIST].get();
 	}
@@ -94,29 +117,33 @@ public class BaseLiner {
 		varStacks[index].addAndTouched(value);
 	}
 	
-	Object getObj(int index) {
-		return varStacks[index].get();
-	}
 	BLArrayStack getVarStacksObj(int index) {
 		return varStacks[index];
-	}
+	}	
 	BLArrayStackInt getVarStacksInt(int index) {
 		return varStacksInt[index-totalObj];
 	}
-	
-	int getChanges(int index) {
-		return varStacks[index].stackSize();
+	BLArrayStackLong getVarStacksLong(int index) {
+		return varStacksLong[index-totalObjAndInt];
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
-	
-	int getInt(int index) {
-		return varStacksInt[index-totalObj].get();
-	}
-	
-	
-	int getChangesInt(int index) {
-		return varStacksInt[index-totalObj].stackSize();
-	}
 	
 	public int incrementIndexCounter(int indexCounterID) {
 		return indexCounters[indexCounterID]++;
@@ -132,44 +159,7 @@ public class BaseLiner {
 		touchedList.add(index);
 	}
 	
-	
-	
-	//@@TODO touching and untouching (idea untouch => untouch sensitive touchlist
-	void setObj(int index, Object value) {
-		if(varStacks[index].addAndTouched(value)) {
-			touchedList.add(index);
-		}
-	}
-
-	
-	void setInt(int index, int value) {
-		if(varStacksInt[index-totalObj].addAndTouched(value)) {
-			touchedList.add(index);
-		}
-	}
-	
-	void incrInt(int index) {
-		if(varStacksInt[index-totalObj].incrAndTouched()) {
-			touchedList.add(index);
-		}
-	}
-	
-	void decrInt(int index) {
-		if(varStacksInt[index-totalObj].decrAndTouched()) {
-			touchedList.add(index);
-		}
-	}
-	
-	void xorInt(int index,int value) {
-		if(varStacksInt[index-totalObj].xorAndTouched(value)) {
-			touchedList.add(index);
-		}
-	}
-	
-	void setIntTouchlessInt(int index, int value) {
-		varStacksInt[index-totalObj].addAndTouched(value);
-	}
-	
+		
 	
 }
 

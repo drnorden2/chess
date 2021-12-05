@@ -48,7 +48,7 @@ public class BLArray<T> {
 	}
 	
 	public static void main(String[] args) {
-		BaseLiner bl = new BaseLiner(50,50,20,20);
+		BaseLiner bl = new BaseLiner(50,50,50,20,20);
 		BLArray myIntArray= new BLArray(bl,20,20);
 		System.out.println(myIntArray);
 		bl.startNextLevel();
