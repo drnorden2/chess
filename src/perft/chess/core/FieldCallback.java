@@ -12,6 +12,7 @@ public class FieldCallback implements IndexedElement{
 	private final int elementIndex;
 	private final int color;
 	private final int moveIndex;
+	private final boolean isPromotion;
 	
 	private final int callbackType;
 	public final static int CALLBACK_TYPE_PUSH_RAY =0;
@@ -34,6 +35,7 @@ public class FieldCallback implements IndexedElement{
 		this.dirX = move.getDirX();
 		this.dirY= move.getDirY();
 		this.color = move.getColor();
+		this.isPromotion = move.isPromotion();
 		this.callbackType = move.getCallbackType();
 		if(callbackType==FieldCallback.CALLBACK_TYPE_ROCHADE_TEST) {
 			this.jj = -1;
@@ -48,6 +50,9 @@ public class FieldCallback implements IndexedElement{
 		this.elementIndex = move.getOldPos();
 	}
 
+	public boolean isPromotion() {
+		return isPromotion;
+	}
 	
 	public int getElementIndex() {
 		return elementIndex;

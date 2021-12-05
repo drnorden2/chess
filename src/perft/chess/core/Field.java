@@ -324,9 +324,18 @@ public class Field implements IndexedElement {
 						store();
 						return;
 					}
-				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_PAWN && color==notifiedPieceColor) {
-					optimizationCounter++;
-					return;
+				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_PAWN) {
+					if(color==notifiedPieceColor) {
+						optimizationCounter++;
+						return;					
+					}else {
+						if(!fieldCB.isPromotion()) {
+							load();
+							this.pseudoMoveSet.get().toggle(fieldCB.getMoveIndex());
+							store();
+							return;
+						}
+					}
 				}
 				break;
 			case NOTIFY_NOW_REPLACED:

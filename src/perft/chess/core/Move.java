@@ -41,7 +41,7 @@ public class Move implements IndexedElement{
 
 	
 	public static final int INDEX_Counter_ID =0;
-	
+	private final String notation;
 	private final int oldPos;
 	private final int newPos;
 	
@@ -80,7 +80,6 @@ public class Move implements IndexedElement{
 	
 	public Move(int color, int callbackType, int oldPos, int newPos, int moveType,int dirX, int dirY,int promotePieceType, int rookPos, int dirOfRochade) {
 		this.elementIndex=-1;
-		
 		this.ii =-1;
 		this.jj =-1;
 		this.fieldCB=null;
@@ -145,6 +144,8 @@ public class Move implements IndexedElement{
 		}
 		this.isKingSensing = (moveType==Move.MOVE_TYPE_KING_SENSING);
 		this.isRochade = this.dirOfRochade!=0;
+		this.notation = generateNotation();
+		
 	}
 	
 	
@@ -152,7 +153,7 @@ public class Move implements IndexedElement{
 		this.ii =-1;
 		this.jj =-1;
 		this.fieldCB=cb;
-		
+		this.notation = move.notation;
 		this.elementIndex=moveIndex;
 		this.oldPos = move.oldPos;
 		this.newPos = move.newPos;
@@ -213,19 +214,7 @@ public class Move implements IndexedElement{
 		return enPassantePawnPos;		
 	}
 	
-	public static int getRank(int pos) {
-		return (int)(pos/8);
-	}
-	public static int getFile(int pos) {
-		return (int)(pos%8);
-	}
-
-	
-	public static int getPos(int rank, int file) {
- 		int index = 8 * rank + file;
-		return index;
-	}
-	public int getPromotePieceType() {
+		public int getPromotePieceType() {
 		return promotePieceType;
 	}
 	public boolean isPromotion() {
@@ -256,6 +245,10 @@ public class Move implements IndexedElement{
 		return this.moveType==MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE ;
 	}
 	public String getNotation() {
+		return notation;
+	}
+	
+	private  String generateNotation () {
 		int r1 = Move.getRank(oldPos);
 		int f1 = Move.getFile(oldPos);
 		int r2 = Move.getRank(newPos);
@@ -294,5 +287,19 @@ public class Move implements IndexedElement{
 	public int getColor() {
 		return color;
 	}
+/*Static*/
 	
+	public static int getRank(int pos) {
+		return (int)(pos/8);
+	}
+	public static int getFile(int pos) {
+		return (int)(pos%8);
+	}
+
+	
+	public static int getPos(int rank, int file) {
+ 		int index = 8 * rank + file;
+		return index;
+	}
+
 }
