@@ -11,6 +11,7 @@ import perft.chess.core.o.O;
 public class MoveManager {
 	private static final Move[][][] moves= new Move[1280][][];
 	private static final Move[][] pseudoMoveSets = new Move[1280][];
+	private static final long [] moveMasks = new long[1280];
 	private final BaseLiner bl;
 	private final Position position;
 	public static final int[][] trackBack = new int[64][64]; 
@@ -156,6 +157,7 @@ public class MoveManager {
 		return this.pseudoMoveSets[index];
 	}
 
+	
 	private void generateMoves(Move[][] curMoves, int color, int[][]  dirs, int rayOffset,int file, int rank,int maxSteps,int moveType, int callbackType) {
 		for (int ray = 0; ray < dirs.length; ray++) {
 			int dirX = dirs[ray][0];
@@ -241,9 +243,10 @@ public class MoveManager {
 		
 		Move[][] finalMoves=new Move[rayCounter][];
 		int validRayCursor =0;
-		ArrayList <Move>list = new ArrayList<Move> ();
+		Move[] moveMap = new Move[64*5];
 		
 		
+		long moveMask = 0L;
 		
 		for (int i = 0; i < curMoves.length; i++) {// MoveRays
 			if(curMoves[i][0]==null) {
@@ -261,17 +264,28 @@ public class MoveManager {
 				System.out.println("We need to talk!");
 			}
 			Move[] moves =new Move[moveCounter];
+			int collision=0;
 			for(int j=0;j<moves.length;j++) {
-				FieldCallback cb = new FieldCallback(this.position.fields[curMoves[i][j].getOldPos()],curMoves[i][j],validRayCursor,j,list.size());
-				moves[j] = new Move(curMoves[i][j],cb,validRayCursor,j,list.size());
-				list.add(moves[j]);
+				Move oldMove = curMoves[i][j];
+				int oldPos =oldMove.getOldPos();
+				int newPos = oldMove.getNewPos();
+				FieldCallback cb = new FieldCallback(this.position.fields[oldPos],oldMove,validRayCursor,j,newPos);
+				moves[j] = new Move(oldMove,cb,validRayCursor,j,newPos);
+				moveMask |= 1L << newPos;
+				
+				if(moveMap[newPos+collision]==null) {
+					moveMap[newPos+collision] = moves[j];
+				}else {
+					moveMap[newPos+collision] = moves[j];
+					collision+=64;
+				}
+
 			}
 			finalMoves[validRayCursor++]=moves;
 		}
-		Move[] allElements = new Move[list.size()];
-		list.toArray(allElements);		
-		this.pseudoMoveSets[offset+index] = allElements;
-		MoveManager.moves[offset+index]=finalMoves;
+		this.pseudoMoveSets[offset+index] = moveMap;
+		this.moveMasks[offset+index]=moveMask;
+		this.moves[offset+index]=finalMoves;
 	}
 
 	private void generateTrackBack() {
