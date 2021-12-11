@@ -37,7 +37,7 @@ public class BitBoard {
 
 	}
 	public boolean get(int pos) {
-		return ((bits >> pos) & 1L)==1L;
+		return (int)((bits >> pos) & 1L)==1;
 	}
 
 	public void toggle(int pos) {
@@ -71,38 +71,6 @@ public class BitBoard {
 	}
 	
 
-	public static String toString(long bits) {
-		String out = "";
-		for(int i = 0; i < Long.numberOfLeadingZeros((long)bits); i++) {
-	      out+='0';
-		}
-		if(bits!=0) {
-			out +=(Long.toBinaryString((long)bits));
-		}
-		String retOut="";
-		for(int i=0;i<out.length();i++) {
-			if(out.charAt(i)=='1') {
-				retOut='x'+retOut;
-			}else{
-				retOut='.'+retOut;
-			}
-			if((i+1)%8==0) {
-				retOut="\n"+retOut;
-			}
-			
-		}
-		return retOut;
-	}
-	public static String toStringLine(long bits) {
-		String out = "";
-		for(int i = 0; i < Long.numberOfLeadingZeros((long)bits); i++) {
-	      out+='0';
-		}
-		if(bits!=0) {
-			out +=(Long.toBinaryString((long)bits));
-		}
-		return out;
-	}
 
 	
 	public String toString() {

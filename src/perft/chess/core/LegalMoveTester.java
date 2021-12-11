@@ -4,8 +4,7 @@ import perft.chess.core.baseliner.BLIndexedList;
 
 public class LegalMoveTester {
 	private final Position position;
-	//private final boolean[] rescueMap=new boolean[64];
-	private long rescueMap = 0L;
+	private final boolean[] rescueMap=new boolean[64];
 	private final Move[] pseudoMoves = new Move[64];
 	public LegalMoveTester(Position position) {
 		this.position=position;
@@ -26,6 +25,7 @@ public class LegalMoveTester {
 		if(kingAttacks==1) {
 			kingAttackerCB = kingAttackedBy(position.fields[kingPos],otherColor);
 			updateRescueMap(kingPos, kingAttackerCB.getElementIndex()); 
+		
 		}
 		
 		for(int i=0;i<allPiecesOfCurCol.size();i++) {
@@ -45,18 +45,19 @@ public class LegalMoveTester {
 				}
 			}
 		}
-		this.rescueMap=0L;
+		if(kingAttacks==1) {
+			updateRescueMap(kingPos, kingAttackerCB.getElementIndex()); 
+		}
 	}
 
 	
 	
 	public void updateRescueMap(int kingPos, int attackerPos) {
 		if(MoveManager.trackBack[kingPos][attackerPos]==attackerPos) {
-			this.rescueMap|= 1L << attackerPos;
-			
+			this.rescueMap[attackerPos]=!this.rescueMap[attackerPos];
 		}else {
 			do {
-				this.rescueMap|= 1L << attackerPos;
+				this.rescueMap[attackerPos]=!this.rescueMap[attackerPos];
 				attackerPos = MoveManager.trackBack[kingPos][attackerPos];
 			}while(kingPos!=attackerPos);
 		}
@@ -164,8 +165,7 @@ public class LegalMoveTester {
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
 				Move move = pseudoMoves[ii];
 				//enpassante case relevant!
-				if(((this.rescueMap >> move.getNewPos()) & 1L)==1L 
-						||(move.getNewPos()==enpassantePos && move.isEnpassanteMove() && attacker.getElementIndex()==move.getEnPassantePawnPos() )) {		
+				if(this.rescueMap[move.getNewPos()]||(move.getNewPos()==enpassantePos && move.isEnpassanteMove() && attacker.getElementIndex()==move.getEnPassantePawnPos() )) {		
 					if(!(move.getNewPos()==enpassantePos && move.isEnpassanteMove()  && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
 						// does the enpassante create a self check by discovery?
 						// eighter the pawn beaten pawn or the ray of both
@@ -295,15 +295,6 @@ public class LegalMoveTester {
 	}
 	
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	

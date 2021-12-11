@@ -1,9 +1,6 @@
 package perft.chess.core;
 
-import java.util.Arrays;
-
 import perft.chess.core.baseliner.*;
-import perft.chess.core.datastruct.BitBoard;
 import perft.chess.core.datastruct.IndexedElement;
 
 public class Field implements IndexedElement {
@@ -46,6 +43,7 @@ public class Field implements IndexedElement {
 		
 		this.position = position;
 		this.piece = new BLVariable<Piece>(this.bl, null);
+		//pseudoMoveSet = new BLVariable<BLIndexedListBB<Move>>(this.bl);
 		this.pseudoMovesBits= new BLVariableLong(bl,0L);
 		callBacks = new BLIndexedList<FieldCallback>(bl, 64, 64);
 	}
@@ -56,41 +54,12 @@ public class Field implements IndexedElement {
 		long copy = this.pseudoMovesBits.get();
 		if(copy!=0L) {
 			Move[] all = position.moveManager.getPseudoMoves(piece.get().getMoveIndex());
-/*
-			System.out.println("Moves:");
-			String out = "";
-			for(int i=all.length-1;i>=0;i--) {
-				if(all[i]==null) {
-					out = ('.')+out;
-				}else {
-					out = ('X')+out;					
-				}
-				if((i)%8==0)out='\n'+out;
-			}
-			
-			System.out.println(out+"\nSelection:");
-			System.out.println(BitBoard.toString(copy));	
-	*/
+				
 			int count = 0;
 			
 			while (copy != 0){
 				int idx = 63-Long.numberOfLeadingZeros(copy); 
-		/*
-				if(all[idx]==null) {
-					System.out.println("WTF for "+this+"\n"+BitBoard.toString(copy));
-					System.out.println("WTF for "+this+"\n"+BitBoard.toStringLine(copy));
-					new RuntimeException("WTF for "+this+"\n"+BitBoard.toString(copy));
-					 
-				}
-			*/
-			
-				
-				for(int j=0;j<256;j=j+64) {
-					moves[count++] = all[idx+j];
-					if(all[idx+j+64]==null) {
-						break;
-					}
-				}
+				moves[count++] = all[idx];
 				copy &= ~(1L << idx);
 			}
 			return count;
@@ -99,12 +68,12 @@ public class Field implements IndexedElement {
 		}
 	}
 	
-
+	
 	// Field reference to Piece and pos of piece
-	public void stagePiece(Piece pieceObj) {
-		this.piece.set(pieceObj);
-		pieceObj.setPosition(this.pos);
-	}
+		public void stagePiece(Piece pieceObj) {
+			this.piece.set(pieceObj);
+			pieceObj.setPosition(this.pos);
+		}
 
 	
 	
@@ -115,7 +84,7 @@ public class Field implements IndexedElement {
 		int movesIndex = pieceObj.getMoveIndex();
 		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
 		addRemovePseudoMoves(pieceObj,moves, -1,-1,true);
-		//this.pseudoMovesBits.set(0L);	
+		this.pseudoMovesBits.set(0L);	
 	}
 
 	
@@ -125,7 +94,6 @@ public class Field implements IndexedElement {
 		Piece piece = this.piece.get();
 		int movesIndex = piece.getMoveIndex();
 		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
-		this.pseudoMovesBits.set(0L);	
 		addRemovePseudoMoves(piece,moves, -1,-1,false);
 	}
 
@@ -134,6 +102,7 @@ public class Field implements IndexedElement {
 	
 	public void addRemovePseudoMoves(Piece piece, Move[][] moves, int ii, int jj, boolean onlyRemove) {
 		long pmBits = this.pseudoMovesBits.get();
+			
 		int color = piece.getColor();
 		int newPos;
 		int iiMax =moves.length;
@@ -180,9 +149,9 @@ public class Field implements IndexedElement {
 				
 				if(move.getMoveType()!=Move.MOVE_TYPE_KING_SENSING) {
 					if (!remove && isPseudoMove(piece, move)) {
-						pmBits |= 1L << newPos;//move.getElementIndex();//set;
+						pmBits |= 1L << move.getElementIndex();//set;
 					}else {
-						pmBits &= ~(1L << newPos);//move.getElementIndex());//unset
+						pmBits &= ~(1L << move.getElementIndex());//unset
 					}
 				}
 				
@@ -357,7 +326,6 @@ public class Field implements IndexedElement {
 						return;
 					}else {
 						//just flip the peudoMove
-						
 						this.pseudoMovesBits.toggleBit(fieldCB.getMoveIndex());
 						optimizationCounter++;
 						return;
@@ -369,7 +337,6 @@ public class Field implements IndexedElement {
 					}else {
 						if(!fieldCB.isPromotion()) {
 							this.pseudoMovesBits.toggleBit(fieldCB.getMoveIndex());
-							
 							optimizationCounter++;
 							return;
 						}
@@ -385,7 +352,6 @@ public class Field implements IndexedElement {
 					return;
 				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_RAY) {				
 					this.pseudoMovesBits.toggleBit(fieldCB.getMoveIndex());
-					
 					optimizationCounter++;
 					return;				
 				}
