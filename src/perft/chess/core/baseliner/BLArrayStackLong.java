@@ -32,8 +32,7 @@ public class BLArrayStackLong {
 
 	
 	public boolean toggleBitTouched(int bitIndex) {
-		long val = stack[head]^1L << bitIndex;
-		return addAndTouched(val);
+		return addAndTouched(stack[head]^1L << bitIndex);
 	}
 	
 	public boolean decrAndTouched() {

@@ -1,5 +1,7 @@
 package perft.chess.core.baseliner;
 
+import perft.chess.core.datastruct.BitBoard;
+
 public class BLVariableLong {
 		private final int bL_Index;
 		private BLArrayStackLong varStack;
