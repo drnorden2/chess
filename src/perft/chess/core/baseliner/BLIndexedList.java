@@ -10,17 +10,26 @@ public class BLIndexedList <T extends IndexedElement>{
 	private BLVariableInt counter; 
 	private BLArray<T> elements; 
 	private BLArrayInt position; 
-	
+	private BLVariableInt touched;
 	public BLIndexedList (BaseLiner bl, int maxAmount, int indexRange) {
 		this.bl = bl;
 		counter=new BLVariableInt(this.bl,0);
 		elements = new BLArray<T>(bl, maxAmount+1);
 		position = new BLArrayInt(bl, indexRange,-1);
+		touched =new BLVariableInt(this.bl,1);
 	}
 	
 
 	public int size(){
 		return counter.get();
+	}
+	
+	public void setUnTouched() {
+		this.touched.set(0);
+	}
+
+	public boolean isTouched() {
+		return this.touched.get()!=0;
 	}
 	
 	public boolean contains(T element){
@@ -39,6 +48,7 @@ public class BLIndexedList <T extends IndexedElement>{
 	}
 	
 	public boolean add(T element){
+		this.touched.set(1);
 		int elementIndex = element.getElementIndex();
 		if(position.get(elementIndex )!=-1) {
 			return false;
@@ -53,6 +63,7 @@ public class BLIndexedList <T extends IndexedElement>{
 	
 
 	public void removeAll() {
+		this.touched.set(1);
 		int elementCount = this.size();
 		for(int i =0;i<elementCount;i++) {
 			position.set(elements.get(i).getElementIndex(),-1);
@@ -71,7 +82,7 @@ public class BLIndexedList <T extends IndexedElement>{
 	}
 		
 	public boolean remove(T element) {
-	
+		this.touched.set(1);	
 		int elementIndex= element.getElementIndex();
 		int toDeletePosition = position.get(elementIndex);
 		if(toDeletePosition ==-1) {

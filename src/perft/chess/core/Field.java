@@ -15,7 +15,8 @@ public class Field implements IndexedElement {
 	
 	private final BLVariable<Piece> piece;
 	BLIndexedList<FieldCallback> callBacks;
-	private final BLVariableLong pseudoMovesBits;
+	final BLVariableLong pseudoMovesBits;
+	final BLVariableLong legalMovesBits;
 	
 	
 	
@@ -44,6 +45,7 @@ public class Field implements IndexedElement {
 		this.position = position;
 		this.piece = new BLVariable<Piece>(this.bl, null);
 		this.pseudoMovesBits= new BLVariableLong(bl,0L);
+		this.legalMovesBits= new BLVariableLong(bl,0L);
 		callBacks = new BLIndexedList<FieldCallback>(bl, 64, 64);
 	}
  
@@ -55,6 +57,29 @@ public class Field implements IndexedElement {
 			Move[] all = position.moveManager.getPseudoMoves(piece.get().getMoveIndex());
 
 			int count = 0;
+			
+			while (copy != 0){
+				int idx = 63-Long.numberOfLeadingZeros(copy); 
+				for(int j=0;j<256;j=j+64) {
+					moves[count++] = all[idx+j];
+					if(all[idx+j+64]==null) {
+						break;
+					}
+				}
+				copy &= ~(1L << idx);
+			}
+			return count;
+		}else {
+			return 0;
+		}
+	}
+	public int getLegalMoveList(Move[] moves) {
+		long copy = this.legalMovesBits.get();
+		if(copy!=0L) {
+			Move[] all = position.moveManager.getPseudoMoves(piece.get().getMoveIndex());
+
+			int count = 0;
+			
 			while (copy != 0){
 				int idx = 63-Long.numberOfLeadingZeros(copy); 
 				for(int j=0;j<256;j=j+64) {
@@ -154,8 +179,8 @@ public class Field implements IndexedElement {
 				}
 				
 				if (position.fields[newPos].getPiece() != null) {
-					/*WTF TODO think condition! scanning always does remove too*/
-					if((!scanning) ||iiMinusOne) {// this is a real add
+					/*WTF TODO think condition!*/
+					if((onlyRemove && scanning) ||iiMinusOne) {// this is a real add
 						break;
 					}
 					remove=true;

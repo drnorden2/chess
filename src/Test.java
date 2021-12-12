@@ -14,7 +14,6 @@ Perft(5) = 4865609 in 0.419626 sec
 Perft(6) = 119060324 in 10.080624 sec		   
 Perft(7) = 3195901860 in 277.148570 sec
 */
-import perft.chess.core.o.O;
 
 public class Test {
 	private static ChessGameFactory factory  = new ChessGameFactory();

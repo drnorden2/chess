@@ -4,9 +4,9 @@ import perft.chess.core.baseliner.BLIndexedList;
 
 public class LegalMoveTester {
 	private final Position position;
-	//private final boolean[] rescueMap=new boolean[64];
 	private long rescueMap = 0L;
-	private final Move[] pseudoMoves = new Move[64];
+	private final Move[] moves = new Move[64];
+
 	public LegalMoveTester(Position position) {
 		this.position=position;
 	}
@@ -32,15 +32,27 @@ public class LegalMoveTester {
 			Piece piece = allPiecesOfCurCol.getElement(i);	
 			int oldPos = piece.getPosition();
 			Field field = position.fields[oldPos];
-			int pseudoMoveCount =  field.getPseudoMoveList(pseudoMoves);
+			if(kingAttacks==1) {
+				if(!field.callBacks.isTouched()) {	
+					int legalMoveCount =  field.getLegalMoveList(moves);
+					for(int ii=0;ii<legalMoveCount;ii++) {
+						Move move = moves[ii];
+						position.addLegalMove(move);
+					}
+					continue;
+				}
+			}
+			
+			
+			int pseudoMoveCount =  field.getPseudoMoveList(moves);
 			if(pseudoMoveCount!=0) {
 				if(piece.getType()==Piece.PIECE_TYPE_KING) {
 					//private void handleKingPiece(Field oldKingField, int oldKingPos, int otherColor, int oldKingPosAttacks, int pseudoMoveCount,int level) {
-					this.handleKingPiece(field, oldPos, otherColor, kingAttacks,pseudoMoves,pseudoMoveCount);
+					this.handleKingPiece(field, oldPos, otherColor, kingAttacks,moves,pseudoMoveCount);
 				}else {
 					if(kingAttacks<2) {
 						//private void handleOtherPiece(Field field, Piece piece, int oldPos, int curColor, int otherColor, int kingPos, int kingAttacks, int level, int pseudoMoveCount) {
-						this.handleOtherPiece(field, piece, oldPos, curColor, otherColor, kingPos, kingAttacks,kingAttackerCB,pseudoMoves, pseudoMoveCount,enpassantePos);
+						this.handleOtherPiece(field, piece, oldPos, curColor, otherColor, kingPos, kingAttacks,kingAttackerCB,moves, pseudoMoveCount,enpassantePos);
 					}//otherwise there is no hope!
 				}
 			}
@@ -144,38 +156,27 @@ public class LegalMoveTester {
 	private void handleOtherPiece(Field field, Piece piece, int oldPos, int curColor, int otherColor, int kingPos, int kingAttacks, FieldCallback attacker, Move[] pseudoMoves, int pseudoMoveCount, int enpassantePos) {
 		FieldCallback oldPosRegToKing = field.getRegisteredCallbackForPos(kingPos);
 		FieldCallback pinner =null;
+		long lmBits = field.legalMovesBits.get();
 		
 		if(oldPosRegToKing!=null) {
 			pinner = this.piecePinnedBy(field,oldPosRegToKing, oldPos, otherColor, kingPos);
 		}
-		if(pinner==null && kingAttacks ==0) {
+		if(pinner==null ) {
 			//all but enpassante ok!
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
 				Move move = pseudoMoves[ii];
-				if(!(move.getNewPos()==enpassantePos && move.isEnpassanteMove() && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
+				int newPos = move.getNewPos();
+				if(!(newPos==enpassantePos && move.isEnpassanteMove() && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
 					// does the enpassante create a self check by discovery?
 					// eighter the pawn beaten pawn or the ray of both
-					position.addLegalMove(move);			
-				}
-			}
-		}else if(pinner==null && kingAttacks !=0) {
-			//check rescue moves
-				
-			for(int ii=0;ii<pseudoMoveCount ;ii++) {
-				Move move = pseudoMoves[ii];
-				//enpassante case relevant!
-				if(((this.rescueMap >> move.getNewPos()) & 1L)==1L 
-						||(move.getNewPos()==enpassantePos && move.isEnpassanteMove() && attacker.getElementIndex()==move.getEnPassantePawnPos() )) {		
-					if(!(move.getNewPos()==enpassantePos && move.isEnpassanteMove()  && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
-						// does the enpassante create a self check by discovery?
-						// eighter the pawn beaten pawn or the ray of both
-						// move has to finally block on rescue map!
+					if(kingAttacks ==0) {
 						position.addLegalMove(move);
 					}
+					lmBits |= 1L << newPos;//move.getElementIndex();//set;
+					continue;
 				}
+				lmBits &= ~(1L << newPos);//move.getElementIndex());//unset
 			}
-		}else if(pinner!=null && kingAttacks !=0) {
-			return;// no pinned move can prevent a check because it cannot be within XRAY!
 		}else {
 			// only remaining:
 			//if(pinner!=null && kingAttacks ==0) >> check slider Moves
@@ -189,7 +190,8 @@ public class LegalMoveTester {
 			
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
 				Move move = pseudoMoves[ii];
-				if(!(move.getNewPos()==enpassantePos && move.isEnpassanteMove() && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
+				int newPos = move.getNewPos();
+				if(!(newPos==enpassantePos && move.isEnpassanteMove() && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
 					// does the enpassante create a self check by discovery?
 					// eighter the pawn beaten pawn or the ray of both
 					// move has to finally still slide!
@@ -201,11 +203,40 @@ public class LegalMoveTester {
 					// this move is on the same axis as this threas!
 					if((Math.abs(xCB-xM ) + Math.abs(yCB-yM)==0)&&xyM ==0
 							||xyM == xyCV &&xyM !=0){
-						position.addLegalMove(move);		
+						if(kingAttacks ==0) {
+							position.addLegalMove(move);
+						}
+						lmBits |= 1L << newPos;//move.getElementIndex();//set;
+						continue;
 					}
+					lmBits &= ~(1L << newPos);//move.getElementIndex());//unset
 				}
+
 			}			
 		}
+		if(kingAttacks !=0) {
+			if(pinner==null ) {
+			//check rescue moves
+				for(int ii=0;ii<pseudoMoveCount ;ii++) {
+					Move move = pseudoMoves[ii];
+					//enpassante case relevant!
+					int newPos = move.getNewPos();
+					if(((this.rescueMap >> newPos) & 1L)==1L 
+							||(newPos==enpassantePos && move.isEnpassanteMove() && attacker.getElementIndex()==move.getEnPassantePawnPos() )) {		
+						if(!(newPos==enpassantePos && move.isEnpassanteMove()  && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
+							// does the enpassante create a self check by discovery?
+							// eighter the pawn beaten pawn or the ray of both
+							// move has to finally block on rescue map!
+							position.addLegalMove(move);
+							continue;
+						}
+					}				
+				}
+			}
+			//do nothing// no pinned move can prevent a check because it cannot be within XRAY!
+		}
+		field.callBacks.setUnTouched();
+		field.legalMovesBits.set(lmBits);
 	}
 
 	public boolean isEnpassanteDiscovery(Field oldPosField, FieldCallback oldPosRegToKing,int oldPos, int otherColor, int kingPos, Move move, int enpassantePos) {
@@ -330,9 +361,9 @@ public class LegalMoveTester {
 			Piece piece = allPiecesOfCurCol.getElement(i);
 			int oldPos = piece.getPosition();
 			Field field = position.fields[oldPos];
-		int pseudoMoveCount =  field.getPseudoMoveList(pseudoMoves);
+			int pseudoMoveCount =  field.getPseudoMoveList(moves);
 			for (int ii = 0; ii < pseudoMoveCount; ii++) {
-				Move move = pseudoMoves[ii];
+				Move move = moves[ii];
 				int newPos = move.getNewPos();
 				if(oldPos == kingPos && kingAttacks ==0){
 					if(move.getMoveType()!= Move.MOVE_TYPE_ROCHADE) {

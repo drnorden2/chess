@@ -24,7 +24,7 @@ public class Position {
  
 	
 	final int depth = 8;
-	public final BaseLiner bl = new BaseLiner(6000,5000,65,depth,1000);
+	public final BaseLiner bl = new BaseLiner(6000,5000,132,depth,1000);
 	final MoveManager moveManager;
 	int color=Piece.COLOR_WHITE;
     int movesPlayed = 0;
