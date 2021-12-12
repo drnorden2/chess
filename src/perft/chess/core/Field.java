@@ -15,11 +15,9 @@ public class Field implements IndexedElement {
 	
 	private final BLVariable<Piece> piece;
 	BLIndexedList<FieldCallback> callBacks;
-	final BLVariableLong pseudoMovesBits;
-	final BLVariableLong legalMovesBits;
+	//private final BLVariableLong pseudoMovesBits;
 	
-	
-	
+	final BLIndexedList<Move> pseudoMoves;
 	private final Position position;
 	public final static int NOTIFY_NOW_EMPTY =0;
 	public final static int NOTIFY_NOW_OCCUPIED =1;
@@ -44,20 +42,19 @@ public class Field implements IndexedElement {
 		
 		this.position = position;
 		this.piece = new BLVariable<Piece>(this.bl, null);
-		this.pseudoMovesBits= new BLVariableLong(bl,0L);
-		this.legalMovesBits= new BLVariableLong(bl,0L);
+		//this.pseudoMovesBits= new BLVariableLong(bl,0L);
+		pseudoMoves = new BLIndexedList<Move>(this.bl, 36, 36);// TBD reduce
 		callBacks = new BLIndexedList<FieldCallback>(bl, 64, 64);
 	}
  
 		
-	
+	/*
 	public int getPseudoMoveList(Move[] moves) {
 		long copy = this.pseudoMovesBits.get();
 		if(copy!=0L) {
 			Move[] all = position.moveManager.getPseudoMoves(piece.get().getMoveIndex());
 
 			int count = 0;
-			
 			while (copy != 0){
 				int idx = 63-Long.numberOfLeadingZeros(copy); 
 				for(int j=0;j<256;j=j+64) {
@@ -73,29 +70,7 @@ public class Field implements IndexedElement {
 			return 0;
 		}
 	}
-	public int getLegalMoveList(Move[] moves) {
-		long copy = this.legalMovesBits.get();
-		if(copy!=0L) {
-			Move[] all = position.moveManager.getPseudoMoves(piece.get().getMoveIndex());
-
-			int count = 0;
-			
-			while (copy != 0){
-				int idx = 63-Long.numberOfLeadingZeros(copy); 
-				for(int j=0;j<256;j=j+64) {
-					moves[count++] = all[idx+j];
-					if(all[idx+j+64]==null) {
-						break;
-					}
-				}
-				copy &= ~(1L << idx);
-			}
-			return count;
-		}else {
-			return 0;
-		}
-	}
-	
+	*/
 
 	// Field reference to Piece and pos of piece
 	public void stagePiece(Piece pieceObj) {
@@ -122,7 +97,8 @@ public class Field implements IndexedElement {
 		Piece piece = this.piece.get();
 		int movesIndex = piece.getMoveIndex();
 		Move[][] moves = position.moveManager.getRawMoves(movesIndex);
-		this.pseudoMovesBits.set(0L);	
+		//this.pseudoMovesBits.set(0L);	
+		pseudoMoves.removeAll();
 		addRemovePseudoMoves(piece,moves, -1,-1,false);
 	}
 
@@ -130,7 +106,7 @@ public class Field implements IndexedElement {
 	
 	
 	public void addRemovePseudoMoves(Piece piece, Move[][] moves, int ii, int jj, boolean onlyRemove) {
-		long pmBits = this.pseudoMovesBits.get();
+		//long pmBits = this.pseudoMovesBits.get();
 		int color = piece.getColor();
 		int newPos;
 		int iiMax =moves.length;
@@ -172,22 +148,24 @@ public class Field implements IndexedElement {
 				
 				if(move.getMoveType()!=Move.MOVE_TYPE_KING_SENSING) {
 					if (!remove && isPseudoMove(piece, move)) {
-						pmBits |= 1L << newPos;//move.getElementIndex();//set;
+						pseudoMoves.add(move);
+						//pmBits |= 1L << newPos;//move.getElementIndex();//set;
 					}else {
-						pmBits &= ~(1L << newPos);//move.getElementIndex());//unset
+						pseudoMoves.remove(move);
+						//pmBits &= ~(1L << newPos);//move.getElementIndex());//unset
 					}
 				}
 				
 				if (position.fields[newPos].getPiece() != null) {
-					/*WTF TODO think condition!*/
-					if((onlyRemove && scanning) ||iiMinusOne) {// this is a real add
+					/*WTF TODO think condition! scanning always does remove too*/
+					if((!scanning) ||iiMinusOne) {// this is a real add
 						break;
 					}
 					remove=true;
 				}
 			}
 		}
-		this.pseudoMovesBits.set(pmBits);
+		//this.pseudoMovesBits.set(pmBits);
 
 	}
 	private boolean isPseudoMove(Piece piece, Move move) {
@@ -348,9 +326,11 @@ public class Field implements IndexedElement {
 					}else {
 						//just flip the peudoMove
 						
-						this.pseudoMovesBits.toggleBit(fieldCB.getMoveIndex());
-						optimizationCounter++;
-						return;
+						//this.pseudoMovesBits.toggleBit(fieldCB.getMoveIndex());
+						//pseudoMoves.toggle(fieldCB.getMoveIndex());
+
+						//optimizationCounter++;
+						//return;
 					}
 				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_PAWN) {
 					if(color==notifiedPieceColor) {
@@ -358,10 +338,10 @@ public class Field implements IndexedElement {
 						return;					
 					}else {
 						if(!fieldCB.isPromotion()) {
-							this.pseudoMovesBits.toggleBit(fieldCB.getMoveIndex());
+							//this.pseudoMovesBits.toggleBit(fieldCB.getMoveIndex());
 							
-							optimizationCounter++;
-							return;
+							//optimizationCounter++;
+							//return;
 						}
 					}
 				}
@@ -374,10 +354,10 @@ public class Field implements IndexedElement {
 					optimizationCounter++;
 					return;
 				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_RAY) {				
-					this.pseudoMovesBits.toggleBit(fieldCB.getMoveIndex());
+					//this.pseudoMovesBits.toggleBit(fieldCB.getMoveIndex());
 					
-					optimizationCounter++;
-					return;				
+					//optimizationCounter++;
+					//return;				
 				}
 				break;
 				

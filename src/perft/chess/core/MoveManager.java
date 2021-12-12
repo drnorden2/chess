@@ -7,8 +7,8 @@ import perft.chess.core.o.O;
 
 public class MoveManager {
 	private static final Move[][][] moves= new Move[1280][][];
-	private static final Move[][] pseudoMoveSets = new Move[1280][];
-	private static final long [] moveMasks = new long[1280];
+//	private static final Move[][] pseudoMoveSets = new Move[1280][];
+//	private static final long [] moveMasks = new long[1280];
 
 	private final BaseLiner bl;
 	private final Position position;
@@ -151,9 +151,10 @@ public class MoveManager {
 	public Move[][] getRawMoves (int index) {
 		return this.moves[index];
 	}
+	/*
 	public Move[] getPseudoMoves (int index) {
 		return this.pseudoMoveSets[index];
-	}
+	}*/
 
 	
 	private void generateMoves(Move[][] curMoves, int color, int[][]  dirs, int rayOffset,int file, int rank,int maxSteps,int moveType, int callbackType) {
@@ -180,8 +181,7 @@ public class MoveManager {
 					if(cb == FieldCallback.CALLBACK_TYPE_BEAT_RAY && last) {
 						cb = FieldCallback.CALLBACK_TYPE_BEAT_ONE;
 					}
-					Move curMove = new Move(color,cb ,oldPos, newPos, moveType,dirX,dirY); ;
-					
+					Move curMove = new Move(color,cb ,oldPos, newPos, moveType,dirX,dirY); ;				
 					curMoves[ray+rayOffset][cursor++] = curMove;
 				} else {
 					break;
@@ -241,16 +241,17 @@ public class MoveManager {
 		
 		Move[][] finalMoves=new Move[rayCounter][];
 		int validRayCursor =0;
-		Move[] moveMap = new Move[64*5];
+		//Move[] moveMap = new Move[64*5];
 		
 		
-		long moveMask = 0L;
+		//long moveMask = 0L;
+		int moveIndex =0;
 		
 		for (int i = 0; i < curMoves.length; i++) {// MoveRays
 			if(curMoves[i][0]==null) {
 				continue;
 			}
-			int moveCounter =0;
+			int moveCounter=0;
 			for (int j = 0; j < curMoves[i].length; j++) {// MoveRays
 				if (curMoves[i][j] != null) {
 					moveCounter++;
@@ -265,10 +266,12 @@ public class MoveManager {
 			for(int j=0;j<moves.length;j++) {
 				Move oldMove = curMoves[i][j];
 				int oldPos =oldMove.getOldPos();
-				int newPos = oldMove.getNewPos();
-				FieldCallback cb = new FieldCallback(this.position.fields[oldPos],oldMove,validRayCursor,j,newPos);
-				moves[j] = new Move(oldMove,cb,validRayCursor,j,newPos);
-				moveMask |= 1L << newPos;
+				//int newPos = oldMove.getNewPos();
+				FieldCallback cb = new FieldCallback(this.position.fields[oldPos],oldMove,validRayCursor,j,moveIndex);
+				moves[j] = new Move(oldMove,cb,validRayCursor,j,moveIndex);
+				moveIndex++;
+				
+				/*moveMask |= 1L << newPos;
 				int collision=0;
 				while(true) {
 					if(moveMap[newPos+collision]==null) {
@@ -277,12 +280,12 @@ public class MoveManager {
 					}else {
 						collision+=64;
 					}
-				}
+				}*/
 			}
 			finalMoves[validRayCursor++]=moves;
 		}
-		this.pseudoMoveSets[offset+index] = moveMap;
-		this.moveMasks[offset+index]=moveMask;
+		//this.pseudoMoveSets[offset+index] = moveMap;
+		//this.moveMasks[offset+index]=moveMask;
 		this.moves[offset+index]=finalMoves;
 	}
 
