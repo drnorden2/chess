@@ -1,13 +1,7 @@
 import perft.Game;
-
-
 import perft.chess.ChessGameFactory;
-import perft.chess.core.Field;
 import perft.chess.core.o.O;
-// ideas
-// harmonize Legal checking w. resp. to Enpassante
-// introduce bitboards for Legal moves
-// 
+import perft.chess.mailbox.Field;
 
 
 public class Main {

@@ -1,4 +1,4 @@
-package perft.chess.core;
+package perft.chess.mailbox;
 
 import perft.chess.core.baseliner.BLVariable;
 import perft.chess.core.baseliner.BLVariableInt;

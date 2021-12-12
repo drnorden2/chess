@@ -1,6 +1,5 @@
-package perft.chess.core;
-import static perft.chess.core.Move.*;
-
+package perft.chess.mailbox;
+import static perft.chess.mailbox.Move.*;
 
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.o.O;

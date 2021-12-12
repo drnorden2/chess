@@ -1,15 +1,14 @@
 package perft.chess.fen;
-import perft.chess.core.*;
+import static perft.chess.mailbox.Move.*;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.*;
 
-import perft.chess.core.Position;
 import perft.chess.core.o.O;
-
-import static perft.chess.core.Move.*;
+import perft.chess.mailbox.*;
 
 
 public class Fen {

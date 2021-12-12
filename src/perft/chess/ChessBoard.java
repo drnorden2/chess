@@ -2,8 +2,8 @@ package perft.chess;
 
 
 import perft.Board;
-import perft.chess.core.Position;
 import perft.chess.fen.Fen;
+import perft.chess.mailbox.Position;
 
 public class ChessBoard extends Board{
 	private Position position;

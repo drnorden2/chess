@@ -1,10 +1,7 @@
 import java.util.HashMap;
 
 import perft.Game;
-
-
 import perft.chess.ChessGameFactory;
-import perft.chess.core.Position;
 /*
 Perft(1) = 20 in 0.001312 sec
 Perft(2) = 400 in 0.001263 sec
@@ -15,6 +12,7 @@ Perft(6) = 119060324 in 10.080624 sec
 Perft(7) = 3195901860 in 277.148570 sec
 */
 import perft.chess.core.o.O;
+import perft.chess.mailbox.Position;
 
 public class Test {
 	private static ChessGameFactory factory  = new ChessGameFactory();

@@ -1,4 +1,4 @@
-package perft.chess.core;
+package perft.chess.mailbox;
 
 
 
@@ -357,7 +357,10 @@ public class Position {
 	
 	public void checkGameState(int color){
 		int kingPos = this.getKingPos(color);
-		
+		if(kingPos ==-1) {
+			
+			return;
+		}
 		int otherColor = (color+1)%2;
 		isCheck[otherColor].set(this.GAME_STATE_NORMAL);		
 		if(attackTable[otherColor].get(kingPos)!=0) {
