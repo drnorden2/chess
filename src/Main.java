@@ -1,7 +1,7 @@
 import perft.Game;
 import perft.chess.ChessGameFactory;
 import perft.chess.core.o.O;
-import perft.chess.mailbox.Field;
+import perft.chess.perftmb.Field;
 
 
 public class Main {

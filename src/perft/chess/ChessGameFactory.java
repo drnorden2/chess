@@ -2,7 +2,7 @@ package perft.chess;
 
 import perft.*;
 import perft.Player.PlayerType;
-import perft.chess.mailbox.MBPosition;
+import perft.chess.perftmb.MBPosition;
 
 public class ChessGameFactory implements GameFactory {
 	@Override

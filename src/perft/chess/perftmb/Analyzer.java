@@ -1,4 +1,4 @@
-package perft.chess.mailbox;
+package perft.chess.perftmb;
 
 import perft.chess.core.o.O;
 import static perft.chess.Definitions.*;

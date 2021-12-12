@@ -12,7 +12,7 @@ Perft(6) = 119060324 in 10.080624 sec
 Perft(7) = 3195901860 in 277.148570 sec
 */
 import perft.chess.core.o.O;
-import perft.chess.mailbox.MBPosition;
+import perft.chess.perftmb.MBPosition;
 
 public class Test {
 	private static ChessGameFactory factory  = new ChessGameFactory();

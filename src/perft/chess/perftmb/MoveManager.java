@@ -1,8 +1,8 @@
-package perft.chess.mailbox;
-import perft.chess.mailbox.*;
-
+package perft.chess.perftmb;
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.o.O;
+import perft.chess.perftmb.*;
+
 import static perft.chess.Definitions.*;
 
 

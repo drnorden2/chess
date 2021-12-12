@@ -1,4 +1,4 @@
-package perft.chess.mailbox;
+package perft.chess.perftmb;
 
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.datastruct.IndexedElement;
