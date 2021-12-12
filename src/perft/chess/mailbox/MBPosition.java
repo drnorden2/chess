@@ -8,25 +8,26 @@ import perft.chess.core.baseliner.BLVariableInt;
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.baseliner.BLIndexedList;
 import perft.chess.core.o.O;
+
+import perft.chess.Position;
 import perft.chess.core.datastruct.ArrayStack;
+import static perft.chess.Definitions.*;
 
 
-public class Position {
+public class MBPosition implements Position{
 	private Analyzer analyzer;
 	public static int wtfIteration  =0;	
-	public static Position position;
+	public static MBPosition position;
 	public LegalMoveTester legalMoveTest;
 	
 	
-	public static final int GAME_STATE_NORMAL=0;
-	public static final int GAME_STATE_CHECK=1;
 	//private final Zobrist zobrist;
  
 	
 	final int depth = 8;
 	public final BaseLiner bl = new BaseLiner(10000,10000,65,depth,1000);
 	final MoveManager moveManager;
-	int color=Piece.COLOR_WHITE;
+	int color=COLOR_WHITE;
     int movesPlayed = 0;
 	public static int registerCount =0;
 	public static int unRegisterCount =0;
@@ -46,8 +47,8 @@ public class Position {
 
 	
 	
-	public Position() {
-		Position.position = this;
+	public MBPosition() {
+		MBPosition.position = this;
 		analyzer = new Analyzer(this);
 		this.legalMoveTest = new LegalMoveTester(position);
 		for(int i=0;i<fields.length;i++) {
@@ -56,16 +57,16 @@ public class Position {
 		
 		moveManager = new MoveManager(bl,this);
 		
-		allPieces[Piece.COLOR_BLACK] = new BLIndexedList<Piece>(bl, 16, 32);
-		allPieces[Piece.COLOR_WHITE] = new BLIndexedList<Piece>(bl, 16, 32);
+		allPieces[COLOR_BLACK] = new BLIndexedList<Piece>(bl, 16, 32);
+		allPieces[COLOR_WHITE] = new BLIndexedList<Piece>(bl, 16, 32);
 
-		attackTable[Piece.COLOR_BLACK] = new BLArrayInt(bl, 64, 0);
-		attackTable[Piece.COLOR_WHITE] = new BLArrayInt(bl, 64, 0);
+		attackTable[COLOR_BLACK] = new BLArrayInt(bl, 64, 0);
+		attackTable[COLOR_WHITE] = new BLArrayInt(bl, 64, 0);
 
 		
 		
-		isCheck[Piece.COLOR_BLACK] = new BLVariableInt(bl,this.GAME_STATE_NORMAL);
-		isCheck[Piece.COLOR_WHITE] = new BLVariableInt(bl,this.GAME_STATE_NORMAL);
+		isCheck[COLOR_BLACK] = new BLVariableInt(bl,GAME_STATE_NORMAL);
+		isCheck[COLOR_WHITE] = new BLVariableInt(bl,GAME_STATE_NORMAL);
 		//zobrist = new Zobrist(bl);
 		
 		for(int i=0;i<depth;i++) {
@@ -103,7 +104,7 @@ public class Position {
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < allPieces[i].size(); j++) {
 				Piece piece = allPieces[i].getElement(j);
-				if(piece.getType()==Piece.PIECE_TYPE_KING && i==Piece.COLOR_WHITE) {
+				if(piece.getType()==PIECE_TYPE_KING && i==COLOR_WHITE) {
 			//		O.UT("Adding the King should cause a pin: BEFORE:"+this);
 				}
 				if(piece.getPosition()==-1) {
@@ -111,7 +112,7 @@ public class Position {
 					
 					O.VER("Piece is gone!"+piece);
 				}
-				int moveIndex = piece.getPosition() +(Piece.PIECE_TYPE_ANY* 2 + i) * 64;
+				int moveIndex = piece.getPosition() +(PIECE_TYPE_ANY* 2 + i) * 64;
 				Move[][] moves = this.moveManager.getRawMoves(moveIndex);
 				this.moveBeforeBaseLine(moves[0][0]);
 			}
@@ -141,8 +142,9 @@ public class Position {
 		}
 	}
 	//by Fen(does not know BL
-	
-	public void initialAddToBoard(int color, int type, int pos, boolean isTouched) {
+
+	@Override
+	public void initialAddToBoard(int color, int type, int pos) {
 		Piece piece = new Piece(bl,this, type, color, true);
 		fields[pos].stagePiece(piece);
 		allPieces[piece.getColor()].add(piece);
@@ -156,13 +158,10 @@ public class Position {
 		this.color = color;
 	}
 	public void setUntouched(int rank, int file) {
-		fields[Move.getPos(rank,file)].getPiece().isUntouched();
+		fields[getPosForRankFile(rank,file)].getPiece().isUntouched();
 	}
 		
-	public int getColorAtTurn() {
-		return color;
-	}
-
+	
 	public void unSetMove(int index) {
 		allMovesLists.get(getLevel()).reset();; 
 		bl.undo();
@@ -279,7 +278,7 @@ public class Position {
 			if(oldEnpassantePos !=-1) {
 				//zobrist.HASH(oldEnpassantePos,null);		
 				enPassantePos.set(-1);
-				fields[oldEnpassantePos].notifyCallBacks(Field.NOTIFY_NOW_EMPTY_ENPASSANTE_FIELD,(color+1)%2,oldPos,false,-1);
+				fields[oldEnpassantePos].notifyCallBacks(NOTIFY_NOW_EMPTY_ENPASSANTE_FIELD,(color+1)%2,oldPos,false,-1);
 			}
 		}
 		
@@ -300,7 +299,7 @@ public class Position {
 			
 			Piece otherPiece = newField.getPiece();
 			boolean isKnight = false;
-			oldField.notifyCallBacks(Field.NOTIFY_NOW_EMPTY,this.color,newPos,isKnight,-1); 
+			oldField.notifyCallBacks(NOTIFY_NOW_EMPTY,this.color,newPos,isKnight,-1); 
 			
 			if(otherPiece!=null) {
 				//zobrist.HASH(newPos,otherPiece);
@@ -309,18 +308,18 @@ public class Position {
 			 	newField.unstagePiece(otherPiece);
 				finalTakeFromBoard(otherPiece);
 			 	
-			 	isKnight  = ((otherPiece.getType()==Piece.PIECE_TYPE_KNIGHT));
+			 	isKnight  = ((otherPiece.getType()==PIECE_TYPE_KNIGHT));
 
 			 	//flip type prior to setting it on field => for moveIndex!
 			} else {
-				if(piece.getType()==Piece.PIECE_TYPE_PAWN) {
+				if(piece.getType()==PIECE_TYPE_PAWN) {
 					if (move.isEnpassanteMove()&& move.getNewPos()==oldEnpassantePos){// other field is empty =>ergo enpassante
 						enPassanteField = fields[move.getEnPassantePawnPos()];				
 						otherPiece = enPassanteField.getPiece();
 						//zobrist.HASH(move.getEnPassantePawnPos(),otherPiece);
 						enPassanteField.unstagePiece(otherPiece);
 						finalTakeFromBoard(otherPiece);
-						enPassanteField.notifyCallBacks(Field.NOTIFY_NOW_EMPTY,otherPiece.getColor(),oldPos, false,-1);
+						enPassanteField.notifyCallBacks(NOTIFY_NOW_EMPTY,otherPiece.getColor(),oldPos, false,-1);
 						
 					}
 				}		
@@ -331,10 +330,10 @@ public class Position {
 			newField.stagePseudoMoves();
 			//zobrist.HASH(newPos,piece);
 			
-			newField.notifyCallBacks(replace?Field.NOTIFY_NOW_REPLACED:Field.NOTIFY_NOW_OCCUPIED,piece.getColor(),oldPos,false,-1); 
+			newField.notifyCallBacks(replace?NOTIFY_NOW_REPLACED:NOTIFY_NOW_OCCUPIED,piece.getColor(),oldPos,false,-1); 
 			
 			// Move rook to new position in rochade before reevaluation of King (new rook position will block one king move!
-			if(moveType==Move.MOVE_TYPE_ROCHADE) {
+			if(moveType==MOVE_TYPE_ROCHADE) {
 				this.moveBeforeBaseLine(move.getRookMove());
 			}
 		}
@@ -342,13 +341,13 @@ public class Position {
 		if(move.isTwoSquarePush()) {
 			enPassantePos.set(move.getEnPassanteSquare());
 			//zobrist.HASH(move.getEnPassanteSquare(),null);
-			fields[move.getEnPassanteSquare()].notifyCallBacks(Field.NOTIFY_NOW_OCCUPIED_ENPASSANTE_FIELD, piece.getColor(),oldPos,false,-1);
+			fields[move.getEnPassanteSquare()].notifyCallBacks(NOTIFY_NOW_OCCUPIED_ENPASSANTE_FIELD, piece.getColor(),oldPos,false,-1);
 		}
 	}
 
 	
 	private void checkPromotion(Move move, Piece piece) {
-		if(move.getMoveType()==Move.MOVE_TYPE_PAWN_BEAT_CONVERT||move.getMoveType()==Move.MOVE_TYPE_PAWN_PUSH_CONVERT) {
+		if(move.getMoveType()==MOVE_TYPE_PAWN_BEAT_CONVERT||move.getMoveType()==MOVE_TYPE_PAWN_PUSH_CONVERT) {
 			piece.setType(move.getPromotePieceType());
 		}
 				
@@ -362,11 +361,11 @@ public class Position {
 			return;
 		}
 		int otherColor = (color+1)%2;
-		isCheck[otherColor].set(this.GAME_STATE_NORMAL);		
+		isCheck[otherColor].set(GAME_STATE_NORMAL);		
 		if(attackTable[otherColor].get(kingPos)!=0) {
-			isCheck[color].set(this.GAME_STATE_CHECK);
+			isCheck[color].set(GAME_STATE_CHECK);
 		}else {
-			isCheck[color].set(this.GAME_STATE_NORMAL);			
+			isCheck[color].set(GAME_STATE_NORMAL);			
 		}
 	}
 		
@@ -391,7 +390,32 @@ public class Position {
 	int getLevel(){
 		return bl.getLevel()-1;
 	}
+
+	@Override
 	public String toString() {
 		return analyzer.toString();
+	}
+
+	@Override
+	public int getColorAtTurn() {
+		return color;
+	}
+
+	
+	@Override
+	public String getNotation(int index) {
+		return this.getMove(index).getNotation();
+	}
+
+
+	@Override
+	public void setEnPassantePos(int enpassantePos) {
+		this.enPassantePos.set(enpassantePos);
+	}
+
+	
+	@Override
+	public void checkLegalMoves() {
+		this.legalMoveTest.checkLegalMovesOpt();
 	}
 }

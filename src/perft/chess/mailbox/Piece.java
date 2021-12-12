@@ -5,21 +5,10 @@ import perft.chess.core.baseliner.BLVariableInt;
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.datastruct.IndexedElement;
 import perft.chess.core.o.O;
+import static perft.chess.Definitions.*;
 
 public class Piece implements IndexedElement{
-	public static final int PIECE_TYPE_PAWN = 0;
-	public static final int PIECE_TYPE_KNIGHT = 1;
-	public static final int PIECE_TYPE_BISHOP = 2;
-	public static final int PIECE_TYPE_ROOK = 3;
-	public static final int PIECE_TYPE_QUEEN = 4;
-	public static final int PIECE_TYPE_KING= 5;
-	public static final int PIECE_TYPE_ANY = 6;
-	public static final int PIECE_TYPE_PAWN_ENPASSANTE_OFFER= 7;
 
-	
-	
-	public static final int COLOR_BLACK= 0;
-	public static final int COLOR_WHITE= 1;
 	private final int elementIndex;
 	private final BaseLiner bl;
 	private final int color;
@@ -30,15 +19,15 @@ public class Piece implements IndexedElement{
 	 final BLVariableInt pos;
 	private final BLVariableInt moveIndex;
 	private final BLVariableInt type;
-	private final Position position;
+	private final MBPosition position;
 	
 	//private IndexedList<Move>allMoves ;
 	
-	public Piece(BaseLiner bl, Position position,int type, int color) {
+	public Piece(BaseLiner bl, MBPosition position,int type, int color) {
 		this(bl, position, type, color, false);
 	}
 
-	public Piece(BaseLiner bl, Position position, int type, int color, boolean touched) {
+	public Piece(BaseLiner bl, MBPosition position, int type, int color, boolean touched) {
 		elementIndex = bl.incrementIndexCounter(Piece.INDEX_Counter_ID);
 		this.bl = bl;
 		this.color = color;
@@ -46,7 +35,7 @@ public class Piece implements IndexedElement{
 		this.moveIndex= new BLVariableInt(bl);		
 		this.type = new BLVariableInt(bl,type);
 		this.position= position;
-		if(type == Piece.PIECE_TYPE_KING) {
+		if(type == PIECE_TYPE_KING) {
 			this.position.setKing(color,this);
 		}
 		this.isTouchedFromBeginning = touched;

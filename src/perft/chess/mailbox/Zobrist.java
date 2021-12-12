@@ -2,6 +2,8 @@ package perft.chess.mailbox;
 
 import perft.chess.core.baseliner.BLVariableInt;
 import perft.chess.core.baseliner.BaseLiner;
+import static perft.chess.Definitions.*;
+
 
 public class Zobrist {
 
@@ -23,7 +25,7 @@ public class Zobrist {
     
     public void HASH(int pos, Piece piece) {
     	if(isOff)return;
-		int type = Piece.PIECE_TYPE_PAWN_ENPASSANTE_OFFER;
+		int type = PIECE_TYPE_PAWN_ENPASSANTE_OFFER;
 		int touched =0;
 		int color=0;
 		if(piece!=null) {

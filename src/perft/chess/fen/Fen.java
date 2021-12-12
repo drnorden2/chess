@@ -1,5 +1,6 @@
 package perft.chess.fen;
-import static perft.chess.mailbox.Move.*;
+import static perft.chess.Definitions.*;
+
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -8,7 +9,7 @@ import java.net.URLConnection;
 import java.util.*;
 
 import perft.chess.core.o.O;
-import perft.chess.mailbox.*;
+import perft.chess.*;
 
 
 public class Fen {
@@ -22,9 +23,8 @@ public class Fen {
 	//private static String fen = "8/p6P/8/8/8/8/8/8 w KQkq - 0 1";
 	
 	
-	public Position getInitialPosition() {
-		Position pos = this.getCustomPosition(fen);		
-		return pos;
+	public void loadInitialPosition(Position position) {
+		this.loadCustomPosition(position,fen);		
 	}
 
 	public Fen() {
@@ -80,20 +80,19 @@ public class Fen {
 		return counter>=6;
 	}
 		
-	public Position getRandomPosition() {
+	public void loadRandomPosition(Position position) {
 		String fen = lib.get((int)(Math.random()*lib.size()));
 		System.out.println("Random Pick:"+fen);
-		return this.getCustomPosition(fen);
+		loadCustomPosition(position,fen);
 	}	
 	
 	
-	public Position getCustomPosition(String fen) {
+	public void loadCustomPosition(Position position,String fen) {
 		int[][] typeCounter = new int[2][6];
 		int[] typeOffset = new int[] {0,8,10,12,14,15};
-		Position position = new Position();
+		 
 		
 		int end = -1;
-		position.bl.isAlreadyInSimulation =true;
 		for (int i = 0; i < 8; i++) {
 			end = fen.indexOf("/");
 			if (end == -1) {
@@ -115,11 +114,11 @@ public class Fen {
 					int type = piece[0];
 					int color = piece[1];
 					typeCounter[color][type]++;
-					int pos = getIndex(file, rank);
+					int pos = getPosForRankFile (rank,file);
 					//System.out.println ("color:"+color+" type:" +type+" index:"+pos);
 					
-					position.initialAddToBoard(color, type, pos, false);
-					int  index = 64 * (Piece.PIECE_TYPE_ANY * 2 + color)+pos;
+					position.initialAddToBoard(color, type, pos);
+					int  index = 64 * (PIECE_TYPE_ANY * 2 + color)+pos;
 					//System.out.println(""+position.toString());
 					cursor++;
 				}
@@ -133,9 +132,9 @@ public class Fen {
 		fen = fen.substring(end + 1, fen.length()).trim();
 		//System.out.println(turn);
 		if("w".equalsIgnoreCase(turn)) {
-			position.setInitialTurn(Piece.COLOR_WHITE);
+			position.setInitialTurn(COLOR_WHITE);
 		}else {
-			position.setInitialTurn(Piece.COLOR_BLACK);
+			position.setInitialTurn(COLOR_BLACK);
 		}
 		
 		
@@ -181,76 +180,70 @@ public class Fen {
 		
 		if(!"-".equals(enpassant) ){
 			int file = enpassant.charAt(0)-'a';
-			int rank = Move._1 - (enpassant.charAt(1)-'1'); 
-			enpassantePos = Move.getPos(rank, file) ;
-			position.enPassantePos.set(enpassantePos);
+			int rank = _1 - (enpassant.charAt(1)-'1'); 
+			enpassantePos = getPosForRankFile(rank, file) ;
+			position.setEnPassantePos(enpassantePos);
 		}
-		position.bl.isAlreadyInSimulation =false;
 		
 		position.initialEval();
 		position.checkGameState(position.getColorAtTurn());
-		position.legalMoveTest.checkLegalMovesOpt();
-		return position;
+		position.checkLegalMoves();
 
 	}
 
-	private static int getIndex(int file, int rank) {
- 		int index = 8 * rank + file;
-		///System.out.println ("i "+file+" j"+rank+" "+index);
-		return index;
-	}
+	
 	public int[] pieceForChar(char c) {
 		int[] piece =new int[2];//type and color	
 		int TYPE=0;
 		int COLOR =1;
 		switch(c) {
 			case 'P':
-				piece[TYPE]= Piece.PIECE_TYPE_PAWN;
-				piece[COLOR]= Piece.COLOR_WHITE;
+				piece[TYPE]= PIECE_TYPE_PAWN;
+				piece[COLOR]= COLOR_WHITE;
 				break;
 			case 'N':
-				piece[TYPE]= Piece.PIECE_TYPE_KNIGHT;
-				piece[COLOR]= Piece.COLOR_WHITE;
+				piece[TYPE]= PIECE_TYPE_KNIGHT;
+				piece[COLOR]= COLOR_WHITE;
 				break;
 			case 'B':
-				piece[TYPE]= Piece.PIECE_TYPE_BISHOP;
-				piece[COLOR]= Piece.COLOR_WHITE;
+				piece[TYPE]= PIECE_TYPE_BISHOP;
+				piece[COLOR]= COLOR_WHITE;
 				break;
 			case 'R':
-				piece[TYPE]= Piece.PIECE_TYPE_ROOK;
-				piece[COLOR]= Piece.COLOR_WHITE;
+				piece[TYPE]= PIECE_TYPE_ROOK;
+				piece[COLOR]= COLOR_WHITE;
 			break;
 			case 'Q':
-				piece[TYPE]= Piece.PIECE_TYPE_QUEEN;
-				piece[COLOR]= Piece.COLOR_WHITE;
+				piece[TYPE]= PIECE_TYPE_QUEEN;
+				piece[COLOR]= COLOR_WHITE;
 			break;
 			case 'K':
-				piece[TYPE]= Piece.PIECE_TYPE_KING;
-				piece[COLOR]= Piece.COLOR_WHITE;
+				piece[TYPE]= PIECE_TYPE_KING;
+				piece[COLOR]= COLOR_WHITE;
 			break;
 			case 'p':
-				piece[TYPE]= Piece.PIECE_TYPE_PAWN;
-				piece[COLOR]= Piece.COLOR_BLACK;
+				piece[TYPE]= PIECE_TYPE_PAWN;
+				piece[COLOR]= COLOR_BLACK;
 				break;
 			case 'n':
-				piece[TYPE]= Piece.PIECE_TYPE_KNIGHT;
-				piece[COLOR]= Piece.COLOR_BLACK;
+				piece[TYPE]= PIECE_TYPE_KNIGHT;
+				piece[COLOR]= COLOR_BLACK;
 				break;
 			case 'b':
-				piece[TYPE]= Piece.PIECE_TYPE_BISHOP;
-				piece[COLOR]= Piece.COLOR_BLACK;
+				piece[TYPE]= PIECE_TYPE_BISHOP;
+				piece[COLOR]= COLOR_BLACK;
 				break;
 			case 'r':
-				piece[TYPE]= Piece.PIECE_TYPE_ROOK;
-				piece[COLOR]= Piece.COLOR_BLACK;
+				piece[TYPE]= PIECE_TYPE_ROOK;
+				piece[COLOR]= COLOR_BLACK;
 			break;
 			case 'q':
-				piece[TYPE]= Piece.PIECE_TYPE_QUEEN;
-				piece[COLOR]= Piece.COLOR_BLACK;
+				piece[TYPE]= PIECE_TYPE_QUEEN;
+				piece[COLOR]= COLOR_BLACK;
 			break;
 			case 'k':
-				piece[TYPE]= Piece.PIECE_TYPE_KING;
-				piece[COLOR]= Piece.COLOR_BLACK;
+				piece[TYPE]= PIECE_TYPE_KING;
+				piece[COLOR]=                                                                               COLOR_BLACK;
 			break;
 			
 		}

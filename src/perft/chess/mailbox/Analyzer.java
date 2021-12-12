@@ -1,10 +1,11 @@
 package perft.chess.mailbox;
 
 import perft.chess.core.o.O;
+import static perft.chess.Definitions.*;
 
 public class Analyzer {
-	private Position position;
-	public Analyzer (Position position) {
+	private MBPosition position;
+	public Analyzer (MBPosition position) {
 		this.position = position;
 	}
 
@@ -29,7 +30,7 @@ public class Analyzer {
 				snapshot[j]=(char)('0'+attack);
 			}
 		}
-		return this.snapshotToString(snapshot,"Attacks","Of Col:"+(color==Piece.COLOR_WHITE?"W":"B"));
+		return this.snapshotToString(snapshot,"Attacks","Of Col:"+(color==COLOR_WHITE?"W":"B"));
 	}
 
 	private String[] getEnPassanteToString() {
@@ -65,7 +66,7 @@ public class Analyzer {
 			}
 
 		}
-		return this.snapshotToString(snapshot,"Moves:"+(position.color==Piece.COLOR_WHITE?"W":"B"),"Size:"+count);
+		return this.snapshotToString(snapshot,"Moves:"+(position.color==COLOR_WHITE?"W":"B"),"Size:"+count);
 
 	}
 
@@ -93,7 +94,7 @@ public class Analyzer {
 			}
 
 		}
-		return this.snapshotToString(snapshot,"PMovs:"+(position.color==Piece.COLOR_WHITE?"W":"B"),"Size:"+count);
+		return this.snapshotToString(snapshot,"PMovs:"+(position.color==COLOR_WHITE?"W":"B"),"Size:"+count);
 
 	}
 
@@ -131,13 +132,13 @@ public class Analyzer {
 		System.out.println("EXPENSIVE");
 		Long.numberOfTrailingZeros(0L);
 		String[] board = this.getBoardToString();
-		String[] attackW = this.getAttackToString(Piece.COLOR_WHITE);
-		String[] attackB = this.getAttackToString(Piece.COLOR_BLACK);
+		String[] attackW = this.getAttackToString(COLOR_WHITE);
+		String[] attackB = this.getAttackToString(COLOR_BLACK);
 		String[] posA = this.getCallBackOfPosToString(45);//position.getKingPos(Piece.COLOR_WHITE));
-		String[] posB = this.getCallBackOfPosToString(position.getKingPos(Piece.COLOR_BLACK));
+		String[] posB = this.getCallBackOfPosToString(position.getKingPos(COLOR_BLACK));
 		String[] posC = this.getMovesToString();//this.getColorAtTurn());
-		String[] posD = this.getPseudoMovesToString(Piece.COLOR_WHITE);
-		String[] posE = this.getPseudoMovesToString(Piece.COLOR_BLACK);
+		String[] posD = this.getPseudoMovesToString(COLOR_WHITE);
+		String[] posE = this.getPseudoMovesToString(COLOR_BLACK);
 		String[] posF = this.getEnPassanteToString();
 		String[] posG = this.getUntouchedToString();
 		
@@ -173,7 +174,7 @@ public class Analyzer {
 		}
 		for(int file =0;file<8;file++) {
 			for (int rank =0;rank<8;rank++) {
-				char cur = snapshot[Move.getPos(rank, file)];
+				char cur = snapshot[getPosForRankFile(rank, file)];
 				if(cur!=0) {
 					charBoard[rank][file] = cur;
 				}
@@ -198,9 +199,9 @@ public class Analyzer {
 		String offBoardList  = getCharBoard(charBoard );
 
 		String isCheck = ("W:" 
-						+ (position.isCheck(Piece.COLOR_WHITE)?"+":" ")
+						+ (position.isCheck(COLOR_WHITE)?"+":" ")
 						+"  B:" 
-						+ (position.isCheck(Piece.COLOR_BLACK)?"+":" "));
+						+ (position.isCheck(COLOR_BLACK)?"+":" "));
 		return this.snapshotToString(charBoard,isCheck, offBoardList);
 	}
 	
@@ -223,27 +224,27 @@ public class Analyzer {
 			int type = piece.getType();
 			String typeStr = "";
 			switch (type) {
-			case Piece.PIECE_TYPE_PAWN:
-				typeStr = color == Piece.COLOR_BLACK ? "p" : "P";
+			case PIECE_TYPE_PAWN:
+				typeStr = color == COLOR_BLACK ? "p" : "P";
 				break;
-			case Piece.PIECE_TYPE_KNIGHT:
-				typeStr = color == Piece.COLOR_BLACK ? "n" : "N";
+			case PIECE_TYPE_KNIGHT:
+				typeStr = color == COLOR_BLACK ? "n" : "N";
 				break;
-			case Piece.PIECE_TYPE_BISHOP:
-				typeStr = color == Piece.COLOR_BLACK ? "b" : "B";
+			case PIECE_TYPE_BISHOP:
+				typeStr = color == COLOR_BLACK ? "b" : "B";
 				break;
-			case Piece.PIECE_TYPE_ROOK:
-				typeStr = color == Piece.COLOR_BLACK ? "r" : "R";
+			case PIECE_TYPE_ROOK:
+				typeStr = color == COLOR_BLACK ? "r" : "R";
 				break;
-			case Piece.PIECE_TYPE_QUEEN:
-				typeStr = color == Piece.COLOR_BLACK ? "q" : "Q";
+			case PIECE_TYPE_QUEEN:
+				typeStr = color == COLOR_BLACK ? "q" : "Q";
 				break;
-			case Piece.PIECE_TYPE_KING:
-				typeStr = color == Piece.COLOR_BLACK ? "k" : "K";
+			case PIECE_TYPE_KING:
+				typeStr = color == COLOR_BLACK ? "k" : "K";
 				break;
 
 			}
-			charBoard[Move.getPos(file,rank)] = typeStr.charAt(0);
+			charBoard[getPosForRankFile(file,rank)] = typeStr.charAt(0);
 				
 		}
 		return offBoardList;

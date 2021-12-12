@@ -4,6 +4,8 @@ package perft.chess.mailbox;
 import perft.chess.core.baseliner.*;
 import perft.chess.core.datastruct.IndexedElement;
 
+import static perft.chess.Definitions.*;
+
 public class Field implements IndexedElement {
 	
 	private final int pos;
@@ -18,27 +20,16 @@ public class Field implements IndexedElement {
 	//private final BLVariableLong pseudoMovesBits;
 	
 	final BLIndexedList<Move> pseudoMoves;
-	private final Position position;
-	public final static int NOTIFY_NOW_EMPTY =0;
-	public final static int NOTIFY_NOW_OCCUPIED =1;
-	public final static int NOTIFY_NOW_REPLACED =2;
-	public final static int NOTIFY_NOW_OCCUPIED_ENPASSANTE_FIELD =3;
-	public final static int NOTIFY_NOW_EMPTY_ENPASSANTE_FIELD =4;
-	
-	
-	public final static int MOVE_IS_POSSIBLE= 0;
-	public final static int MOVE_NOT_POSSIBLE=1;
-	public final static int MOVE_IS_PINNED=2;
-	public final static int MOVE_IS_UNCLEAR=3;
+	private final MBPosition position;
 	static int optimizationCounter=0;
 	FieldCallback[] fieldCBBuffer = new FieldCallback[64];
 		
 
-	public Field(BaseLiner bl, Position position, int pos) {
+	public Field(BaseLiner bl, MBPosition position, int pos) {
 		this.bl = bl;
 		this.pos = pos;
-		this.file = Move.getFile(pos);
-		this.rank= Move.getRank(pos);
+		this.file = getFileForPos(pos);
+		this.rank= getRankForPos(pos);
 		
 		this.position = position;
 		this.piece = new BLVariable<Piece>(this.bl, null);
@@ -129,14 +120,14 @@ public class Field implements IndexedElement {
 				if(move.isNoPromotionOrQueen()) {
 					if(!remove) {
 						if(position.fields[newPos].registerCallback(move.getFieldCB())) {
-							Position.registerCount++;
+							MBPosition.registerCount++;
 							if(move.isAttackerMove() ) {
 								position.attackTable[color].incr(newPos);
 							}
 						}
 					}else {
 						if(position.fields[newPos].unRegisterCallback(move.getFieldCB())) {
-							Position.unRegisterCount++;
+							MBPosition.unRegisterCount++;
 							if(move.isAttackerMove() ) {
 								position.attackTable[color].decr(newPos);
 							}
@@ -146,7 +137,7 @@ public class Field implements IndexedElement {
 					}
 				}
 				
-				if(move.getMoveType()!=Move.MOVE_TYPE_KING_SENSING) {
+				if(move.getMoveType()!=MOVE_TYPE_KING_SENSING) {
 					if (!remove && isPseudoMove(piece, move)) {
 						pseudoMoves.add(move);
 						//pmBits |= 1L << newPos;//move.getElementIndex();//set;
@@ -183,14 +174,14 @@ public class Field implements IndexedElement {
 		}
 		
 		switch (moveType) {
-		case Move.MOVE_TYPE_PUSH_BEAT:
+		case MOVE_TYPE_PUSH_BEAT:
 			isPossible = !isOtherPiece || isOtherPiece && !sameColor;
 			break;
-		case Move.MOVE_TYPE_PAWN_PUSH_CONVERT:
-		case Move.MOVE_TYPE_PAWN_PUSH:
+		case MOVE_TYPE_PAWN_PUSH_CONVERT:
+		case MOVE_TYPE_PAWN_PUSH:
 			isPossible = !isOtherPiece;
 			break;
-		case Move.MOVE_TYPE_ROCHADE:
+		case MOVE_TYPE_ROCHADE:
 			if (piece.isTouched()) { // king was touched
 				isPossible = false;
 			} else {
@@ -209,11 +200,11 @@ public class Field implements IndexedElement {
 				}
 			}
 			break;
-		case Move.MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE:
+		case MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE:
 			if (!isOtherPiece && position.enPassantePos.get() != -1 && position.enPassantePos.get() == newPos) {
-				int twoPushPawnPos = move.getPos(move.getRank(oldPos), move.getFile(newPos));
+				int twoPushPawnPos = getPosForRankFile(getRankForPos(oldPos), getFileForPos(newPos));
 				Piece pawnToRemove = position.fields[twoPushPawnPos].getPiece();
-				if(pawnToRemove !=null &&pawnToRemove.getType()==Piece.PIECE_TYPE_PAWN && pawnToRemove.getColor()!=piece.getColor()){
+				if(pawnToRemove !=null &&pawnToRemove.getType()==PIECE_TYPE_PAWN && pawnToRemove.getColor()!=piece.getColor()){
 					//Test if enpassante removal causes check by simulation!
 					break;
 				}else {
@@ -223,8 +214,8 @@ public class Field implements IndexedElement {
 				isPossible = isOtherPiece && !sameColor;
 			}
 			break;
-		case Move.MOVE_TYPE_PAWN_BEAT_CONVERT:
-		case Move.MOVE_TYPE_PAWN_BEAT:
+		case MOVE_TYPE_PAWN_BEAT_CONVERT:
+		case MOVE_TYPE_PAWN_BEAT:
 				isPossible = isOtherPiece && !sameColor;
 			break;
 		}

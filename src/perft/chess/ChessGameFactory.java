@@ -2,14 +2,15 @@ package perft.chess;
 
 import perft.*;
 import perft.Player.PlayerType;
+import perft.chess.mailbox.MBPosition;
 
 public class ChessGameFactory implements GameFactory {
 	@Override
 	public Board getInitialBoard() {
-		return new ChessBoard();
+		return new ChessBoard(new MBPosition());
 	}
 	public Board getSpecificBoard(String FEN) {
-		return new ChessBoard(FEN);
+		return new ChessBoard(new MBPosition(), FEN);
 	}
 	@Override
 	public BoardUI getBoardUI() {

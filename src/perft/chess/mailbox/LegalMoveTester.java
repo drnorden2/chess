@@ -1,12 +1,14 @@
 package perft.chess.mailbox;
 
 import perft.chess.core.baseliner.BLIndexedList;
+import static perft.chess.Definitions.*;
+
 
 public class LegalMoveTester {
-	private final Position position;
+	private final MBPosition position;
 	//private final boolean[] rescueMap=new boolean[64];
 	private long rescueMap = 0L;
-	public LegalMoveTester(Position position) {
+	public LegalMoveTester(MBPosition position) {
 		this.position=position;
 	}
 	
@@ -36,7 +38,7 @@ public class LegalMoveTester {
 			
 			if(pseudoMoveCount!=0) {
 				
-				if(piece.getType()==Piece.PIECE_TYPE_KING) {
+				if(piece.getType()==PIECE_TYPE_KING) {
 					//private void handleKingPiece(Field oldKingField, int oldKingPos, int otherColor, int oldKingPosAttacks, int pseudoMoveCount,int level) {
 					this.handleKingPiece(field, oldPos, otherColor, kingAttacks,pseudoMoveCount);
 				}else {
@@ -98,7 +100,7 @@ public class LegalMoveTester {
 				continue; // nothing can be done!
 			}else {
 				if(oldKingPosAttacks==0) {//no Check
-					if(move.getMoveType()== Move.MOVE_TYPE_ROCHADE) {
+					if(move.getMoveType()== MOVE_TYPE_ROCHADE) {
 						// no check and king target safe => only test the jump one!
 						if(position.attackTable[otherColor].get(oldKingPos+move.getDirOfRochade()) == 0){
 							position.addLegalMove(move);
@@ -109,7 +111,7 @@ public class LegalMoveTester {
 						continue;	
 					}
 				}else {//Check
-					if(move.getMoveType()== Move.MOVE_TYPE_ROCHADE) {
+					if(move.getMoveType()== MOVE_TYPE_ROCHADE) {
 						continue;
 					}
 					 
@@ -226,7 +228,7 @@ public class LegalMoveTester {
 	}
 
 	public boolean isEnpassanteDiscovery(Field oldPosField, FieldCallback oldPosRegToKing,int oldPos, int otherColor, int kingPos, Move move, int enpassantePos) {
-		if(Move.getRank(kingPos)==Move.getRank(oldPos)) {
+		if(getRankForPos(kingPos)==getRankForPos(oldPos)) {
 			 // is king on same rank als OldPos? => does other field have an attacker 
 			int proxyPos = oldPos;
 			if(oldPosRegToKing!=null) {
@@ -355,7 +357,7 @@ public class LegalMoveTester {
 				//Move move = pseudoMoves[ii];
 				int newPos = move.getNewPos();
 				if(oldPos == kingPos && kingAttacks ==0){
-					if(move.getMoveType()!= Move.MOVE_TYPE_ROCHADE) {
+					if(move.getMoveType()!= MOVE_TYPE_ROCHADE) {
 						if(position.attackTable[otherColor].get(move.getNewPos())==0){
 							position.addLegalMove(move);
 							continue;
@@ -379,7 +381,7 @@ public class LegalMoveTester {
 						}     
 					}
 				}else {
-					if(move.getMoveType()!= Move.MOVE_TYPE_ROCHADE &&!isMovePinnedOrNotPreventingCheckEXPENSIVE(move, curColor, enpassantePos!=-1 )) {
+					if(move.getMoveType()!= MOVE_TYPE_ROCHADE &&!isMovePinnedOrNotPreventingCheckEXPENSIVE(move, curColor, enpassantePos!=-1 )) {
 						position.addLegalMove(move);
 					}
 				}

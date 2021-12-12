@@ -3,18 +3,19 @@ package perft.chess;
 
 import perft.Board;
 import perft.chess.fen.Fen;
-import perft.chess.mailbox.Position;
+import perft.chess.Position;
 
 public class ChessBoard extends Board{
 	private Position position;
-	public ChessBoard() {
+	public ChessBoard(Position position) {
 		Fen fen = new Fen();
-		position = fen.getInitialPosition();
+		fen.loadInitialPosition(position);
 	}
 	
-	public ChessBoard(String fenStr) {
+	public ChessBoard(Position position,String fenStr) {
 		Fen fen = new Fen();
-		position = fen.getCustomPosition(fenStr);
+		this.position = position;
+		fen.loadCustomPosition(position,fenStr);
 	}
 	
 
@@ -47,7 +48,7 @@ public class ChessBoard extends Board{
 	
 	@Override
 	public String getMoveStr(int index) {
-		return position.getMove(index).getNotation();
+		return position.getNotation(index);
 	}
 	@Override
 	public int getHash() {
