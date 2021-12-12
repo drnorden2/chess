@@ -3,9 +3,9 @@ package perft.chess.perftmb;
 import perft.chess.core.o.O;
 import static perft.chess.Definitions.*;
 
-public class Analyzer {
-	private MBPosition position;
-	public Analyzer (MBPosition position) {
+public class MBAnalyzer {
+	private MailBoxPosition position;
+	public MBAnalyzer (MailBoxPosition position) {
 		this.position = position;
 	}
 

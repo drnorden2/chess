@@ -2,15 +2,18 @@ package perft.chess;
 
 import perft.*;
 import perft.Player.PlayerType;
-import perft.chess.perftmb.MBPosition;
+import perft.chess.perftbb.BitBoardPosition;
+import perft.chess.perftmb.MailBoxPosition;
+
 
 public class ChessGameFactory implements GameFactory {
+	private final static boolean bitBoard = true;
 	@Override
 	public Board getInitialBoard() {
-		return new ChessBoard(new MBPosition());
+		return new ChessBoard(bitBoard?new BitBoardPosition():new MailBoxPosition());
 	}
 	public Board getSpecificBoard(String FEN) {
-		return new ChessBoard(new MBPosition(), FEN);
+		return new ChessBoard(bitBoard?new BitBoardPosition():new MailBoxPosition(), FEN);
 	}
 	@Override
 	public BoardUI getBoardUI() {

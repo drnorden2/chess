@@ -5,10 +5,10 @@ import static perft.chess.Definitions.*;
 
 
 public class LegalMoveTester {
-	private final MBPosition position;
+	private final MailBoxPosition position;
 	//private final boolean[] rescueMap=new boolean[64];
 	private long rescueMap = 0L;
-	public LegalMoveTester(MBPosition position) {
+	public LegalMoveTester(MailBoxPosition position) {
 		this.position=position;
 	}
 	

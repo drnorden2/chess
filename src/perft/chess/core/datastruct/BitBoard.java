@@ -47,15 +47,15 @@ public class BitBoard {
 		return Long.bitCount(bits);
 	}
 	
-	public void updateIndices(int[] indices) {
-		indices[0] = 0;
+	public int updateIndices(int[] indices) {
 		long copy = this.bits;
-
+		int counter =0;
 		while (copy != 0){
 			int idx = 63-Long.numberOfLeadingZeros(copy); 
-			indices[++indices[0]] = idx;
+			indices[counter++] = idx;
 			copy &= ~(1L << idx);
 		}
+		return counter;
 	}
 
 	public int selectList(Object[] selection, Object[] all) {

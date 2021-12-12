@@ -12,14 +12,14 @@ public class MoveManager {
 //	private static final long [] moveMasks = new long[1280];
 
 	private final BaseLiner bl;
-	private final MBPosition position;
+	private final MailBoxPosition position;
 	public static final int[][] trackBack = new int[64][64]; 
 	public final static boolean[][] isPieceAttacker= new boolean[1280][64];
 	
 	final Field[] fields = new Field[64];
 
 
-	public MoveManager(BaseLiner bl, MBPosition position) {
+	public MoveManager(BaseLiner bl, MailBoxPosition position) {
 		this.bl = bl;
 		this.position = position;
 		setup();

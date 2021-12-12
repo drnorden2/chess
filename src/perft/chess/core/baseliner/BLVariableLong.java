@@ -30,6 +30,31 @@ public class BLVariableLong {
 				bl.touch(bL_Index);
 			}
 		}
+
+		public void setBit(int bitIndex) {
+			if(varStack.setBitTouched(bitIndex)){
+				bl.touch(bL_Index);
+			}
+		}
+		
+		public void setBitTouchless(int bitIndex) {
+			varStack.setBitTouched(bitIndex);
+		}
+
+		
+		public void unBit(int bitIndex) {
+			if(varStack.unsetBitTouched(bitIndex)){
+				bl.touch(bL_Index);
+			}
+		}
+		public boolean getBit(int bitIndex) {
+			return varStack.getBit(bitIndex);
+		}
+		
+		public int updateIndices(int[] indices) {
+			return varStack.updateIndices(indices);
+		}
+
 		
 		public long get() {
 			return varStack.get();

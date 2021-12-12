@@ -28,13 +28,41 @@ public class BLArrayStackLong {
 		long val = stack[head]+1L;
 		return addAndTouched(val);
 	}
-
-
 	
+	//get::((bits >> bitIndex) & 1L)==1L;
+	public boolean getBit(int bitIndex) {
+		return ((stack[head] >> bitIndex) & 1L)==1L;
+	}
+	
+	
+	public int updateIndices(int[] indices) {
+		long copy = stack[head];
+		int counter =0;
+		while (copy != 0){
+			int idx = 63-Long.numberOfLeadingZeros(copy); 
+			indices[counter++] = idx;
+			copy &= ~(1L << idx);
+		}
+		return counter;
+	}
+	
+	
+	//toggle::bits ^= 1L << bitIndex;
 	public boolean toggleBitTouched(int bitIndex) {
 		return addAndTouched(stack[head]^1L << bitIndex);
 	}
 	
+	//set::bits |= 1L << bitIndex;
+	public boolean setBitTouched(int bitIndex) {
+		return addAndTouched(stack[head]|1L << bitIndex);
+	}
+	
+	//unset::bits &= ~(1L << bitIndex);
+	public boolean unsetBitTouched(int bitIndex) {
+		return addAndTouched(stack[head]&~(1L << bitIndex));
+	}
+	
+		
 	public boolean decrAndTouched() {
 		long val = stack[head]-1L;
 		return addAndTouched(val);
