@@ -1,7 +1,6 @@
 package perft.chess.perftmb;
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.o.O;
-import perft.chess.perftmb.*;
 
 import static perft.chess.Definitions.*;
 
@@ -44,12 +43,12 @@ public class MoveManager {
 								//moves only starting from 2nd row
 								{
 									int moveType = MOVE_TYPE_PAWN_BEAT;
-									int callbackType = FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_PAWN;
+									int callbackType = CALLBACK_TYPE_BEAT_ONE_AS_PAWN;
 									
 									//special case enpassante indicated by Movetype
 									if((rank ==_5 && color ==COLOR_WHITE )||(rank == _4 && color ==COLOR_BLACK)) {
 										moveType = MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE;
-										callbackType = FieldCallback.CALLBACK_TYPE_OTHER;
+										callbackType = CALLBACK_TYPE_OTHER;
 									}
 									generateMoves(curMoves, color,new int[][]{{-1,colorSwitch},{1,colorSwitch}}, 0, file, rank,1, moveType,callbackType);
 								}
@@ -59,7 +58,7 @@ public class MoveManager {
 									steps =2;
 								}
 								
-								generateMoves(curMoves, color,new int[][]{{0,colorSwitch}}, 2, file, rank,steps,MOVE_TYPE_PAWN_PUSH,FieldCallback.CALLBACK_TYPE_PUSH_RAY);
+								generateMoves(curMoves, color,new int[][]{{0,colorSwitch}}, 2, file, rank,steps,MOVE_TYPE_PAWN_PUSH,CALLBACK_TYPE_PUSH_RAY);
 								//if right before finish line
 								if((rank ==_2 && color ==COLOR_BLACK)||(rank == _7 && color ==COLOR_WHITE )) {
 									for(int i=0;i<3;i++) {
@@ -68,10 +67,10 @@ public class MoveManager {
 									
 										if(i==2) {//Push
 											moveType=MOVE_TYPE_PAWN_PUSH_CONVERT;
-											callbackType= FieldCallback.CALLBACK_TYPE_PUSH_ONE;
+											callbackType= CALLBACK_TYPE_PUSH_ONE;
 										}else {//Beat
 											moveType=MOVE_TYPE_PAWN_BEAT_CONVERT;											
-											callbackType= FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_PAWN;
+											callbackType= CALLBACK_TYPE_BEAT_ONE_AS_PAWN;
 										}
 										if(curMoves[i][0]!=null) { // skip the sidewise beating 
 											Move oldMove = curMoves[i][0];
@@ -89,16 +88,16 @@ public class MoveManager {
 							break;
 						case PIECE_TYPE_BISHOP:
 							//O.UT("BISHOP "+color);
-							generateMoves(curMoves,color, new int[][]{{-1,-1},{-1,1},{1,-1},{1,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,FieldCallback.CALLBACK_TYPE_BEAT_RAY);
+							generateMoves(curMoves,color, new int[][]{{-1,-1},{-1,1},{1,-1},{1,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_RAY);
 							break;
 						case PIECE_TYPE_KNIGHT:
 							//O.UT("KNIGHT "+color);
-							generateMoves(curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 0, file, rank,1, MOVE_TYPE_PUSH_BEAT,FieldCallback.CALLBACK_TYPE_BEAT_ONE);
+							generateMoves(curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 0, file, rank,1, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_ONE);
 							break;
 						
 						case PIECE_TYPE_ROOK:
 							//O.UT("ROOK_T "+color);
-							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,FieldCallback.CALLBACK_TYPE_BEAT_RAY);
+							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_RAY);
 							break;
 							
 						
@@ -107,9 +106,9 @@ public class MoveManager {
 							//O.UT("KING_T "+color+"file "+file +" Rank:"+rank+" Offset:"+offset);
 							//generate the sensing moves to detect pinning
 
-							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_KING_SENSING,FieldCallback.CALLBACK_TYPE_KING_SENSING);
-							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,1, MOVE_TYPE_PUSH_BEAT,FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_KING);
-							generateMoves(curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 8, file, rank,1, MOVE_TYPE_KING_SENSING,FieldCallback.CALLBACK_TYPE_CHECK_KNIGHT_ATTACK);
+							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_KING_SENSING,CALLBACK_TYPE_KING_SENSING);
+							generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,1, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_ONE_AS_KING);
+							generateMoves(curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 8, file, rank,1, MOVE_TYPE_KING_SENSING,CALLBACK_TYPE_CHECK_KNIGHT_ATTACK);
 							
 							
 							// add the rochade as ray moves to 1 and 2 options on the E1/E8 position
@@ -119,11 +118,11 @@ public class MoveManager {
 									int oldPos = getPosForRankFile(rank,file);
 									int newPos = getPosForRankFile(rank,file+2*dir);
 									int rookPos = getPosForRankFile(rank,file+((i==0)?3:-4));
-									curMoves[i][1] = new Move(color,FieldCallback.CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
+									curMoves[i][1] = new Move(color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
 									int counter =2;
 									
 									for (int j = oldPos + dir*3; j != rookPos+dir; j = j + dir) {
-										curMoves[i][counter++] = new Move(color,FieldCallback.CALLBACK_TYPE_ROCHADE_TEST , oldPos,j, MOVE_TYPE_KING_SENSING,dir, 0);
+										curMoves[i][counter++] = new Move(color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,j, MOVE_TYPE_KING_SENSING,dir, 0);
 										//O.UT("added at "+i+","+(counter-1)+" "+curMoves[i+8][counter-1]);
 									}								
 								}
@@ -131,12 +130,12 @@ public class MoveManager {
 							break;
 						case PIECE_TYPE_QUEEN:
 							//O.UT("QUEEN "+color+"file "+file +" Rank:"+rank+" Offset:"+offset);
-							generateMoves(curMoves, color,new int[][]{{-1,0},{1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,FieldCallback.CALLBACK_TYPE_BEAT_RAY);
+							generateMoves(curMoves, color,new int[][]{{-1,0},{1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_RAY);
 							break;
 						
 						case PIECE_TYPE_ANY:
 							//public Move(BaseLiner bl,int callbackType, int oldPos, int newPos, int moveType) {
-							curMoves[0] = new Move[] {new Move(color,FieldCallback.CALLBACK_TYPE_OTHER , getPosForRankFile(rank,file),getPosForRankFile(rank,file), MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
+							curMoves[0] = new Move[] {new Move(color,CALLBACK_TYPE_OTHER , getPosForRankFile(rank,file),getPosForRankFile(rank,file), MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
 							break;
 						
 						}
@@ -179,8 +178,8 @@ public class MoveManager {
 					// last in a row works link one that cannot mask out others
 					// perft(6) w. feature: Opt:4196382 vs Opt:4000980
 					boolean last = (i+1==maxSteps ||!isInBounds(file + dirX * (i + 2), rank + dirY * (i + 2)));
-					if(cb == FieldCallback.CALLBACK_TYPE_BEAT_RAY && last) {
-						cb = FieldCallback.CALLBACK_TYPE_BEAT_ONE;
+					if(cb == CALLBACK_TYPE_BEAT_RAY && last) {
+						cb = CALLBACK_TYPE_BEAT_ONE;
 					}
 					Move curMove = new Move(color,cb ,oldPos, newPos, moveType,dirX,dirY); ;				
 					curMoves[ray+rayOffset][cursor++] = curMove;

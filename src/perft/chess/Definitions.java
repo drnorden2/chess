@@ -1,5 +1,7 @@
 package perft.chess;
 
+import perft.chess.core.datastruct.BitBoard;
+
 public class Definitions {
 	public static final int PIECE_TYPE_PAWN = 0;
 	public static final int PIECE_TYPE_KNIGHT = 1;
@@ -64,6 +66,65 @@ public class Definitions {
 			
 	public static final int GAME_STATE_NORMAL=0;
 	public static final int GAME_STATE_CHECK=1;
+	
+	public final static int CALLBACK_TYPE_PUSH_RAY =0;
+	public final static int CALLBACK_TYPE_PUSH_ONE =1;
+	public final static int CALLBACK_TYPE_KING_SENSING=2;
+	public final static int CALLBACK_TYPE_ROCHADE_TEST = 3;
+	public final static int CALLBACK_TYPE_CHECK_KNIGHT_ATTACK = 4;
+
+	public final static int CALLBACK_TYPE_BEAT_ONE =5;
+	public final static int CALLBACK_TYPE_BEAT_ONE_AS_PAWN=6;
+	public final static int CALLBACK_TYPE_OTHER = 7;
+	public final static int CALLBACK_TYPE_BEAT_RAY =8;	
+	public final static int CALLBACK_TYPE_BEAT_ONE_AS_KING = 9;
+	
+	
+	public final static long MASK_A_FILE = fileMask(_A);
+	public final static long MASK_B_FILE = fileMask(_B);
+	public final static long MASK_C_FILE = fileMask(_C);
+	public final static long MASK_D_FILE = fileMask(_D);
+	public final static long MASK_E_FILE = fileMask(_E);
+	public final static long MASK_F_FILE = fileMask(_F);
+	public final static long MASK_G_FILE = fileMask(_G);
+	public final static long MASK_H_FILE = fileMask(_H);
+	
+	
+	public final static long MASK_NOT_A_FILE = not(MASK_A_FILE);
+	public final static long MASK_NOT_B_FILE = not(MASK_B_FILE);
+	public final static long MASK_NOT_C_FILE = not(MASK_C_FILE);
+	public final static long MASK_NOT_D_FILE = not(MASK_D_FILE);
+	public final static long MASK_NOT_E_FILE = not(MASK_E_FILE);
+	public final static long MASK_NOT_F_FILE = not(MASK_F_FILE);
+	public final static long MASK_NOT_G_FILE = not(MASK_G_FILE);
+	public final static long MASK_NOT_H_FILE = not(MASK_H_FILE);
+	
+	
+	public final static long MASK_1_RANK = rankMask(_1);
+	public final static long MASK_2_RANK = rankMask(_2);
+	public final static long MASK_3_RANK = rankMask(_3);
+	public final static long MASK_4_RANK = rankMask(_4);
+	public final static long MASK_5_RANK = rankMask(_5);
+	public final static long MASK_6_RANK = rankMask(_6);
+	public final static long MASK_7_RANK = rankMask(_7);
+	public final static long MASK_8_RANK = rankMask(_8);
+	
+	public final static long MASK_NOT_1_RANK = not(MASK_1_RANK);
+	public final static long MASK_NOT_2_RANK = not(MASK_2_RANK);
+	public final static long MASK_NOT_3_RANK = not(MASK_3_RANK);
+	public final static long MASK_NOT_4_RANK = not(MASK_4_RANK);
+	public final static long MASK_NOT_5_RANK = not(MASK_5_RANK);
+	public final static long MASK_NOT_6_RANK = not(MASK_6_RANK);
+	public final static long MASK_NOT_7_RANK = not(MASK_7_RANK);
+	public final static long MASK_NOT_8_RANK = not(MASK_8_RANK);
+
+	public final static int DIR_UP_LEFT = 9;
+	public final static int DIR_UP_RIGHT = 7;
+	public final static int DIR_LEFT = 1;
+	public final static int DIR_UP = 8;
+
+	
+
 
 			
 /*Static*/
@@ -79,5 +140,30 @@ public class Definitions {
  		int index = 8 * rank + file;
 		return index;
 	}
-
+	
+	
+	
+	
+	private static long fileMask(int file) {
+		BitBoard bb= new BitBoard(0L);
+		for(int i=0;i<8;i++) {
+			bb.set(getPosForRankFile(i,file));
+		}
+		return bb.getBits();
+	}
+	
+	private static long rankMask(int rank) {
+		BitBoard bb= new BitBoard(0L);
+		for(int i=0;i<8;i++) {
+			bb.set(getPosForRankFile(rank,i));
+		}
+		return bb.getBits();
+	}
+		
+	private static long not(long mask) {
+		BitBoard bb= new BitBoard(mask);
+		bb.invert();
+		return bb.getBits();
+	}
+	
 }

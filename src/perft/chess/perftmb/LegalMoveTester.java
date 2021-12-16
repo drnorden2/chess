@@ -120,7 +120,7 @@ public class LegalMoveTester {
 					for(int i=0; i<oldKingField.getRegisteredCallbackCount();i++){
 						FieldCallback cb = oldKingField.getRegisteredCallback(i);
 						//@TODO CB Should know the color!
-						if(cb.getCallbackType() == FieldCallback.CALLBACK_TYPE_BEAT_RAY
+						if(cb.getCallbackType() == CALLBACK_TYPE_BEAT_RAY
 								&& cb.getColor()==otherColor) {
 							// if it is just one thread and you can beat one! there you go 
 							if(newKingPos == cb.getElementIndex()) {
@@ -238,7 +238,7 @@ public class LegalMoveTester {
 			Field proxyField = position.fields[proxyPos];
 			for(int i=0; i<proxyField.getRegisteredCallbackCount();i++){
 				FieldCallback cb = proxyField.getRegisteredCallback(i);
-				if(cb.getCallbackType() == FieldCallback.CALLBACK_TYPE_BEAT_RAY) {
+				if(cb.getCallbackType() == CALLBACK_TYPE_BEAT_RAY) {
 					if(cb.getColor()==otherColor) {
 						//in a straight line
 						if(cb.getDirX()!=0 &&cb.getDirY()==0) {
@@ -266,7 +266,7 @@ public class LegalMoveTester {
 	 * these are only the harmless non King non Enpassante moves with 1x check max
 	 */
 	public FieldCallback piecePinnedBy(Field oldPosField,FieldCallback oldPosRegToKing, int oldPos, int otherColor,int kingPos) {		
-		if(oldPosRegToKing.getCallbackType()==FieldCallback.CALLBACK_TYPE_CHECK_KNIGHT_ATTACK ) {
+		if(oldPosRegToKing.getCallbackType()==CALLBACK_TYPE_CHECK_KNIGHT_ATTACK ) {
 			return null;
 		}
 		
@@ -275,7 +275,7 @@ public class LegalMoveTester {
 		// the king is dependend  => now check if it is xrayed
 		for(int i=0; i<oldPosField.getRegisteredCallbackCount();i++){
 			FieldCallback cb = oldPosField.getRegisteredCallback(i);
-			if(cb.getCallbackType() == FieldCallback.CALLBACK_TYPE_BEAT_RAY) {
+			if(cb.getCallbackType() == CALLBACK_TYPE_BEAT_RAY) {
 				if(cb.getColor()==otherColor) {
 					//in a straight line
 					int attackerPos = cb.getElementIndex();
@@ -305,7 +305,7 @@ public class LegalMoveTester {
 			FieldCallback cb = kingField.getRegisteredCallback(i);
 			//no Knight handeling ==>these are the callbacks of the others
 			if(cb.getColor()==otherColor) {//this is the guy
-				if(cb.getCallbackType()>=FieldCallback.CALLBACK_TYPE_BEAT_ONE) {
+				if(cb.getCallbackType()>=CALLBACK_TYPE_BEAT_ONE) {
 					return cb;
 				}
 			}

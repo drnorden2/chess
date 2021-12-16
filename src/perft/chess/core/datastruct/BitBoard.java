@@ -28,6 +28,10 @@ public class BitBoard {
 		this.bits = bits;
 	}
 
+	public void invert() {
+		bits =~bits;
+	}
+
 	public void set(int pos) {
 		bits |= 1L << pos;
 	}

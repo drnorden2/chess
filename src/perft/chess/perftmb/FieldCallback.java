@@ -1,7 +1,7 @@
 package perft.chess.perftmb;
 
 import perft.chess.core.datastruct.IndexedElement;
-
+import static perft.chess.Definitions.*;
 public class FieldCallback implements IndexedElement{
 			
 	private final Field field;
@@ -15,17 +15,6 @@ public class FieldCallback implements IndexedElement{
 	private final boolean isPromotion;
 	
 	private final int callbackType;
-	public final static int CALLBACK_TYPE_PUSH_RAY =0;
-	public final static int CALLBACK_TYPE_PUSH_ONE =1;
-	public final static int CALLBACK_TYPE_KING_SENSING=2;
-	public final static int CALLBACK_TYPE_ROCHADE_TEST = 3;
-	public final static int CALLBACK_TYPE_CHECK_KNIGHT_ATTACK = 4;
-
-	public final static int CALLBACK_TYPE_BEAT_ONE =5;
-	public final static int CALLBACK_TYPE_BEAT_ONE_AS_PAWN=6;
-	public final static int CALLBACK_TYPE_OTHER = 7;
-	public final static int CALLBACK_TYPE_BEAT_RAY =8;	
-	public final static int CALLBACK_TYPE_BEAT_ONE_AS_KING = 9;
 	
 	
 	
@@ -37,7 +26,7 @@ public class FieldCallback implements IndexedElement{
 		this.color = move.getColor();
 		this.isPromotion = move.isPromotion();
 		this.callbackType = move.getCallbackType();
-		if(callbackType==FieldCallback.CALLBACK_TYPE_ROCHADE_TEST) {
+		if(callbackType==CALLBACK_TYPE_ROCHADE_TEST) {
 			this.jj = -1;
 		}else {
 			this.jj = jj;

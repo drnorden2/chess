@@ -4,9 +4,9 @@ import perft.chess.core.o.O;
 import static perft.chess.Definitions.*;
 
 public class BBAnalyzer {
-	private BitBoardPosition position;
+	private BBPosition position;
 
-	public BBAnalyzer (BitBoardPosition position) {
+	public BBAnalyzer (BBPosition position) {
 		this.position = position;
 	}
 

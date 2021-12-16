@@ -1,23 +1,19 @@
-package perft.chess.perftmb;
+package perft.chess.perftbb;
 
-import perft.chess.core.baseliner.BaseLiner;
-import perft.chess.core.datastruct.IndexedElement;
 
 import static perft.chess.Definitions.*;
 
 
-public class Move implements IndexedElement{
+public class Move {
 	
 
 	
-	public static final int INDEX_Counter_ID =0;
 	private final String notation;
 	private final int oldPos;
 	private final int newPos;
 	
 	private final int ii;
 	private final int jj;
-	private final FieldCallback fieldCB;
 	
 	private final int moveType;
 	private final int elementIndex;
@@ -52,7 +48,6 @@ public class Move implements IndexedElement{
 		this.elementIndex=-1;
 		this.ii =-1;
 		this.jj =-1;
-		this.fieldCB=null;
 		this.color = color;
 		this.oldPos= oldPos;
 		this.newPos = newPos;
@@ -119,10 +114,9 @@ public class Move implements IndexedElement{
 	}
 	
 	
-	public Move (Move move, FieldCallback cb,int ii, int jj, int moveIndex ) {
+	public Move (Move move, int ii, int jj, int moveIndex ) {
 		this.ii =-1;
 		this.jj =-1;
-		this.fieldCB=cb;
 		this.notation = move.notation;
 		this.elementIndex=moveIndex;
 		this.oldPos = move.oldPos;
@@ -251,9 +245,7 @@ public class Move implements IndexedElement{
 	public int getJJ() {
 		return jj;
 	}
-	public FieldCallback  getFieldCB() {
-		return fieldCB;
-	}
+	
 	public int getColor() {
 		return color;
 	}

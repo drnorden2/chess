@@ -284,7 +284,7 @@ public class Field implements IndexedElement {
 				continue;// the old and the new position do not have to notify each other again
 			}
 		
-			if(!isKnight && position.getKingPos(color)==this.getElementIndex() && cb.getCallbackType() == FieldCallback.CALLBACK_TYPE_CHECK_KNIGHT_ATTACK)  {
+			if(!isKnight && position.getKingPos(color)==this.getElementIndex() && cb.getCallbackType() == CALLBACK_TYPE_CHECK_KNIGHT_ATTACK)  {
 				continue;
 			}
 			
@@ -310,7 +310,7 @@ public class Field implements IndexedElement {
 			case NOTIFY_NOW_OCCUPIED:
 				//something of the other color went out of the way where we anyways always could beat
 				//callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_KING||
-				if((callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE) ) {
+				if((callbackType==CALLBACK_TYPE_BEAT_ONE) ) {
 					if(color!=notifiedPieceColor) {
 						optimizationCounter++;
 						return;
@@ -323,7 +323,7 @@ public class Field implements IndexedElement {
 						//optimizationCounter++;
 						//return;
 					}
-				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_ONE_AS_PAWN) {
+				}else if(callbackType==CALLBACK_TYPE_BEAT_ONE_AS_PAWN) {
 					if(color==notifiedPieceColor) {
 						optimizationCounter++;
 						return;					
@@ -339,12 +339,12 @@ public class Field implements IndexedElement {
 				break;
 			case NOTIFY_NOW_REPLACED:
 				//for pushers it does not matter if something remains blocking
-				if(callbackType==FieldCallback.CALLBACK_TYPE_PUSH_ONE ||
-					callbackType==FieldCallback.CALLBACK_TYPE_PUSH_RAY ||
-				    callbackType==FieldCallback.CALLBACK_TYPE_KING_SENSING ) {
+				if(callbackType==CALLBACK_TYPE_PUSH_ONE ||
+					callbackType==CALLBACK_TYPE_PUSH_RAY ||
+				    callbackType==CALLBACK_TYPE_KING_SENSING ) {
 					optimizationCounter++;
 					return;
-				}else if(callbackType==FieldCallback.CALLBACK_TYPE_BEAT_RAY) {				
+				}else if(callbackType==CALLBACK_TYPE_BEAT_RAY) {				
 					//this.pseudoMovesBits.toggleBit(fieldCB.getMoveIndex());
 					
 					//optimizationCounter++;
