@@ -1,7 +1,8 @@
 package perft.chess.perftmb;
 
-import perft.chess.core.datastruct.IndexedElement;
 import static perft.chess.Definitions.*;
+
+import perft.chess.core.datastruct.IndexedElement;
 public class FieldCallback implements IndexedElement{
 			
 	private final Field field;

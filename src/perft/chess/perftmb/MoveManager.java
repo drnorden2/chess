@@ -1,8 +1,8 @@
 package perft.chess.perftmb;
+import static perft.chess.Definitions.*;
+
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.o.O;
-
-import static perft.chess.Definitions.*;
 
 
 public class MoveManager {
@@ -50,7 +50,7 @@ public class MoveManager {
 										moveType = MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE;
 										callbackType = CALLBACK_TYPE_OTHER;
 									}
-									generateMoves(curMoves, color,new int[][]{{-1,colorSwitch},{1,colorSwitch}}, 0, file, rank,1, moveType,callbackType);
+									generateMoves(curMoves, color,new int[][]{{-1,colorSwitch*-1},{1,colorSwitch*-1}}, 0, file, rank,1, moveType,callbackType);
 								}
 								int steps =1;
 								//2 steps if 2nd row
@@ -58,7 +58,7 @@ public class MoveManager {
 									steps =2;
 								}
 								
-								generateMoves(curMoves, color,new int[][]{{0,colorSwitch}}, 2, file, rank,steps,MOVE_TYPE_PAWN_PUSH,CALLBACK_TYPE_PUSH_RAY);
+								generateMoves(curMoves, color,new int[][]{{0,colorSwitch*-1}}, 2, file, rank,steps,MOVE_TYPE_PAWN_PUSH,CALLBACK_TYPE_PUSH_RAY);
 								//if right before finish line
 								if((rank ==_2 && color ==COLOR_BLACK)||(rank == _7 && color ==COLOR_WHITE )) {
 									for(int i=0;i<3;i++) {
@@ -115,9 +115,9 @@ public class MoveManager {
 							if((rank ==_1 && file ==_E  && color ==COLOR_WHITE)||(rank == _8 && file ==_E && color ==COLOR_BLACK )) {
 								for(int i=0;i<2;i++) {
 									int dir = (i==0)?1:-1;
-									int oldPos = getPosForRankFile(rank,file);
-									int newPos = getPosForRankFile(rank,file+2*dir);
-									int rookPos = getPosForRankFile(rank,file+((i==0)?3:-4));
+									int oldPos = getPosForFileRank(file,rank);
+									int newPos = getPosForFileRank(file+2*dir,rank);
+									int rookPos = getPosForFileRank(file+((i==0)?3:-4),rank);
 									curMoves[i][1] = new Move(color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
 									int counter =2;
 									
@@ -135,11 +135,11 @@ public class MoveManager {
 						
 						case PIECE_TYPE_ANY:
 							//public Move(BaseLiner bl,int callbackType, int oldPos, int newPos, int moveType) {
-							curMoves[0] = new Move[] {new Move(color,CALLBACK_TYPE_OTHER , getPosForRankFile(rank,file),getPosForRankFile(rank,file), MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
+							curMoves[0] = new Move[] {new Move(color,CALLBACK_TYPE_OTHER , getPosForFileRank(file,rank),getPosForFileRank(file,rank), MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
 							break;
 						
 						}
-						addMoves(curMoves, offset, getPosForRankFile(rank, file),pieceType);
+						addMoves(curMoves, offset, getPosForFileRank(file, rank),pieceType);
 					}
 				}
 			}
@@ -161,7 +161,7 @@ public class MoveManager {
 		for (int ray = 0; ray < dirs.length; ray++) {
 			int dirX = dirs[ray][0];
 			int dirY = dirs[ray][1];
-			int oldPos = getPosForRankFile(rank,file);
+			int oldPos = getPosForFileRank(file,rank);
 			int cursor = 0;
 			
 			
@@ -172,7 +172,7 @@ public class MoveManager {
 					break;
 				}*/
 				if (isInBounds) {
-					int newPos = getPosForRankFile(rank + dirY * (i + 1),file + dirX * (i + 1));
+					int newPos = getPosForFileRank(file + dirX * (i + 1),rank + dirY * (i + 1));
 					int cb = callbackType;
 					
 					// last in a row works link one that cannot mask out others
@@ -306,7 +306,7 @@ public class MoveManager {
 				int yy = y2-dirY;
 				
 				if(Math.abs(dX)==Math.abs(dY)||dX==0||dY==0) {
-					trackBack[i][j]= getPosForRankFile(yy, xx);
+					trackBack[i][j]= getPosForFileRank(xx,yy);
 				}else {
 					trackBack[i][j]=j;
 				}			

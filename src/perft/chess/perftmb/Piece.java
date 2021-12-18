@@ -1,11 +1,12 @@
 package perft.chess.perftmb;
 
+import static perft.chess.Definitions.*;
+
 import perft.chess.core.baseliner.BLVariable;
 import perft.chess.core.baseliner.BLVariableInt;
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.datastruct.IndexedElement;
 import perft.chess.core.o.O;
-import static perft.chess.Definitions.*;
 
 public class Piece implements IndexedElement{
 

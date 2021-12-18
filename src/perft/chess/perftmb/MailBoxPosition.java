@@ -9,9 +9,10 @@ import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.baseliner.BLIndexedList;
 import perft.chess.core.o.O;
 
+import static perft.chess.Definitions.*;
+
 import perft.chess.Position;
 import perft.chess.core.datastruct.ArrayStack;
-import static perft.chess.Definitions.*;
 
 
 public class MailBoxPosition implements Position{
@@ -158,7 +159,7 @@ public class MailBoxPosition implements Position{
 		this.color = color;
 	}
 	public void setUntouched(int rank, int file) {
-		fields[getPosForRankFile(rank,file)].getPiece().isUntouched();
+		fields[getPosForFileRank(file,rank)].getPiece().isUntouched();
 	}
 		
 	

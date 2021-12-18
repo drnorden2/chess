@@ -1,7 +1,8 @@
 package perft.chess.perftbb;
+import static perft.chess.Definitions.*;
+
 import perft.chess.core.baseliner.BLVariableLong;
 import perft.chess.core.o.O;
-import static perft.chess.Definitions.*;
 
 public class BBAnalyzer {
 	private BBPosition position;
@@ -178,7 +179,7 @@ public class BBAnalyzer {
 		}
 		for(int file =0;file<8;file++) {
 			for (int rank =0;rank<8;rank++) {
-				char cur = snapshot[getPosForRankFile(rank, file)];
+				char cur = snapshot[getPosForFileRank(file,rank)];
 				if(cur!=0) {
 					charBoard[rank][file] = cur;
 				}

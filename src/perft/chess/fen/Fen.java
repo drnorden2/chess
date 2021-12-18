@@ -1,7 +1,6 @@
 package perft.chess.fen;
 import static perft.chess.Definitions.*;
 
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -109,12 +108,12 @@ public class Fen {
 					//System.out.println("Cursor"+cursor);
 				}else {
 					int file = cursor;
-					int rank = i;
+					int rank = 7-i;
 					int[] piece = pieceForChar(c);
 					int type = piece[0];
 					int color = piece[1];
 					typeCounter[color][type]++;
-					int pos = getPosForRankFile (rank,file);
+					int pos = getPosForFileRank(file,rank);
 					//System.out.println ("color:"+color+" type:" +type+" index:"+pos);
 					
 					position.initialAddToBoard(color, type, pos);
@@ -180,8 +179,8 @@ public class Fen {
 		
 		if(!"-".equals(enpassant) ){
 			int file = enpassant.charAt(0)-'a';
-			int rank = _1 - (enpassant.charAt(1)-'1'); 
-			enpassantePos = getPosForRankFile(rank, file) ;
+			int rank = 7 - (enpassant.charAt(1)-'1'); 
+			enpassantePos = getPosForFileRank(file,rank) ;
 			position.setEnPassantePos(enpassantePos);
 		}
 		

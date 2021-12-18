@@ -102,9 +102,9 @@ public class BBMoveManager {
 								if((rank ==_1 && file ==_E  && color ==COLOR_WHITE)||(rank == _8 && file ==_E && color ==COLOR_BLACK )) {
 									for(int i=0;i<2;i++) {
 										int dir = (i==0)?1:-1;
-										int oldPos = getPosForRankFile(rank,file);
-										int newPos = getPosForRankFile(rank,file+2*dir);
-										int rookPos = getPosForRankFile(rank,file+((i==0)?3:-4));
+										int oldPos = getPosForFileRank(file,rank);
+										int newPos = getPosForFileRank(file+2*dir,rank);
+										int rookPos = getPosForFileRank(file+((i==0)?3:-4),rank);
 										curMoves[i][1] = new Move(color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
 										int counter =2;
 										
@@ -122,12 +122,12 @@ public class BBMoveManager {
 							
 							case PIECE_TYPE_ANY:
 								//public Move(BaseLiner bl,int callbackType, int oldPos, int newPos, int moveType) {
-								curMoves[0] = new Move[] {new Move(color,CALLBACK_TYPE_OTHER , getPosForRankFile(rank,file),getPosForRankFile(rank,file), MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
+								curMoves[0] = new Move[] {new Move(color,CALLBACK_TYPE_OTHER , getPosForFileRank(file,rank),getPosForFileRank(file,rank), MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
 								break;
 							
 							}
 							//addMoves(curMoves, offset, getPosForRankFile(rank, file),pieceType);
-							this.addMoveMask(curMoves, pieceType,offset, getPosForRankFile(rank, file));
+							this.addMoveMask(curMoves, pieceType,offset, getPosForFileRank(file,rank));
 						}
 					}
 				}
@@ -143,7 +143,7 @@ public class BBMoveManager {
 			for (int ray = 0; ray < dirs.length; ray++) {
 				int dirX = dirs[ray][0];
 				int dirY = dirs[ray][1];
-				int oldPos = getPosForRankFile(rank,file);
+				int oldPos = getPosForFileRank(file,rank);
 				int cursor = 0;
 				
 				
@@ -154,7 +154,7 @@ public class BBMoveManager {
 						break;
 					}*/
 					if (isInBounds) {
-						int newPos = getPosForRankFile(rank + dirY * (i + 1),file + dirX * (i + 1));
+						int newPos = getPosForFileRank(file + dirX * (i + 1),rank + dirY * (i + 1));
 						int cb = callbackType;
 						
 						// last in a row works link one that cannot mask out others

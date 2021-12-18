@@ -1,8 +1,9 @@
 package perft.chess.perftmb;
 
+import static perft.chess.Definitions.*;
+
 import perft.chess.core.baseliner.BLVariableInt;
 import perft.chess.core.baseliner.BaseLiner;
-import static perft.chess.Definitions.*;
 
 
 public class Zobrist {

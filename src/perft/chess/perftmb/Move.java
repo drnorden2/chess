@@ -1,9 +1,9 @@
 package perft.chess.perftmb;
 
+import static perft.chess.Definitions.*;
+
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.datastruct.IndexedElement;
-
-import static perft.chess.Definitions.*;
 
 
 public class Move implements IndexedElement{
@@ -71,12 +71,12 @@ public class Move implements IndexedElement{
 		if(moveType ==MOVE_TYPE_PAWN_PUSH) {
 			if(getRankForPos(oldPos)==_2 &&  getRankForPos(newPos)==_4) {
 				isTwoSquarePush = true;
-				enPassanteSquare = getPosForRankFile(_3, getFileForPos(newPos));
-				enPassantePawnPos = getPosForRankFile(_4, getFileForPos(newPos));
+				enPassanteSquare = getPosForFileRank(getFileForPos(newPos),_3);
+				enPassantePawnPos = getPosForFileRank(getFileForPos(newPos),_4);
 			}else if(getRankForPos(oldPos)==_7 &&  getRankForPos(newPos)==_5) {
 				isTwoSquarePush = true;
-				enPassanteSquare = getPosForRankFile(_6, getFileForPos(newPos));
-				enPassantePawnPos = getPosForRankFile(_5, getFileForPos(newPos));
+				enPassanteSquare = getPosForFileRank(getFileForPos(newPos),_6);
+				enPassantePawnPos = getPosForFileRank(getFileForPos(newPos),_5);
 			}else {
 				isTwoSquarePush = false;
 				enPassanteSquare = -1;
@@ -85,12 +85,12 @@ public class Move implements IndexedElement{
 		}else if(moveType ==MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE) {
 			if(getRankForPos(oldPos)==_5 &&  getRankForPos(newPos)==_6) {
 				isTwoSquarePush = false;
-				enPassanteSquare = getPosForRankFile(_6, getFileForPos(newPos));
-				enPassantePawnPos = getPosForRankFile(_5, getFileForPos(newPos));
+				enPassanteSquare = getPosForFileRank(getFileForPos(newPos),_6);
+				enPassantePawnPos = getPosForFileRank( getFileForPos(newPos),_5);
 			}else if(getRankForPos(oldPos)==_4 &&  getRankForPos(newPos)==_3) {
 				isTwoSquarePush = false;
-				enPassanteSquare = getPosForRankFile(_3, getFileForPos(newPos));
-				enPassantePawnPos = getPosForRankFile(_4, getFileForPos(newPos));
+				enPassanteSquare = getPosForFileRank(getFileForPos(newPos),_3);
+				enPassantePawnPos = getPosForFileRank(getFileForPos(newPos),_4 );
 			}else {
 				isTwoSquarePush = false;
 				enPassanteSquare = -1;

@@ -1,10 +1,10 @@
 package perft.chess.perftmb;
 
 
+import static perft.chess.Definitions.*;
+
 import perft.chess.core.baseliner.*;
 import perft.chess.core.datastruct.IndexedElement;
-
-import static perft.chess.Definitions.*;
 
 public class Field implements IndexedElement {
 	
@@ -202,7 +202,7 @@ public class Field implements IndexedElement {
 			break;
 		case MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE:
 			if (!isOtherPiece && position.enPassantePos.get() != -1 && position.enPassantePos.get() == newPos) {
-				int twoPushPawnPos = getPosForRankFile(getRankForPos(oldPos), getFileForPos(newPos));
+				int twoPushPawnPos = getPosForFileRank(getFileForPos(newPos),getRankForPos(oldPos));
 				Piece pawnToRemove = position.fields[twoPushPawnPos].getPiece();
 				if(pawnToRemove !=null &&pawnToRemove.getType()==PIECE_TYPE_PAWN && pawnToRemove.getColor()!=piece.getColor()){
 					//Test if enpassante removal causes check by simulation!

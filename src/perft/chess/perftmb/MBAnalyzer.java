@@ -1,7 +1,8 @@
 package perft.chess.perftmb;
 
-import perft.chess.core.o.O;
 import static perft.chess.Definitions.*;
+
+import perft.chess.core.o.O;
 
 public class MBAnalyzer {
 	private MailBoxPosition position;
@@ -174,7 +175,7 @@ public class MBAnalyzer {
 		}
 		for(int file =0;file<8;file++) {
 			for (int rank =0;rank<8;rank++) {
-				char cur = snapshot[getPosForRankFile(rank, file)];
+				char cur = snapshot[getPosForFileRank(file,rank)];
 				if(cur!=0) {
 					charBoard[rank][file] = cur;
 				}
@@ -244,7 +245,7 @@ public class MBAnalyzer {
 				break;
 
 			}
-			charBoard[getPosForRankFile(file,rank)] = typeStr.charAt(0);
+			charBoard[getPosForFileRank(file,rank)] = typeStr.charAt(0);
 				
 		}
 		return offBoardList;

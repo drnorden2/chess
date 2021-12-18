@@ -7,7 +7,7 @@ import perft.chess.perftmb.MailBoxPosition;
 
 
 public class ChessGameFactory implements GameFactory {
-	private final static boolean bitBoard = true;
+	private final static boolean bitBoard = false;
 	@Override
 	public Board getInitialBoard() {
 		return new ChessBoard(bitBoard?new BBPosition():new MailBoxPosition());

@@ -50,14 +50,14 @@ public class Definitions {
 	public static final int _G = 6;
 	public static final int _H = 7;
 
-	public static final int _8 = 0;
-	public static final int _7 = 1;
-	public static final int _6 = 2;
-	public static final int _5 = 3;
-	public static final int _4 = 4;
-	public static final int _3 = 5;
-	public static final int _2 = 6;
-	public static final int _1 = 7;
+	public static final int _8 = 7;
+	public static final int _7 = 6;
+	public static final int _6 = 5;
+	public static final int _5 = 4;
+	public static final int _4 = 3;
+	public static final int _3 = 2;
+	public static final int _2 = 1;
+	public static final int _1 = 0;
 
 	public static final int ROCHADE_W_ROOK_LONG = 2;
 	public static final int ROCHADE_W_ROOK_SHORT = 6;
@@ -109,6 +109,27 @@ public class Definitions {
 	public final static long MASK_7_RANK = rankMask(_7);
 	public final static long MASK_8_RANK = rankMask(_8);
 	
+	public final static long[] MASK_X_RANK = new long[]{
+			MASK_1_RANK,
+			MASK_2_RANK,
+			MASK_3_RANK,
+			MASK_4_RANK,
+			MASK_5_RANK,
+			MASK_6_RANK,
+			MASK_7_RANK,
+			MASK_8_RANK
+	};
+	public final static long[] MASK_X_FILE = new long[]{
+			MASK_A_FILE,
+			MASK_B_FILE,
+			MASK_C_FILE,
+			MASK_D_FILE,
+			MASK_E_FILE,
+			MASK_F_FILE,
+			MASK_G_FILE,
+			MASK_H_FILE
+	};
+	
 	public final static long MASK_NOT_1_RANK = not(MASK_1_RANK);
 	public final static long MASK_NOT_2_RANK = not(MASK_2_RANK);
 	public final static long MASK_NOT_3_RANK = not(MASK_3_RANK);
@@ -123,8 +144,6 @@ public class Definitions {
 	public final static int DIR_LEFT = 1;
 	public final static int DIR_UP = 8;
 
-	
-
 
 			
 /*Static*/
@@ -136,18 +155,19 @@ public class Definitions {
 		return (int)(pos%8);
 	}
 	
-	public static int getPosForRankFile(int rank, int file) {
+	public static int getPosForFileRank(int file , int rank) {
  		int index = 8 * rank + file;
 		return index;
 	}
 	
+
 	
 	
 	
 	private static long fileMask(int file) {
 		BitBoard bb= new BitBoard(0L);
 		for(int i=0;i<8;i++) {
-			bb.set(getPosForRankFile(i,file));
+			bb.set(getPosForFileRank(file,i));
 		}
 		return bb.getBits();
 	}
@@ -155,7 +175,7 @@ public class Definitions {
 	private static long rankMask(int rank) {
 		BitBoard bb= new BitBoard(0L);
 		for(int i=0;i<8;i++) {
-			bb.set(getPosForRankFile(rank,i));
+			bb.set(getPosForFileRank(i,rank));
 		}
 		return bb.getBits();
 	}

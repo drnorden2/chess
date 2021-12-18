@@ -1,12 +1,12 @@
 package perft.chess.perftbb;
 
+import static perft.chess.Definitions.*;
+
 import perft.chess.Position;
 import perft.chess.core.baseliner.BLVariableInt;
 import perft.chess.core.baseliner.BLVariableLong;
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.datastruct.BitBoard;
-
-import static perft.chess.Definitions.*;
 
 public class BBPosition implements Position{
 	public final BLVariableLong[][] pieces;
@@ -49,7 +49,7 @@ public class BBPosition implements Position{
 	
 	@Override
 	public void setUntouched(int rank, int file) {
-		untouched.setBit(getPosForRankFile(rank,file));
+		untouched.setBit(getPosForFileRank(file,rank));
 	}
 
 	@Override

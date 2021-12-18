@@ -1,7 +1,8 @@
 package perft.chess.perftmb;
 
-import perft.chess.core.baseliner.BLIndexedList;
 import static perft.chess.Definitions.*;
+
+import perft.chess.core.baseliner.BLIndexedList;
 
 
 public class LegalMoveTester {
