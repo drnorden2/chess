@@ -7,7 +7,7 @@ public class BBMoveManager {
 
 		private static final Move [][][] moves= new Move[1280][][];
 		private static final Move [][] pseudoMoveSets = new Move[1280][];
-		public static final long [][] moveMasks = new long[1280][];
+		public static final long [] moveMasks = new long[1280];
 
 		public BBMoveManager() {
 			setup();
@@ -181,27 +181,21 @@ public class BBMoveManager {
 		}
 
 		private void addMoveMask(Move curMoves[][], int type, int offset,int index) {
-			long[] masks = new long[1];
-			if(type == PIECE_TYPE_PAWN) {
-				masks = new long[2];	
-			}
+			long mask = 0L;
 			
 			for (int i = 0; i < curMoves.length; i++) {// MoveRays
 				for(int j=0;j<curMoves[i].length;j++) {
 					Move oldMove = curMoves[i][j];
 					if(oldMove!=null) {
-						int maskID=0;
-						if(type == PIECE_TYPE_PAWN 
-								&& (getFileForPos(oldMove.getOldPos())==getFileForPos(oldMove.getNewPos()))) {
-							maskID=1;
+						if(!oldMove.isKingSensing()) {
+							int newPos = oldMove.getNewPos();
+							mask |= 1L << newPos;
 						}
-						int newPos = oldMove.getNewPos();
-						masks[maskID] |= 1L << newPos;
 					}
 				
 				}
 			}
-			this.moveMasks[offset+index]=masks;
+			this.moveMasks[offset+index]=mask;
 		}
 		
 		/*	

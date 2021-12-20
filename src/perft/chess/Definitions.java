@@ -11,8 +11,6 @@ public class Definitions {
 	public static final int PIECE_TYPE_KING= 5;
 	public static final int PIECE_TYPE_ANY = 6;
 	public static final int PIECE_TYPE_PAWN_ENPASSANTE_OFFER= 7;
-
-	
 	
 	public static final int COLOR_BLACK= 0;
 	public static final int COLOR_WHITE= 1;
@@ -88,6 +86,29 @@ public class Definitions {
 	public final static long MASK_F_FILE = fileMask(_F);
 	public final static long MASK_G_FILE = fileMask(_G);
 	public final static long MASK_H_FILE = fileMask(_H);
+	public final static long MASK_NONE = 0L;
+	public final static long MASK_ALL = ~MASK_NONE;
+	
+	
+	public static final long MASK_A1=1L<<0;
+	public static final long MASK_B1=1L<<1;
+	public static final long MASK_C1=1L<<2;
+	public static final long MASK_D1=1L<<3;
+	public static final long MASK_E1=1L<<4;
+	public static final long MASK_F1=1L<<5;
+	public static final long MASK_G1=1L<<6;
+	public static final long MASK_H1=1L<<7;
+	
+	public static final long MASK_A8=1L<<56;
+	public static final long MASK_B8=1L<<57;
+	public static final long MASK_C8=1L<<58;
+	public static final long MASK_D8=1L<<59;
+	public static final long MASK_E8=1L<<60;
+	public static final long MASK_F8=1L<<61;
+	public static final long MASK_G8=1L<<62;
+	public static final long MASK_H8=1L<<63;
+	
+	
 	
 	
 	public final static long MASK_NOT_A_FILE = not(MASK_A_FILE);
@@ -139,10 +160,31 @@ public class Definitions {
 	public final static long MASK_NOT_7_RANK = not(MASK_7_RANK);
 	public final static long MASK_NOT_8_RANK = not(MASK_8_RANK);
 
+	public final static long MASK_CASTLE_OCC_Q = MASK_B1|MASK_C1|MASK_D1;
+	public final static long MASK_CASTLE_ALL_Q = MASK_A1|MASK_B1|MASK_C1|MASK_D1|MASK_E1;
+	public final static long MASK_CASTLE_OCC_K = MASK_F1|MASK_G1;
+	public final static long MASK_CASTLE_ALL_K = MASK_E1|MASK_F1|MASK_G1|MASK_H1;
+	
+
+	public final static long MASK_CASTLE_OCC_q = MASK_B8|MASK_C8|MASK_D8;
+	public final static long MASK_CASTLE_ALL_q = MASK_A8|MASK_B8|MASK_C8|MASK_D8|MASK_E8;
+	public final static long MASK_CASTLE_OCC_k = MASK_F8|MASK_G8;
+	public final static long MASK_CASTLE_ALL_k = MASK_E8|MASK_F8|MASK_G8|MASK_H8;
+	
+	public final static long MASK_CASTLE_KING_Q = MASK_C1;
+	public final static long MASK_CASTLE_KING_K = MASK_G1;
+	public final static long MASK_CASTLE_KING_q = MASK_C8;
+	public final static long MASK_CASTLE_KING_k = MASK_G8;
+	
+
 	public final static int DIR_UP_LEFT = 9;
 	public final static int DIR_UP_RIGHT = 7;
 	public final static int DIR_LEFT = 1;
 	public final static int DIR_UP = 8;
+
+	public static final long[] PAWN_SECOND_LINE = new long[] {MASK_6_RANK,MASK_3_RANK};
+	public static final long[] PAWN_LAST_LINE = new long[] {MASK_1_RANK,MASK_8_RANK};
+	public static final int[] OTHER_COLOR = new int[] {COLOR_WHITE,COLOR_BLACK};
 
 
 			
@@ -185,5 +227,30 @@ public class Definitions {
 		bb.invert();
 		return bb.getBits();
 	}
+	
+	public static void out(long bits) {
+		System.out.println(BitBoard.toString(bits));
+	}
+	
+	/*
+	public static int updateIndices(int[] indices, long bits) {
+		int counter =0;
+		while (bits != 0){
+			int idx = 63-Long.numberOfLeadingZeros(bits); 
+			indices[counter++] = idx;
+			bits &= ~(1L << idx);
+		}
+		return counter;
+	}*/
+	
+	public static int updateIndices(int[] indices, long bits) {
+		int retVal = Long.bitCount(bits);
+		for(int i=0;i<retVal;i++) {
+			indices[i] = Long.numberOfTrailingZeros(bits);
+			bits &= bits - 1;			
+		}
+		return retVal ;
+	}
+
 	
 }

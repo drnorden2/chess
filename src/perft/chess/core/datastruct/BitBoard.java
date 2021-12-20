@@ -62,6 +62,16 @@ public class BitBoard {
 		return counter;
 	}
 
+	public static int updateIndices(int[] indices, long bits) {
+		int counter =0;
+		while (bits != 0){
+			int idx = 63-Long.numberOfLeadingZeros(bits); 
+			indices[counter++] = idx;
+			bits &= ~(1L << idx);
+		}
+		return counter;
+	}
+	
 	public int selectList(Object[] selection, Object[] all) {
 		int count = 0;
 		long copy = this.bits;

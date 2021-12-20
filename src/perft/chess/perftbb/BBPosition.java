@@ -7,56 +7,53 @@ import perft.chess.core.baseliner.BLVariableInt;
 import perft.chess.core.baseliner.BLVariableLong;
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.datastruct.BitBoard;
+import perft.chess.perftbb.gen.MagicNumberFinder;
 
-public class BBPosition implements Position{
+public class BBPosition implements Position {
+	MagicNumberFinder mnf = new MagicNumberFinder();
+
 	public final BLVariableLong[][] pieces;
-	public final BLVariableLong[] allOfOneColor= new BLVariableLong[2];	
+
+	public final BLVariableLong[] allOfOneColor = new BLVariableLong[2];
 	public final BLVariableLong untouched;
-	public final BLVariableInt  enPassantePos;
+	public final BLVariableInt enPassantePos;
 	public BBAnalyzer analyzer = new BBAnalyzer(this);
 	public LookUp lookUp = new LookUp();
-	
-	public final int depth =10;
-	public final BaseLiner bl = new BaseLiner(1,1,20,depth,1000);
-	private int colorAtTurn=COLOR_WHITE;
-	
+
+	public final int depth = 10;
+	public final BaseLiner bl = new BaseLiner(1, 1, 20, depth, 1000);
+	private int colorAtTurn = COLOR_WHITE;
+
 	public BBPosition() {
-		pieces  = new BLVariableLong[2][6];
-		for(int i=0;i<pieces.length;i++) {
-			for(int j=0;j<pieces[0].length;j++) {
-				pieces[i][j]=new BLVariableLong(bl,0L);
+		pieces = new BLVariableLong[2][6];
+		for (int i = 0; i < pieces.length; i++) {
+			for (int j = 0; j < pieces[i].length; j++) {
+				pieces[i][j] = new BLVariableLong(bl, 0L);
 			}
 		}
-		
-		enPassantePos = new BLVariableInt(bl,-1); 
-		untouched = new BLVariableLong(bl,0L);
-		allOfOneColor[COLOR_WHITE] = new BLVariableLong(bl,0L);
-		allOfOneColor[COLOR_BLACK] = new BLVariableLong(bl,0L);
-	
-		
-		
 
+		enPassantePos = new BLVariableInt(bl, -1);
+		untouched = new BLVariableLong(bl, 0L);
+		allOfOneColor[COLOR_WHITE] = new BLVariableLong(bl, 0L);
+		allOfOneColor[COLOR_BLACK] = new BLVariableLong(bl, 0L);
 	}
-	
+
 	@Override
 	public void initialAddToBoard(int color, int type, int pos) {
-		pieces[color][type].setBitTouchless(pos);
-		allOfOneColor[color].setBitTouchless(pos);
+		pieces[color][type].setBit(pos);
+		allOfOneColor[color].setBit(pos);
 	}
 
-	
-	
-	
 	@Override
 	public void setUntouched(int rank, int file) {
-		untouched.setBit(getPosForFileRank(file,rank));
+		untouched.setBit(getPosForFileRank(file, rank));
 	}
 
 	@Override
 	public void setEnPassantePos(int enpassantePos) {
 		this.enPassantePos.set(enpassantePos);
-	}	
-	
+	}
+
 	@Override
 	public void unSetMove(int move) {
 		// TODO Auto-generated method stub
@@ -65,19 +62,13 @@ public class BBPosition implements Position{
 	@Override
 	public void setMove(int move) {
 		// TODO Auto-generated method stub
-		
 	}
-	
+
 	@Override
 	public void setInitialTurn(int color) {
 		colorAtTurn = color;
 	}
 
-	
-	
-	
-	
-	
 	@Override
 	public int getMoves() {
 		// TODO Auto-generated method stub
@@ -96,177 +87,147 @@ public class BBPosition implements Position{
 		return null;
 	}
 
-
-	
-	
 	@Override
 	public void initialEval() {
-		long[][] rawMoves = new long[9][];
-		long allWhite = this.allOfOneColor[COLOR_WHITE].get();
-		long allBlack = this.allOfOneColor[COLOR_BLACK].get();
-		long notAll = ~(allWhite|allBlack);
-		
-		int color = COLOR_WHITE;
-		{
-			int type = PIECE_TYPE_PAWN;
-			long pawns  = pieces[COLOR_WHITE][PIECE_TYPE_PAWN].get();
-			int count = lookUp.getRawMoves(pawns, color, type, rawMoves);
-		//	moveWhitePawns(rawMoves,count, pawns, notAll,allBlack,allWhite,color, type); 
-		}
-		{
-			int type = PIECE_TYPE_ROOK;
-			long rooks  = pieces[COLOR_WHITE][PIECE_TYPE_ROOK].get() |pieces[COLOR_WHITE][PIECE_TYPE_QUEEN].get();
-			int count = lookUp.getRawMoves(rooks, color, type, rawMoves);
-			moveWhiteRooks(rawMoves,count, rooks, notAll,allBlack,allWhite,color, type); 
-		}
-		
-		
-		
-		
-		
-		/*
-		for(int color=0;color<this.pieces.length;color++) {
-			for(int type=0;type<this.pieces[color].length;type++) {
-				int count = lookUp.getRawMoves(pieces[color][type].get(),color, type,rawMoves);
-			
-			}
-		}*/
-	}
+		int color = 1;
+		int otherColor = OTHER_COLOR[color];
 
-	public void moveWhiteRooks(long[][] rawMoves,int count, long rooks, long notAll,long allBlack,long allWhite,int color, int type) {
-		//do rook stuff
-		System.out.println("before"+BitBoard.toString(rooks));
-		long all = 0L;
-		long up = rooks;
-		long down =rooks;
-		long left = rooks;
-		long right = rooks;
-		long notAllWhite =~allWhite;
-		long notAllBlack =~allBlack;
-		long allWAttacks1 =0L;
-		long allWAttacks2 =0L;
-		long[] pseudoMoves = new long[count];
-		for(int j=0;j<count;j++) {
-			System.out.println("all rook "+BitBoard.toString(rawMoves[j][0]));
-		}
-		
-		for(int i=0;i<7;i++) {
-			if(up!=0L) { 
-				up = (up >> DIR_UP) & notAllWhite & MASK_NOT_1_RANK;
-				allWAttacks2 |= up & allWAttacks1;
-				allWAttacks1 |= up;
-				for(int j=0;j<count;j++) {
-					pseudoMoves[j] |= rawMoves[j][0]&up ;//Beats
-				}
-				//System.out.println("up"+BitBoard.toString(up));
-				up &= notAllBlack;
+		int[] positionIndices = new int[9];
+
+		long[] allOfCol = new long[] { this.allOfOneColor[COLOR_BLACK].get(),this.allOfOneColor[COLOR_WHITE].get() };
+		long occ = allOfCol[COLOR_WHITE] | allOfCol[COLOR_BLACK];
+		long notOcc = ~occ;
+		long notOwn = ~allOfCol[color];
+
+		int moveCount = 0;
+
+		for (int type = 0; type < 6; type++) {
+/*
+			switch (type) {
+			case PIECE_TYPE_PAWN:
+				System.out.println("PAWN");
+				break;
+			case PIECE_TYPE_BISHOP:
+				System.out.println("BISHOP");
+				break;
+			case PIECE_TYPE_ROOK:
+				System.out.println("ROOK");
+				break;
+			case PIECE_TYPE_QUEEN:
+				System.out.println("QUEEN");
+				break;
+			case PIECE_TYPE_KING:
+				System.out.println("KING");
+				break;
+			case PIECE_TYPE_KNIGHT:
+				System.out.println("KNIGHT");
+				break;
 			}
-			if(right!=0L) { 
-				right = (right << DIR_LEFT) & notAllWhite & MASK_NOT_A_FILE;
-				allWAttacks2 |= right & allWAttacks1;
-				allWAttacks1 |= right ;
-				for(int j=0;j<count;j++) {
-					pseudoMoves[j] |= rawMoves[j][0]&right ;//Beats
-				}
-				right &= notAllBlack;
-			}
-			if(down !=0L) { 
-				down = (down << DIR_UP) & notAllWhite & MASK_NOT_8_RANK;
-				allWAttacks2 |= down & allWAttacks1;
-				allWAttacks1 |= down ;
-				for(int j=0;j<count;j++) {
-					pseudoMoves[j] |= rawMoves[j][0]&down;//Beats
-				}
+*/		
 			
-				//System.out.println("down"+BitBoard.toString(down));
-				down &= notAllBlack;
-			}
-			if(left !=0L) { 
-				left = (left >> DIR_LEFT) & notAllWhite & MASK_NOT_H_FILE;
-				allWAttacks2 |= left & allWAttacks1;
-				allWAttacks1 |= left ;
-				for(int j=0;j<count;j++) {
-					pseudoMoves[j] |= rawMoves[j][0]&left;
-				}
-			
-				//System.out.println("left"+BitBoard.toString(left));
-				left &= notAllBlack;
+			long pieces = this.pieces[color][type].get();
+			long attacks = 0L;
+			long pawnPushes = 0L;
+			long pawnAttacksRight = 0L;
+			long pawnAttacksLeft = 0L;
+
+			int index = 0;
+			long moves = 0L;
+			if (type == PIECE_TYPE_PAWN && pieces != 0L) {
+				//out(pieces);
 				
+				pawnPushes = color*(pieces << DIR_UP & notOcc) 
+						+ otherColor*(pieces >> DIR_UP & notOcc);
+				//out(pawnPushes);
+				pawnPushes |= color*((pawnPushes & PAWN_SECOND_LINE[color]) << DIR_UP & notOcc)
+						+ otherColor*((pawnPushes & PAWN_SECOND_LINE[color]) >> DIR_UP & notOcc);
+				//out(pawnPushes);
+				
+				pawnAttacksRight = color & pieces << DIR_UP_RIGHT & MASK_NOT_A_FILE|(1-color) & pieces >> DIR_UP_LEFT & MASK_NOT_A_FILE;
+				pawnAttacksLeft = color & pieces << DIR_UP_LEFT & MASK_NOT_A_FILE|(1-color) & pieces >> DIR_UP_RIGHT & MASK_NOT_A_FILE;
+				
+				moveCount += Long.bitCount(pawnPushes);
+				moveCount += Long.bitCount(pawnAttacksRight & allOfCol[otherColor]);
+				moveCount += Long.bitCount(pawnAttacksLeft & allOfCol[otherColor]);
+				continue;
 			}
-			
-			 
-		}
-		for(int j=0;j<count;j++) {
-			System.out.println("all rook "+BitBoard.toString(pseudoMoves[j]));
-		}
-		
-		
-		///System.out.println("all rook moves"+BitBoard.toString(all));
-		//System.out.println("all Pawn attacks 1"+BitBoard.toString(allWAttacks1));
-		//System.out.println("all Pawn attacks 2"+BitBoard.toString(allWAttacks2));
+			int pieceCount = updateIndices(positionIndices, pieces);
 
-	}
-
-	
-	
-	public void moveWhitePawns(long[][] rawMoves,int count, long pawns, long notAll,long allBlack,long allWhite,int color, int type) {
-		//do pawn stuff
-		//System.out.println("before"+BitBoard.toString(pawns));
-		if(color == COLOR_WHITE) {
-			long up = pawns >> DIR_UP & notAll;
-			//System.out.println("Up x1"+BitBoard.toString(up));
-			long up2 = (up & MASK_3_RANK)>> DIR_UP & notAll;
-			//System.out.println("Up x2"+BitBoard.toString(up2));
-			long allUp = up|up2;
-			//System.out.println("allUp"+BitBoard.toString(allUp));
-			
-			long all = 0L;
-			long allWAttacks1 =0L;
-			long allWAttacks2 =0L;
+			for (int i = 0; i < pieceCount; i++) {
+				int pos = positionIndices[i];
+				switch (type) {
+				case PIECE_TYPE_BISHOP:
+					attacks = mnf.getBishopAttacks(pos, occ);
+					break;
+				case PIECE_TYPE_ROOK:
+					attacks = mnf.getRookAttacks(pos, occ);		
+					break;
+				case PIECE_TYPE_QUEEN:
+					attacks = mnf.getRookAttacks(pos, occ);
+					attacks |= mnf.getBishopAttacks(pos, occ);
+					break;
+				case PIECE_TYPE_KING:
+					index = (pos + (type * 2 + color) * 64);
+					attacks = lookUp.getRawMoves(index);
+				
+					long ntchd = untouched.get();
+					boolean test_k = false;
+					boolean test_q = false;
+					long castleMoves=0L;
+					if(color==COLOR_BLACK) {
+						if((MASK_CASTLE_ALL_k ^ (notOcc & MASK_CASTLE_OCC_k | ntchd))==0L) {
+							castleMoves |= MASK_CASTLE_KING_k;
+						}
+						if((MASK_CASTLE_ALL_q ^ (notOcc & MASK_CASTLE_OCC_q | ntchd))==0L){
+							castleMoves |= MASK_CASTLE_KING_q;
+						}
+						
+					
+					}else {
+						if((MASK_CASTLE_ALL_K ^ (notOcc & MASK_CASTLE_OCC_K | ntchd))==0L){
+							castleMoves |= MASK_CASTLE_KING_K;
+						}
+						if((MASK_CASTLE_ALL_Q ^ (notOcc & MASK_CASTLE_OCC_Q | ntchd))==0L){
+							castleMoves |= MASK_CASTLE_KING_Q;
+						}						
+					}
+					moveCount += Long.bitCount(castleMoves);
+					break;
 							
-			for(int i=0;i<count;i++) {
-				allWAttacks2 |= rawMoves[i][0]&allWAttacks1;
-				allWAttacks1|=rawMoves[i][0];
-				rawMoves[i][0]&=allBlack;//Beats
-				//System.out.println("beat("+i+")"+BitBoard.toString(rawMoves[i][0]));
-				rawMoves[i][1]&=allUp;//Beats
-				//System.out.println("up("+i+")"+BitBoard.toString(rawMoves[i][1]));					
-				all |= rawMoves[i][0]|rawMoves[i][1];
+					
+				case PIECE_TYPE_KNIGHT:
+					index = (pos + (type * 2 + color) * 64);
+					attacks = lookUp.getRawMoves(index);
+					break;
+				}
+				moves = attacks & notOwn;
+				//out(moves);
+				moveCount += Long.bitCount(moves);
 			}
-			System.out.println("all Pawn moves"+BitBoard.toString(all));
-			System.out.println("all Pawn attacks 1"+BitBoard.toString(allWAttacks1));
-			System.out.println("all Pawn attacks 2"+BitBoard.toString(allWAttacks2));
-			
 		}
+		System.out.println("Moves:" + moveCount);
 	}
-	
-	
+
+
+
 	@Override
 	public int getColorAtTurn() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
-
-	
-	
-	
-	
-	
-	
-	
-	
 	@Override
 	public void checkGameState(int colorAtTurn) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void checkLegalMoves() {
 		// TODO Auto-generated method stub
-		
+
 	}
+
 	public String toString() {
 		return analyzer.toString();
 	}
