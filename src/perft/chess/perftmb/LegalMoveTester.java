@@ -6,10 +6,10 @@ import perft.chess.core.baseliner.BLIndexedList;
 
 
 public class LegalMoveTester {
-	private final MailBoxPosition position;
+	private final MBPosition position;
 	//private final boolean[] rescueMap=new boolean[64];
 	private long rescueMap = 0L;
-	public LegalMoveTester(MailBoxPosition position) {
+	public LegalMoveTester(MBPosition position) {
 		this.position=position;
 	}
 	

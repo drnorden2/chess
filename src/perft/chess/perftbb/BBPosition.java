@@ -2,34 +2,41 @@ package perft.chess.perftbb;
 
 import static perft.chess.Definitions.*;
 
+import java.util.ArrayList;
+
 import perft.chess.Position;
 import perft.chess.core.baseliner.BLVariableInt;
 import perft.chess.core.baseliner.BLVariableLong;
 import perft.chess.core.baseliner.BaseLiner;
-import perft.chess.core.datastruct.BitBoard;
 import perft.chess.perftbb.gen.MagicNumberFinder;
 
+
 public class BBPosition implements Position {
+	public final int depth = 10;
+	public final BaseLiner bl = new BaseLiner(1, 200, 200, depth, 1000);
 	MagicNumberFinder mnf = new MagicNumberFinder();
 
-	public final BLVariableLong[][] pieces;
-
 	public final BLVariableLong[] allOfOneColor = new BLVariableLong[2];
+	public final BLVariableLong[] allMoves = new BLVariableLong[64];
+	public final BLVariableInt[] fields = new BLVariableInt[64];
+
 	public final BLVariableLong untouched;
 	public final BLVariableInt enPassantePos;
 	public BBAnalyzer analyzer = new BBAnalyzer(this);
 	public LookUp lookUp = new LookUp();
 
-	public final int depth = 10;
-	public final BaseLiner bl = new BaseLiner(1, 1, 20, depth, 1000);
 	private int colorAtTurn = COLOR_WHITE;
 
+	private int[] indices1 = new int[64];
+	private int[] indices2 = new int[64];
+
+	private ArrayList<Move> list = null;
+
 	public BBPosition() {
-		pieces = new BLVariableLong[2][6];
-		for (int i = 0; i < pieces.length; i++) {
-			for (int j = 0; j < pieces[i].length; j++) {
-				pieces[i][j] = new BLVariableLong(bl, 0L);
-			}
+
+		for (int i = 0; i < allMoves.length; i++) {
+			allMoves[i] = new BLVariableLong(bl, 0L);
+			fields[i] = new BLVariableInt(bl, 0);
 		}
 
 		enPassantePos = new BLVariableInt(bl, -1);
@@ -40,7 +47,7 @@ public class BBPosition implements Position {
 
 	@Override
 	public void initialAddToBoard(int color, int type, int pos) {
-		pieces[color][type].setBit(pos);
+		fields[pos].set((type * 2 + color) * 64);
 		allOfOneColor[color].setBit(pos);
 	}
 
@@ -57,11 +64,32 @@ public class BBPosition implements Position {
 	@Override
 	public void unSetMove(int move) {
 		// TODO Auto-generated method stub
+		bl.undo();
+		System.out.println("UNDONE!");
+		this.colorAtTurn= OTHER_COLOR[colorAtTurn];
+		
 	}
+	private int moveCounter=0;
 
 	@Override
-	public void setMove(int move) {
-		// TODO Auto-generated method stub
+	public void setMove(int index) {
+		
+		getMoves();
+		bl.startNextLevel();
+		Move move = this.list.get(index);
+	
+		System.out.println("MoveCount"+(++moveCounter)+": "+move+" - "+move.getNotation());
+		System.out.println(this);
+		
+		int oldPos = move.getOldPos();
+		int newPos = move.getNewPos();
+		
+		fields[newPos].set(fields[oldPos].getAndSet(-1));
+		this.allMoves[oldPos].set(0L);
+		this.updatePseudoMoves(newPos, newPos);
+		this.allOfOneColor[colorAtTurn].moveBit(oldPos,newPos);
+		System.out.println(this);
+		this.colorAtTurn= OTHER_COLOR[colorAtTurn];
 	}
 
 	@Override
@@ -71,8 +99,23 @@ public class BBPosition implements Position {
 
 	@Override
 	public int getMoves() {
+		list = new ArrayList<Move>();
 		// TODO Auto-generated method stub
-		return 0;
+		int color = this.colorAtTurn;
+		long all = this.allOfOneColor[color].get();
+		int count1 = updateIndices(indices1, all);
+		for (int i = 0; i < count1; i++) {
+			int pos = indices1[i];
+			long moveMask = this.allMoves[pos].get();
+			int index = pos + fields[pos].get();
+			Move[] moves = lookUp.getMoveMap(index);
+			int count2 = updateIndices(indices2, moveMask);
+			for (int j = 0; j < count2; j++) {
+				list.add(moves[indices2[j]]);
+
+			}
+		}
+		return list.size();
 	}
 
 	@Override
@@ -89,131 +132,123 @@ public class BBPosition implements Position {
 
 	@Override
 	public void initialEval() {
-		int color = 1;
-		int otherColor = OTHER_COLOR[color];
-
-		int[] positionIndices = new int[9];
-
-		long[] allOfCol = new long[] { this.allOfOneColor[COLOR_BLACK].get(),this.allOfOneColor[COLOR_WHITE].get() };
-		long occ = allOfCol[COLOR_WHITE] | allOfCol[COLOR_BLACK];
-		long notOcc = ~occ;
-		long notOwn = ~allOfCol[color];
-
+		long own = this.allOfOneColor[colorAtTurn].get();
 		int moveCount = 0;
-
-		for (int type = 0; type < 6; type++) {
-/*
-			switch (type) {
-			case PIECE_TYPE_PAWN:
-				System.out.println("PAWN");
-				break;
-			case PIECE_TYPE_BISHOP:
-				System.out.println("BISHOP");
-				break;
-			case PIECE_TYPE_ROOK:
-				System.out.println("ROOK");
-				break;
-			case PIECE_TYPE_QUEEN:
-				System.out.println("QUEEN");
-				break;
-			case PIECE_TYPE_KING:
-				System.out.println("KING");
-				break;
-			case PIECE_TYPE_KNIGHT:
-				System.out.println("KNIGHT");
-				break;
-			}
-*/		
-			
-			long pieces = this.pieces[color][type].get();
-			long attacks = 0L;
-			long pawnPushes = 0L;
-			long pawnAttacksRight = 0L;
-			long pawnAttacksLeft = 0L;
-
-			int index = 0;
-			long moves = 0L;
-			if (type == PIECE_TYPE_PAWN && pieces != 0L) {
-				//out(pieces);
-				
-				pawnPushes = color*(pieces << DIR_UP & notOcc) 
-						+ otherColor*(pieces >> DIR_UP & notOcc);
-				//out(pawnPushes);
-				pawnPushes |= color*((pawnPushes & PAWN_SECOND_LINE[color]) << DIR_UP & notOcc)
-						+ otherColor*((pawnPushes & PAWN_SECOND_LINE[color]) >> DIR_UP & notOcc);
-				//out(pawnPushes);
-				
-				pawnAttacksRight = color & pieces << DIR_UP_RIGHT & MASK_NOT_A_FILE|(1-color) & pieces >> DIR_UP_LEFT & MASK_NOT_A_FILE;
-				pawnAttacksLeft = color & pieces << DIR_UP_LEFT & MASK_NOT_A_FILE|(1-color) & pieces >> DIR_UP_RIGHT & MASK_NOT_A_FILE;
-				
-				moveCount += Long.bitCount(pawnPushes);
-				moveCount += Long.bitCount(pawnAttacksRight & allOfCol[otherColor]);
-				moveCount += Long.bitCount(pawnAttacksLeft & allOfCol[otherColor]);
-				continue;
-			}
-			int pieceCount = updateIndices(positionIndices, pieces);
-
-			for (int i = 0; i < pieceCount; i++) {
-				int pos = positionIndices[i];
-				switch (type) {
-				case PIECE_TYPE_BISHOP:
-					attacks = mnf.getBishopAttacks(pos, occ);
-					break;
-				case PIECE_TYPE_ROOK:
-					attacks = mnf.getRookAttacks(pos, occ);		
-					break;
-				case PIECE_TYPE_QUEEN:
-					attacks = mnf.getRookAttacks(pos, occ);
-					attacks |= mnf.getBishopAttacks(pos, occ);
-					break;
-				case PIECE_TYPE_KING:
-					index = (pos + (type * 2 + color) * 64);
-					attacks = lookUp.getRawMoves(index);
-				
-					long ntchd = untouched.get();
-					boolean test_k = false;
-					boolean test_q = false;
-					long castleMoves=0L;
-					if(color==COLOR_BLACK) {
-						if((MASK_CASTLE_ALL_k ^ (notOcc & MASK_CASTLE_OCC_k | ntchd))==0L) {
-							castleMoves |= MASK_CASTLE_KING_k;
-						}
-						if((MASK_CASTLE_ALL_q ^ (notOcc & MASK_CASTLE_OCC_q | ntchd))==0L){
-							castleMoves |= MASK_CASTLE_KING_q;
-						}
-						
-					
-					}else {
-						if((MASK_CASTLE_ALL_K ^ (notOcc & MASK_CASTLE_OCC_K | ntchd))==0L){
-							castleMoves |= MASK_CASTLE_KING_K;
-						}
-						if((MASK_CASTLE_ALL_Q ^ (notOcc & MASK_CASTLE_OCC_Q | ntchd))==0L){
-							castleMoves |= MASK_CASTLE_KING_Q;
-						}						
-					}
-					moveCount += Long.bitCount(castleMoves);
-					break;
-							
-					
-				case PIECE_TYPE_KNIGHT:
-					index = (pos + (type * 2 + color) * 64);
-					attacks = lookUp.getRawMoves(index);
-					break;
-				}
-				moves = attacks & notOwn;
-				//out(moves);
-				moveCount += Long.bitCount(moves);
-			}
+		int count1 = updateIndices(indices1, own);
+		for (int i = 0; i < count1; i++) {
+			int pos = indices1[i];
+			int typeColor = fields[pos].get();
+			int count2 = updatePseudoMoves(typeColor, pos);
+			System.out.println(((typeColor / 64) - colorAtTurn) / 2 + "(" + pos + ")" + ":" + count2);
+			moveCount += count2;
 		}
 		System.out.println("Moves:" + moveCount);
+		System.out.println("Moves:" + getMoves());
 	}
 
+	private int updatePseudoMoves(int typeColor, int pos) {
+		long attacks = 0L;
+		long moves= 0L;
+		long own = this.allOfOneColor[colorAtTurn].get();
+		long notOwn = ~own;
 
+		switch (typeColor) {
+		case PIECE_TYPE_WHITE_PAWN:
+			{
+				long other = this.allOfOneColor[OTHER_COLOR[colorAtTurn]].get();
+				long occ = own | other;
+				long notOcc = ~occ;
+				long posMask = 1L << pos;
+				moves = posMask << DIR_UP & notOcc;
+				moves |= (moves & MASK_3_RANK) << DIR_UP & notOcc;
+				attacks = ((posMask << DIR_UP_RIGHT & MASK_NOT_H_FILE) | (posMask << DIR_UP_LEFT & MASK_NOT_A_FILE))
+						& other;
+			}
+			break;
+		case PIECE_TYPE_BLACK_PAWN:
+			{
+				long other = this.allOfOneColor[OTHER_COLOR[colorAtTurn]].get();
+				long occ = own | other;
+				long notOcc = ~occ;
+				long posMask = 1L << pos;
+				moves = posMask >> DIR_UP & notOcc;
+				moves |= (moves & MASK_6_RANK) >> DIR_UP & notOcc;
+				attacks = ((posMask >> DIR_UP_RIGHT & MASK_NOT_H_FILE) | (posMask >> DIR_UP_LEFT & MASK_NOT_A_FILE))& other;
+			}
+			break;
+		case PIECE_TYPE_BLACK_BISHOP:
+		case PIECE_TYPE_WHITE_BISHOP:
+			{
+				long other = this.allOfOneColor[OTHER_COLOR[colorAtTurn]].get();
+				long occ = own | other;
+				attacks = mnf.getBishopAttacks(pos, occ);
+				break;
+			}
+		case PIECE_TYPE_BLACK_ROOK:
+		case PIECE_TYPE_WHITE_ROOK:
+			{
+				long other = this.allOfOneColor[OTHER_COLOR[colorAtTurn]].get();
+				long occ = own | other;
+				attacks = mnf.getRookAttacks(pos, occ);
+				break;
+			}
+		case PIECE_TYPE_BLACK_QUEEN:
+		case PIECE_TYPE_WHITE_QUEEN:
+			{
+				long other = this.allOfOneColor[OTHER_COLOR[colorAtTurn]].get();
+				long occ = own | other;
+				attacks = mnf.getRookAttacks(pos, occ);
+				attacks |= mnf.getBishopAttacks(pos, occ);
+				break;
+			}
+		case PIECE_TYPE_BLACK_KING:
+			{
+				long other = this.allOfOneColor[OTHER_COLOR[colorAtTurn]].get();
+				long occ = own | other;
+				long notOcc = ~occ;
+				
+				int index = pos + typeColor;
+				attacks = lookUp.getMoveMask(index);
+				long ntchd = untouched.get();
+				if ((MASK_CASTLE_ALL_k ^ (notOcc & MASK_CASTLE_OCC_k | ntchd)) == 0L) {
+					moves = MASK_CASTLE_KING_k;
+				}
+				if ((MASK_CASTLE_ALL_q ^ (notOcc & MASK_CASTLE_OCC_q | ntchd)) == 0L) {
+					moves |= MASK_CASTLE_KING_q;
+				}
+			}
+			break;
+		case PIECE_TYPE_WHITE_KING:
+			{
+				long other = this.allOfOneColor[OTHER_COLOR[colorAtTurn]].get();
+				long occ = own | other;
+				long notOcc = ~occ;
+				
+				int index = pos + typeColor;
+				attacks = lookUp.getMoveMask(index);
+				long ntchd = untouched.get();
+				if ((MASK_CASTLE_ALL_K ^ (notOcc & MASK_CASTLE_OCC_K | ntchd)) == 0L) {
+					moves  = MASK_CASTLE_KING_K;
+				}
+				if ((MASK_CASTLE_ALL_Q ^ (notOcc & MASK_CASTLE_OCC_Q | ntchd)) == 0L) {
+					moves  |= MASK_CASTLE_KING_Q;
+				}
+			}
+			break;
+		case PIECE_TYPE_WHITE_KNIGHT:
+		case PIECE_TYPE_BLACK_KNIGHT:
+			int index = pos + typeColor;
+			attacks = lookUp.getMoveMask(index);
+			break;
+		}
+		moves |= attacks & notOwn;
+		allMoves[pos].set(moves);
+		return Long.bitCount(moves);
+	}
 
 	@Override
 	public int getColorAtTurn() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.colorAtTurn;
 	}
 
 	@Override
@@ -231,5 +266,4 @@ public class BBPosition implements Position {
 	public String toString() {
 		return analyzer.toString();
 	}
-
 }

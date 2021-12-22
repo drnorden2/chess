@@ -20,15 +20,15 @@ public class Piece implements IndexedElement{
 	 final BLVariableInt pos;
 	private final BLVariableInt moveIndex;
 	private final BLVariableInt type;
-	private final MailBoxPosition position;
+	private final MBPosition position;
 	
 	//private IndexedList<Move>allMoves ;
 	
-	public Piece(BaseLiner bl, MailBoxPosition position,int type, int color) {
+	public Piece(BaseLiner bl, MBPosition position,int type, int color) {
 		this(bl, position, type, color, false);
 	}
 
-	public Piece(BaseLiner bl, MailBoxPosition position, int type, int color, boolean touched) {
+	public Piece(BaseLiner bl, MBPosition position, int type, int color, boolean touched) {
 		elementIndex = bl.incrementIndexCounter(Piece.INDEX_Counter_ID);
 		this.bl = bl;
 		this.color = color;

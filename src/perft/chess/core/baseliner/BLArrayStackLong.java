@@ -61,6 +61,10 @@ public class BLArrayStackLong {
 	public boolean unsetBitTouched(int bitIndex) {
 		return addAndTouched(stack[head]&~(1L << bitIndex));
 	}
+	//unset::bits &= ~(1L << bitIndex);
+	public boolean moveBitTouched(int oldIndex, int newIndex) {
+		return addAndTouched(((stack[head]&~(1L << oldIndex))|1L << newIndex));
+	}
 	
 		
 	public boolean decrAndTouched() {

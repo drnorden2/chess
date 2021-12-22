@@ -26,6 +26,14 @@ public class BLVariableInt {
 	public int get() {
 		return varStack.get();
 	}
+	public int getAndSet(int value) {
+		int ret = get();
+		if(varStack.addAndTouched(value)) {
+			bl.touch(bL_Index);
+		}
+		return ret;
+	}
+	
 	public int getChanges() {
 		return varStack.stackSize();
 	}

@@ -15,10 +15,10 @@ import perft.chess.Position;
 import perft.chess.core.datastruct.ArrayStack;
 
 
-public class MailBoxPosition implements Position{
+public class MBPosition implements Position{
 	private MBAnalyzer analyzer;
 	public static int wtfIteration  =0;	
-	public static MailBoxPosition position;
+	public static MBPosition position;
 	public LegalMoveTester legalMoveTest;
 	
 	
@@ -48,8 +48,8 @@ public class MailBoxPosition implements Position{
 
 	
 	
-	public MailBoxPosition() {
-		MailBoxPosition.position = this;
+	public MBPosition() {
+		MBPosition.position = this;
 		analyzer = new MBAnalyzer(this);
 		this.legalMoveTest = new LegalMoveTester(position);
 		for(int i=0;i<fields.length;i++) {

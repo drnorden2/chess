@@ -12,7 +12,7 @@ Perft(6) = 119060324 in 10.080624 sec
 Perft(7) = 3195901860 in 277.148570 sec
 */
 import perft.chess.core.o.O;
-import perft.chess.perftmb.MailBoxPosition;
+import perft.chess.perftmb.MBPosition;
 
 public class Test {
 	private static ChessGameFactory factory  = new ChessGameFactory();
@@ -152,8 +152,8 @@ public class Test {
 		System.out.println("After loading:\n"+game);
 		int hash1 = game.getBoard().getHash();
 		System.out.println("DIE SPIELE SIND ERÖFFNET!");
-		MailBoxPosition.registerCount =0;
-		MailBoxPosition.unRegisterCount =0;
+		MBPosition.registerCount =0;
+		MBPosition.unRegisterCount =0;
 		
 		//O.N=true;
 		long timeStamp = System.currentTimeMillis();
@@ -172,13 +172,13 @@ public class Test {
 		System.out.println(headLine);
 		System.out.print("game\n"+game.toString());
 		System.out.println("");
-		System.out.println("  Delta:"+MailBoxPosition.counter);
+		System.out.println("  Delta:"+MBPosition.counter);
 		int hash2= game.getBoard().getHash();
 		System.out.println("  Hashes:"+hash1+"/"+hash2);
 		System.out.println("");
 		System.out.println("  Callbacks:");
-		System.out.println("  Reg:   "+MailBoxPosition.registerCount+":  ("+(int)(MailBoxPosition.registerCount/game.getMoveCounter())+"/move)  ("+((int)((MailBoxPosition.registerCount/(time*10))/10))+"/s)");
-		System.out.println("  UnReg: " +MailBoxPosition.unRegisterCount+":  ("+(int)(MailBoxPosition.unRegisterCount/game.getMoveCounter())+"/move)  ("+((int)((MailBoxPosition.unRegisterCount/(time*10))/10))+"/s)");
+		System.out.println("  Reg:   "+MBPosition.registerCount+":  ("+(int)(MBPosition.registerCount/game.getMoveCounter())+"/move)  ("+((int)((MBPosition.registerCount/(time*10))/10))+"/s)");
+		System.out.println("  UnReg: " +MBPosition.unRegisterCount+":  ("+(int)(MBPosition.unRegisterCount/game.getMoveCounter())+"/move)  ("+((int)((MBPosition.unRegisterCount/(time*10))/10))+"/s)");
 		System.out.println("");
 		System.out.println("  Nodes (bulk: "+useBulk+"):");
 		System.out.println("  Real Nodes: "+game.getMoveCounter()+":  "+(int)(game.getMoveCounter()/time)+"/s");

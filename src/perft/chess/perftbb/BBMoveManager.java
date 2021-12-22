@@ -5,8 +5,8 @@ public class BBMoveManager {
 
 
 
-		private static final Move [][][] moves= new Move[1280][][];
-		private static final Move [][] pseudoMoveSets = new Move[1280][];
+		public static final Move [][] moves= new Move[1280][64];
+		//private static final Move [][] pseudoMoveSets = new Move[1280][];
 		public static final long [] moveMasks = new long[1280];
 
 		public BBMoveManager() {
@@ -106,12 +106,13 @@ public class BBMoveManager {
 										int newPos = getPosForFileRank(file+2*dir,rank);
 										int rookPos = getPosForFileRank(file+((i==0)?3:-4),rank);
 										curMoves[i][1] = new Move(color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
+										/*
 										int counter =2;
 										
 										for (int j = oldPos + dir*3; j != rookPos+dir; j = j + dir) {
 											curMoves[i][counter++] = new Move(color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,j, MOVE_TYPE_KING_SENSING,dir, 0);
 											//O.UT("added at "+i+","+(counter-1)+" "+curMoves[i+8][counter-1]);
-										}								
+										}*/								
 									}
 								}
 								break;
@@ -123,10 +124,9 @@ public class BBMoveManager {
 							case PIECE_TYPE_ANY:
 								//public Move(BaseLiner bl,int callbackType, int oldPos, int newPos, int moveType) {
 								curMoves[0] = new Move[] {new Move(color,CALLBACK_TYPE_OTHER , getPosForFileRank(file,rank),getPosForFileRank(file,rank), MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
-								break;
-							
+								break;						
 							}
-							//addMoves(curMoves, offset, getPosForRankFile(rank, file),pieceType);
+							addMoves(curMoves, offset, getPosForFileRank(file,rank),pieceType);
 							this.addMoveMask(curMoves, pieceType,offset, getPosForFileRank(file,rank));
 						}
 					}
@@ -134,7 +134,7 @@ public class BBMoveManager {
 			}
 		}
 		
-		public Move[][] getRawMoves (int index) {
+		public Move[] getRawMoves (int index) {
 			return this.moves[index];
 		}
 
@@ -198,10 +198,9 @@ public class BBMoveManager {
 			this.moveMasks[offset+index]=mask;
 		}
 		
-		/*	
+		
 		private void addMoves(Move curMoves[][], int offset,int index, int pieceType) {
 			int rayCounter=0;
-			long moveMask = 0L;
 			
 			for (int i = 0; i < curMoves.length; i++) {// MoveRays
 				if (curMoves[i][0] != null) {
@@ -209,10 +208,8 @@ public class BBMoveManager {
 				}
 			}
 			
-			Move[][] finalMoves=new Move[rayCounter][];
 			int validRayCursor =0;
-			Move[] moveMap = new Move[64*5];
-			
+			Move[] moveMap = new Move[64];
 			
 			int moveIndex =0;
 			
@@ -233,28 +230,19 @@ public class BBMoveManager {
 				}
 				Move[] moves =new Move[moveCounter];
 				for(int j=0;j<moves.length;j++) {
-					Move oldMove = curMoves[i][j];
-					int newPos = oldMove.getNewPos();
-					moves[j] = new Move(oldMove,validRayCursor,j,moveIndex++);
-					moveMask |= 1L << newPos;
-					int collision=0;
-					while(true) {
-						if(moveMap[newPos+collision]==null) {
-							moveMap[newPos+collision] = moves[j];
-							break;
-						}else {
-							collision+=64;
-						}
+					Move move = curMoves[i][j];
+					int curPos = move.getNewPos();
+					int file = getFileForPos(curPos);
+					int rank =getRankForPos(curPos);
+					while(moveMap[curPos]!=null) {
+						rank=(rank-PAWN_MOVE_DIR[move.getColor()]);
+						curPos = getPosForFileRank(file,rank);
 					}
+					moveMap[curPos] = new Move(move,validRayCursor,j,moveIndex++);
+					
 				}
-				finalMoves[validRayCursor++]=moves;
 			}
-			this.pseudoMoveSets[offset+index] = moveMap;
-			this.moveMasks[offset+index]=moveMask;
-			this.moves[offset+index]=finalMoves;
+			this.moves[offset+index] = moveMap;
 		}
-	*/
-
-
 	}
 

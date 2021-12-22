@@ -1,6 +1,5 @@
 package perft.chess.core.baseliner;
 
-import perft.chess.core.datastruct.BitBoard;
 
 public class BLVariableLong {
 		private final int bL_Index;
@@ -30,7 +29,14 @@ public class BLVariableLong {
 				bl.touch(bL_Index);
 			}
 		}
-
+		public void moveBit(int oldIndex, int newIndex) {
+			if(varStack.moveBitTouched(oldIndex, newIndex)){
+				bl.touch(bL_Index);
+			}
+		}
+		
+		
+		
 		public void setBit(int bitIndex) {
 			if(varStack.setBitTouched(bitIndex)){
 				bl.touch(bL_Index);
@@ -42,7 +48,7 @@ public class BLVariableLong {
 		}
 
 		
-		public void unBit(int bitIndex) {
+		public void unsetBit(int bitIndex) {
 			if(varStack.unsetBitTouched(bitIndex)){
 				bl.touch(bL_Index);
 			}

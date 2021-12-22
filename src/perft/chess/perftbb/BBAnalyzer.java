@@ -216,34 +216,57 @@ public class BBAnalyzer {
 	
 	private String getCharBoard(char[] charBoard ) {
 		int[] indices = new int[64];
-		for(int color=0;color<position.pieces.length;color++) {
-			for(int type=0;type<position.pieces[0].length;type++) {
-				int count = position.pieces[color][type].updateIndices(indices);
-				for(int i=0;i<count;i++) {
-					int pos = indices[i];
-					String typeStr = "";
-					switch (type) {
-					case PIECE_TYPE_PAWN:
-						typeStr = color == COLOR_BLACK ? "p" : "P";
-						break;
-					case PIECE_TYPE_KNIGHT:
-						typeStr = color == COLOR_BLACK ? "n" : "N";
-						break;
-					case PIECE_TYPE_BISHOP:
-						typeStr = color == COLOR_BLACK ? "b" : "B";
-						break;
-					case PIECE_TYPE_ROOK:
-						typeStr = color == COLOR_BLACK ? "r" : "R";
-						break;
-					case PIECE_TYPE_QUEEN:
-						typeStr = color == COLOR_BLACK ? "q" : "Q";
-						break;
-					case PIECE_TYPE_KING:
-						typeStr = color == COLOR_BLACK ? "k" : "K";
-						break;
-					}
-					charBoard[pos] = typeStr.charAt(0);
+		
+		
+		for(int color=0;color<2;color++) {
+			int count1 = updateIndices(indices, position.allOfOneColor[color].get());
+			for (int i = 0; i < count1; i++) {
+				int pos = indices[i];
+				int typeColor = position.fields[pos].get();
+				String typeStr = "";
+				switch (typeColor) {
+				case PIECE_TYPE_WHITE_PAWN:
+					typeStr = "P";
+					break;
+				case PIECE_TYPE_WHITE_KNIGHT:
+					typeStr = "N";
+					break;
+				case PIECE_TYPE_WHITE_BISHOP:
+					typeStr = "B";
+					break;
+				case PIECE_TYPE_WHITE_ROOK:
+					typeStr = "R";
+					break;
+				case PIECE_TYPE_WHITE_QUEEN:
+					typeStr = "Q";
+					break;
+				case PIECE_TYPE_WHITE_KING:
+					typeStr = "k";
+					break;
+				case PIECE_TYPE_BLACK_PAWN:
+					typeStr = "p";
+					break;
+				case PIECE_TYPE_BLACK_KNIGHT:
+					typeStr = "n";
+					break;
+				case PIECE_TYPE_BLACK_BISHOP:
+					typeStr = "b";
+					break;
+				case PIECE_TYPE_BLACK_ROOK:
+					typeStr = "r";
+					break;
+				case PIECE_TYPE_BLACK_QUEEN:
+					typeStr = "q";
+					break;
+				case PIECE_TYPE_BLACK_KING:
+					typeStr = "k";
+					break;
+				default:
+					typeStr = "X";
+					System.out.println("WTF");
+					break;
 				}
+				charBoard[pos] = typeStr.charAt(0);
 			}
 		}
 		return "";

@@ -185,6 +185,7 @@ public class Definitions {
 	public static final long[] PAWN_SECOND_LINE = new long[] {MASK_6_RANK,MASK_3_RANK};
 	public static final long[] PAWN_LAST_LINE = new long[] {MASK_1_RANK,MASK_8_RANK};
 	public static final int[] OTHER_COLOR = new int[] {COLOR_WHITE,COLOR_BLACK};
+	public static final int[] PAWN_MOVE_DIR = new int[] {-1,1};
 
 
 			
@@ -201,7 +202,6 @@ public class Definitions {
  		int index = 8 * rank + file;
 		return index;
 	}
-	
 
 	
 	
@@ -251,6 +251,18 @@ public class Definitions {
 		}
 		return retVal ;
 	}
+	public static final int PIECE_TYPE_WHITE_PAWN = (PIECE_TYPE_PAWN  * 2 + COLOR_WHITE) * 64;
+	public static final int PIECE_TYPE_WHITE_KNIGHT = (PIECE_TYPE_KNIGHT* 2 + COLOR_WHITE) * 64;
+	public static final int PIECE_TYPE_WHITE_BISHOP = (PIECE_TYPE_BISHOP* 2 + COLOR_WHITE) * 64;
+	public static final int PIECE_TYPE_WHITE_ROOK = (PIECE_TYPE_ROOK* 2 + COLOR_WHITE) * 64;
+	public static final int PIECE_TYPE_WHITE_QUEEN = (PIECE_TYPE_QUEEN* 2 + COLOR_WHITE) * 64;
+	public static final int PIECE_TYPE_WHITE_KING= (PIECE_TYPE_KING* 2 + COLOR_WHITE) * 64;
 
+	public static final int PIECE_TYPE_BLACK_PAWN = (PIECE_TYPE_PAWN  * 2 + COLOR_BLACK) * 64;
+	public static final int PIECE_TYPE_BLACK_KNIGHT = (PIECE_TYPE_KNIGHT* 2 + COLOR_BLACK) * 64;
+	public static final int PIECE_TYPE_BLACK_BISHOP = (PIECE_TYPE_BISHOP* 2 + COLOR_BLACK) * 64;
+	public static final int PIECE_TYPE_BLACK_ROOK = (PIECE_TYPE_ROOK* 2 + COLOR_BLACK) * 64;
+	public static final int PIECE_TYPE_BLACK_QUEEN = (PIECE_TYPE_QUEEN* 2 + COLOR_BLACK) * 64;
+	public static final int PIECE_TYPE_BLACK_KING= (PIECE_TYPE_KING* 2 + COLOR_BLACK) * 64;
 	
 }

@@ -5,8 +5,8 @@ import static perft.chess.Definitions.*;
 import perft.chess.core.o.O;
 
 public class MBAnalyzer {
-	private MailBoxPosition position;
-	public MBAnalyzer (MailBoxPosition position) {
+	private MBPosition position;
+	public MBAnalyzer (MBPosition position) {
 		this.position = position;
 	}
 

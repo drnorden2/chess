@@ -20,12 +20,12 @@ public class Field implements IndexedElement {
 	//private final BLVariableLong pseudoMovesBits;
 	
 	final BLIndexedList<Move> pseudoMoves;
-	private final MailBoxPosition position;
+	private final MBPosition position;
 	static int optimizationCounter=0;
 	FieldCallback[] fieldCBBuffer = new FieldCallback[64];
 		
 
-	public Field(BaseLiner bl, MailBoxPosition position, int pos) {
+	public Field(BaseLiner bl, MBPosition position, int pos) {
 		this.bl = bl;
 		this.pos = pos;
 		this.file = getFileForPos(pos);
@@ -120,14 +120,14 @@ public class Field implements IndexedElement {
 				if(move.isNoPromotionOrQueen()) {
 					if(!remove) {
 						if(position.fields[newPos].registerCallback(move.getFieldCB())) {
-							MailBoxPosition.registerCount++;
+							MBPosition.registerCount++;
 							if(move.isAttackerMove() ) {
 								position.attackTable[color].incr(newPos);
 							}
 						}
 					}else {
 						if(position.fields[newPos].unRegisterCallback(move.getFieldCB())) {
-							MailBoxPosition.unRegisterCount++;
+							MBPosition.unRegisterCount++;
 							if(move.isAttackerMove() ) {
 								position.attackTable[color].decr(newPos);
 							}
