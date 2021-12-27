@@ -203,7 +203,7 @@ public class MBPosition implements Position{
 		this.moveBeforeBaseLine(move);				
 		this.takeTurn();
 		checkGameState(color);			
-		this.legalMoveTest.checkLegalMovesOpt();
+		this.checkLegalMoves();
 	
 /*		
 		System.out.println("Move End:"+this.wtfIteration+"-----------------------------"+this);
@@ -270,9 +270,10 @@ public class MBPosition implements Position{
 		Piece piece = oldField.getPiece();
 		boolean isPieceTouched = piece.isTouched();
 		
+		/*
 		if(oldPos!=newPos && move.getNewPos()==position.getKingPos(1) && this.color==0) {
 			System.out.println("WTF"+this.wtfIteration+" "+move+":" +this);
-		}
+		}*/
 		
 		int oldEnpassantePos =enPassantePos.get();
 		if(oldPos!=newPos) {
@@ -357,11 +358,13 @@ public class MBPosition implements Position{
 	
 	public void checkGameState(int color){
 		int kingPos = this.getKingPos(color);
+		int otherColor = (color+1)%2;
 		if(kingPos ==-1) {
-			
+			//System.out.println("WTF Kingone!");
+			isCheck[otherColor].set(GAME_STATE_NORMAL);		
+			isCheck[color].set(GAME_STATE_NORMAL);			
 			return;
 		}
-		int otherColor = (color+1)%2;
 		isCheck[otherColor].set(GAME_STATE_NORMAL);		
 		if(attackTable[otherColor].get(kingPos)!=0) {
 			isCheck[color].set(GAME_STATE_CHECK);
@@ -386,7 +389,11 @@ public class MBPosition implements Position{
 	}
 	
 	public int getKingPos(int color) {
-		return this.kingPieces[color].getPosition();
+		if(this.kingPieces[color]!=null) {
+			return this.kingPieces[color].getPosition();
+		}else {
+			return -1;
+		}
 	}
 	int getLevel(){
 		return bl.getLevel()-1;
@@ -417,6 +424,6 @@ public class MBPosition implements Position{
 	
 	@Override
 	public void checkLegalMoves() {
-		this.legalMoveTest.checkLegalMovesOpt();
+		this.legalMoveTest.checkLegalMovesAll();
 	}
 }

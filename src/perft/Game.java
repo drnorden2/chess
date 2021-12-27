@@ -155,6 +155,57 @@ final public class Game {
 		}
 		return moveCount;
 	}
+
+	final public  long bulkPerft(int deep) {
+		
+		long moveCount=0;
+		int moves = board.getMoves();
+		if ( deep ==1) {
+			return moves;
+		}
+		for(int i=0;i<moves;i++) {
+			moveCounter++;
+			board.doMove(i);
+			moveCount +=bulkPerft(deep-1);
+			board.undoMove();
+		}
+		return moveCount;
+	}
+
+	final public  long debugPerft(Board ref, int deep) {
+		long moveCount=0;
+		int moves = board.getMoves();
+		int other = ref.getMoves();
+		
+		if(moves!=other) {
+			System.out.println("unexpeceded Move amount: "+moves+" (ref:"+other+")");
+			System.out.println(this.toString());
+			System.out.println(ref.toString());
+			
+			
+			System.exit(-1);
+		}
+		
+		if ( deep ==0) {
+			return 1;
+		}
+		for(int i=0;i<moves;i++) {
+			String moveStr = board.getMoveStr(i);
+			board.doMove(i);
+			O.UT("***********************************************");
+			O.UT((i+1)+"/"+moves+":"+ moveStr +"("+deep+")" +this.toString());
+			ref.setMoveByMoveStr(moveStr);
+			O.UT(ref.toString());
+			O._push("     ");
+			moveCount +=debugPerft(ref, deep-1);
+			O.UT(moveStr+"Movecount("+deep+"):"+moveCount);  
+			O._pop();
+			board.undoMove();
+			ref.undoMove();
+		}
+		return moveCount;
+	}
+
 	
 	@Override
 	public String toString() {

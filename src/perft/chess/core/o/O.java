@@ -11,7 +11,7 @@ final public class O {
 	private static String prefix="";
 
 	
-	public final static boolean N = false;
+	public final static boolean N = true;
 	private final static int LVL = LVL_NORMAL;
 
 	

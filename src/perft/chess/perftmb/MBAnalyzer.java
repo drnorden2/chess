@@ -12,6 +12,9 @@ public class MBAnalyzer {
 
 	
 	private String[] getCallBackOfPosToString(int pos) {
+		if(pos==-1) {
+			pos =0;
+		}
 		char[] snapshot = new char[64];
 		for (int j = 0; j < 64; j++) {
 			FieldCallback cb = position.fields[j].getRegisteredCallbackForPos(pos);
@@ -219,8 +222,6 @@ public class MBAnalyzer {
 				continue;
 			}
 				
-			int rank = position % 8;
-			int file = position / 8;
 			int color = piece.getColor();
 			int type = piece.getType();
 			String typeStr = "";
@@ -245,7 +246,7 @@ public class MBAnalyzer {
 				break;
 
 			}
-			charBoard[getPosForFileRank(file,rank)] = typeStr.charAt(0);
+			charBoard[position] = typeStr.charAt(0);
 				
 		}
 		return offBoardList;

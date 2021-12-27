@@ -17,7 +17,7 @@ public class BBMoveManager {
 			for (int color = 0; color < 2; color++) {
 				for (int pieceType = 0; pieceType < 7; pieceType++) {
 					int offset = 64 * (pieceType * 2 + color);
-
+						
 					for (int rank = 0; rank < 8; rank++) {
 						for (int file = 0; file < 8; file++) {
 							Move[][] curMoves = new Move[18][7];
@@ -25,8 +25,9 @@ public class BBMoveManager {
 							
 							case PIECE_TYPE_PAWN:
 							//	O.UT("PAWN"+color);
-								int colorSwitch = color==0?1:-1;
+								int colorSwitch = color==0?-1:1;
 								if((rank !=_1 && color ==COLOR_WHITE )||(rank != _8 && color ==COLOR_BLACK )) {
+									
 									//moves only starting from 2nd row
 									{
 										int moveType = MOVE_TYPE_PAWN_BEAT;
@@ -97,7 +98,7 @@ public class BBMoveManager {
 								generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,1, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_ONE_AS_KING);
 								generateMoves(curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 8, file, rank,1, MOVE_TYPE_KING_SENSING,CALLBACK_TYPE_CHECK_KNIGHT_ATTACK);
 								
-								
+								/* no rochade 
 								// add the rochade as ray moves to 1 and 2 options on the E1/E8 position
 								if((rank ==_1 && file ==_E  && color ==COLOR_WHITE)||(rank == _8 && file ==_E && color ==COLOR_BLACK )) {
 									for(int i=0;i<2;i++) {
@@ -106,15 +107,8 @@ public class BBMoveManager {
 										int newPos = getPosForFileRank(file+2*dir,rank);
 										int rookPos = getPosForFileRank(file+((i==0)?3:-4),rank);
 										curMoves[i][1] = new Move(color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
-										/*
-										int counter =2;
-										
-										for (int j = oldPos + dir*3; j != rookPos+dir; j = j + dir) {
-											curMoves[i][counter++] = new Move(color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,j, MOVE_TYPE_KING_SENSING,dir, 0);
-											//O.UT("added at "+i+","+(counter-1)+" "+curMoves[i+8][counter-1]);
-										}*/								
 									}
-								}
+								}*/
 								break;
 							case PIECE_TYPE_QUEEN:
 								//O.UT("QUEEN "+color+"file "+file +" Rank:"+rank+" Offset:"+offset);
@@ -126,7 +120,7 @@ public class BBMoveManager {
 								curMoves[0] = new Move[] {new Move(color,CALLBACK_TYPE_OTHER , getPosForFileRank(file,rank),getPosForFileRank(file,rank), MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
 								break;						
 							}
-							addMoves(curMoves, offset, getPosForFileRank(file,rank),pieceType);
+							this.addMoves(curMoves, offset, getPosForFileRank(file,rank),pieceType);
 							this.addMoveMask(curMoves, pieceType,offset, getPosForFileRank(file,rank));
 						}
 					}
@@ -242,6 +236,7 @@ public class BBMoveManager {
 					
 				}
 			}
+			
 			this.moves[offset+index] = moveMap;
 		}
 	}

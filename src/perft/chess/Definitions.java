@@ -150,6 +150,16 @@ public class Definitions {
 			MASK_G_FILE,
 			MASK_H_FILE
 	};
+	public final static long[] MASK_NOT_X_FILE = new long[]{
+			MASK_NOT_A_FILE,
+			MASK_NOT_B_FILE,
+			MASK_NOT_C_FILE,
+			MASK_NOT_D_FILE,
+			MASK_NOT_E_FILE,
+			MASK_NOT_F_FILE,
+			MASK_NOT_G_FILE,
+			MASK_NOT_H_FILE
+	};
 	
 	public final static long MASK_NOT_1_RANK = not(MASK_1_RANK);
 	public final static long MASK_NOT_2_RANK = not(MASK_2_RANK);
@@ -264,5 +274,7 @@ public class Definitions {
 	public static final int PIECE_TYPE_BLACK_ROOK = (PIECE_TYPE_ROOK* 2 + COLOR_BLACK) * 64;
 	public static final int PIECE_TYPE_BLACK_QUEEN = (PIECE_TYPE_QUEEN* 2 + COLOR_BLACK) * 64;
 	public static final int PIECE_TYPE_BLACK_KING= (PIECE_TYPE_KING* 2 + COLOR_BLACK) * 64;
+
+	
 	
 }

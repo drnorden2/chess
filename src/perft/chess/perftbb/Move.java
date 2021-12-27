@@ -235,8 +235,8 @@ public class Move {
 			}
 			
 		}
-		return ""+((char)('a'+f1))  +""+ (8-r1)+""
-				+((char)('a'+f2))  +""+ (8-r2)+promotion+"";
+		return ""+((char)('a'+f1))  +""+ (1+r1)+""
+				+((char)('a'+f2))  +""+ (1+r2)+promotion+"";
 	}	
 	
 	public int getII() {

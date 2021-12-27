@@ -43,8 +43,6 @@ public class BBCodeGenerator {
 			long no=1L <<i;
 			long sw=1L <<i;
 			long so=1L <<i;
-			int rank = getRankForPos(i);
-			int file = getFileForPos(i);
 			
 			for(int j=0;j<8;j++) {
 				nw = (nw<<DIR_UP_LEFT) & MASK_NOT_1_RANK & MASK_NOT_A_FILE;
@@ -53,6 +51,8 @@ public class BBCodeGenerator {
 				so = (so>>DIR_UP_RIGHT) & MASK_NOT_8_RANK & MASK_NOT_A_FILE;
 				bishopMasks[i]|=nw|no|sw|so;
 			}
+			int rank = getRankForPos(i);
+			int file = getFileForPos(i);
 			if(file!=_A ) bishopMasks[i] &= MASK_NOT_A_FILE;
 			if(file!=_H ) bishopMasks[i] &= MASK_NOT_H_FILE;
 			if(rank!=_1 ) bishopMasks[i] &= MASK_NOT_1_RANK;

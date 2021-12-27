@@ -2,24 +2,49 @@ import java.util.HashMap;
 
 import perft.Game;
 import perft.chess.ChessGameFactory;
-/*
-Perft(1) = 20 in 0.001312 sec
-Perft(2) = 400 in 0.001263 sec
-Perft(3) = 8902 in 0.004491 sec
-Perft(4) = 197281 in 0.023202 sec
-Perft(5) = 4865609 in 0.419626 sec
-Perft(6) = 119060324 in 10.080624 sec		   
-Perft(7) = 3195901860 in 277.148570 sec
-*/
+
 import perft.chess.core.o.O;
 import perft.chess.perftmb.MBPosition;
 
 public class Test {
+	/*
+	Perft(1) = 20 in 0.001312 sec
+	Perft(2) = 400 in 0.001263 sec
+	Perft(3) = 8902 in 0.004491 sec
+	Perft(4) = 197281 in 0.023202 sec
+	Perft(5) = 4865609 in 0.419626 sec
+	Perft(6) = 119060324 in 10.080624 sec		   
+	Perft(7) = 3195901860 in 277.148570 sec
+	*/
 	private static ChessGameFactory factory  = new ChessGameFactory();
+
 	private static boolean useBulk = true;
 
 	public static void main(String[] args) {
-		test(4, 197281,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w KQkq - 0 1");
+		ChessGameFactory.bitBoard=true;
+		//debug(1, 16,"3qk3/8/8/8/8/8/8/3QK4 b - - 0 1");
+		test(6, 120921506,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+				
+		//test(2, 1890,"q7/8/8/8/8/8/8/7Q w - - 0 1");
+	
+		//test(3, 8902,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+		
+		//test(5, 1890,"k7/8/8/8/8/8/8/7K b - - 0 1");
+		
+		
+		
+		if(true)return;
+		test(3, 4732,"k7/pppppppp/8/8/8/8/PPPPPPPP/7K b - - 0 1");
+		test(3, 8902,"c");
+		test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		
+		
+		
+		
+		
+		
+		
+		
 		
 		//test(4, 2, "k7/Pp6/1P6/8/1p6/6p1/2P3Pp/7K w - - 0 1");
 
@@ -142,9 +167,72 @@ public class Test {
 	}
 	
 	
+	private static void debug(int depth, long nodes, String fen) {
+		Test.debug(new String[0], null, depth, nodes, fen);
+	}
+	private static void debug(String [] debugMoves, HashMap<String,Long>refMap,int depth, long nodes, String fen) {
+		//O.N=false;
+		ChessGameFactory.bitBoard=false;
+		Game reference = new Game(factory,fen);
+		
+		ChessGameFactory.bitBoard=true;
+		Game game = new Game(factory,fen);
+		
+		System.out.println("After loading:\n"+game);
+		int hash1 = game.getBoard().getHash();
+		System.out.println("DIE SPIELE SIND ERÖFFNET!");
+		MBPosition.registerCount =0;
+		MBPosition.unRegisterCount =0;
+		
+		//O.N=true;
+		long timeStamp = System.currentTimeMillis();
+		long games = 0;
+		String headLine="";
+		if(useBulk) {
+			headLine +="Bulk Counting";
+		}else {
+			headLine +="Real Counting";
+		}
+		games = game.debugPerft(reference.getBoard(),depth);
+		
+		double time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
+		boolean correct = games == nodes;
+
+		System.out.println(headLine);
+		System.out.print("game\n"+game.toString());
+		System.out.println("");
+		System.out.println("  Delta:"+MBPosition.counter);
+		int hash2= game.getBoard().getHash();
+		System.out.println("  Hashes:"+hash1+"/"+hash2);
+		System.out.println("");
+		System.out.println("  Callbacks:");
+		System.out.println("  Reg:   "+MBPosition.registerCount+":  ("+(int)(MBPosition.registerCount/game.getMoveCounter())+"/move)  ("+((int)((MBPosition.registerCount/(time*10))/10))+"/s)");
+		System.out.println("  UnReg: " +MBPosition.unRegisterCount+":  ("+(int)(MBPosition.unRegisterCount/game.getMoveCounter())+"/move)  ("+((int)((MBPosition.unRegisterCount/(time*10))/10))+"/s)");
+		System.out.println("");
+		System.out.println("  Nodes (bulk: "+useBulk+"):");
+		System.out.println("  Real Nodes: "+game.getMoveCounter()+":  "+(int)(game.getMoveCounter()/time)+"/s");
+		System.out.println("  Bulk Nodes: "+games +":  "+(int)(games/time)+"/s");
+		
+		System.out.println("");
+		System.out.println("  FEN:\""+fen+"\"");
+		System.out.println("  Depth: "+ depth);
+		System.out.println("  Time: "+ time +"s");
+		if(correct) {
+			System.out.print("[OK]: ");
+		}else {
+			System.out.print("[FAILED]: ");
+		}
+		System.out.println("("+games+" of "+nodes+")");
+				
+		
+		if(!correct) {
+			System.exit(-1);
+		}
+	}
 	private static void test(int depth, long nodes, String fen) {
 		Test.test(new String[0], null, depth, nodes, fen);
 	}
+	
 	private static void test(String [] debugMoves, HashMap<String,Long>refMap,int depth, long nodes, String fen) {
 		//O.N=false;
 		Game game = new Game(factory,fen);
@@ -165,7 +253,8 @@ public class Test {
 			headLine +="Real Counting";
 		}
 		games = game.perft(depth,debugMoves,refMap,useBulk);
-
+		//games = game.bulkPerft(depth);
+		
 		double time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
 		boolean correct = games == nodes;
 

@@ -1,8 +1,7 @@
 package perft.chess.perftbb;
 import static perft.chess.Definitions.*;
 
-import perft.chess.core.baseliner.BLVariableLong;
-import perft.chess.core.o.O;
+
 
 public class BBAnalyzer {
 	private BBPosition position;
@@ -11,13 +10,13 @@ public class BBAnalyzer {
 		this.position = position;
 	}
 
-	/*
+	
 	private String[] getCallBackOfPosToString(int pos) {
 		char[] snapshot = new char[64];
 		for (int j = 0; j < 64; j++) {
-			FieldCallback cb = position.fields[j].getRegisteredCallbackForPos(pos);
-			if(cb!=null) {
-				snapshot[j]=(char)('0'+cb.getCallbackType());
+			long cb = position.tCallBacks[j].get();
+			if(((cb >> pos) & 1L)==1L) {
+				snapshot[j]=(char)('1');
 			}
 		}
 		return this.snapshotToString(snapshot,"CallBacks","Pos:"+pos);
@@ -25,16 +24,19 @@ public class BBAnalyzer {
 
 	
 	private String[] getAttackToString(int color) {
+		long own = position.allOfOneColor[color].get();
+		long correction = position.correctors[color].get();
 		char[] snapshot = new char[64];
 		for (int j = 0; j < 64; j++) {
-			int attack = position.attackTable[color].get(j);
+			int attack = (int)(Long.bitCount(position.tCallBacks[j].get()&own)
+					- (( correction>> j) & 1 ));
 			if(attack!=0) {
 				snapshot[j]=(char)('0'+attack);
 			}
 		}
 		return this.snapshotToString(snapshot,"Attacks","Of Col:"+(color==COLOR_WHITE?"W":"B"));
 	}
-
+	/*
 	private String[] getEnPassanteToString() {
 		char[] snapshot = new char[64];
 		int enpassante = position.enPassantePos.get();
@@ -47,19 +49,14 @@ public class BBAnalyzer {
 		}
 		return this.snapshotToString(snapshot,"EnPassante","Pos:"+enpassante);
 	}
-	
+	*/
 
+	
 	private String[] getMovesToString() {
 		char[] snapshot = new char[64];
-		int count=position.allMovesLists.get(position.getLevel()).size();
+		int count=position.getMoves();
 		for(int i=0;i<count;i++){
-			Move move = position.allMovesLists.get(position.getLevel()).get(i);
-			
-			if(move==null) {
-				O.UT("Seriously! Move missing at "+i+" from "+count );
-				continue;
-			}
-
+			Move move = position.getMoveObj(i);
 			snapshot[move.getOldPos()]++;			
 		}
 		for (int j = 0; j < 64; j++) {
@@ -68,26 +65,35 @@ public class BBAnalyzer {
 			}
 
 		}
-		return this.snapshotToString(snapshot,"Moves:"+(position.color==COLOR_WHITE?"W":"B"),"Size:"+count);
-
+		return this.snapshotToString(snapshot,"Moves:"+(position.getColorAtTurn()==COLOR_WHITE?"W":"B"),"Size:"+count);
 	}
-
+	private int wtfcount;
+	
 	private String[] getPseudoMovesToString(int color) {
+		
 		char[] snapshot = new char[64];
 		int count =0;
-		for(int i=0;i<position.allPieces[color].size();i++){
-			Piece piece = position.allPieces[color].getElement(i);
-			Field field = position.fields[piece.getPosition()];
+		int[] indices1 = new int[64];
+		long own = position.allOfOneColor[color].get();
+		long notOwn = ~own;
+		int count1 = updateIndices(indices1, own);
+		
+		for (int i = 0; i < count1; i++) {
+			int pos = indices1[i];
+			long moveMask = position.allMoves[pos].get() & notOwn;
 			
-			//Move[] pseudoMoves = new Move[64];
-			//int pseudoMoveCount =  field.getPseudoMoveList(pseudoMoves);
-			int pseudoMoveCount = field.pseudoMoves.size();
-			
-			for(int j=0;j<pseudoMoveCount ;j++) {
-				//Move move = pseudoMoves[j]; 
-				Move move = field.pseudoMoves.getElement(j);
-				snapshot[move.getOldPos()]++;			
-				count++;
+			int index = pos + position.fields[pos].get();
+			Move[] moves = position.lookUp.getMoveMap(index);
+			int[] indices2 = new int[64];
+			int count2 = updateIndices(indices2, moveMask);	
+			//System.out.println(i+":"+count2);
+			//out(moveMask);
+			for (int j = 0; j < count2; j++) {
+				Move move = moves[indices2[j]];//TBD
+				int movePos = move.getOldPos();
+					
+				snapshot[movePos]++;			
+				count++;	
 			}
 		}
 		for (int j = 0; j < 64; j++) {
@@ -96,9 +102,11 @@ public class BBAnalyzer {
 			}
 
 		}
-		return this.snapshotToString(snapshot,"PMovs:"+(position.color==COLOR_WHITE?"W":"B"),"Size:"+count);
+		return this.snapshotToString(snapshot,"PMovs:"+(position.getColorAtTurn()==COLOR_WHITE?"W":"B"),"Size:"+count);
 
 	}
+	
+/*	
 	private String[] getUntouchedToString() {
 		char[] snapshot = new char[64];
 		int count=position.getMoves();
@@ -108,7 +116,6 @@ public class BBAnalyzer {
 			for (int j = 0; j < 64; j++) {
 				if(position.fields[j].getPiece()!=null &&!position.fields[j].getPiece().isTouched()) {
 					snapshot[j]=charBoard[j];
-					
 				}
 			}
 		}
@@ -132,21 +139,22 @@ public class BBAnalyzer {
 		System.out.println("EXPENSIVE");
 		Long.numberOfTrailingZeros(0L);
 		String[] board = this.getBoardToString();
-	/*
+	
 		String[] attackW = this.getAttackToString(COLOR_WHITE);
 		String[] attackB = this.getAttackToString(COLOR_BLACK);
-		String[] posA = this.getCallBackOfPosToString(45);//position.getKingPos(Piece.COLOR_WHITE));
-		String[] posB = this.getCallBackOfPosToString(position.getKingPos(COLOR_BLACK));
+		
+		String[] posA = this.getCallBackOfPosToString(58);//position.getKingPos(Piece.COLOR_WHITE));
+		String[] posB = this.getCallBackOfPosToString(23);
 		String[] posC = this.getMovesToString();//this.getColorAtTurn());
 		String[] posD = this.getPseudoMovesToString(COLOR_WHITE);
 		String[] posE = this.getPseudoMovesToString(COLOR_BLACK);
+		/*
 		String[] posF = this.getEnPassanteToString();
 		String[] posG = this.getUntouchedToString();
 		*/
 		String str="\n";
 		for(int i=0;i<board.length;i++) {
 			str +=board[i]
-					/*
 					+" | " +
 				attackW[i]+" | " +
 				attackB[i]+" | " +
@@ -155,10 +163,11 @@ public class BBAnalyzer {
 				posC[i]+" | " +
 				posD[i]+" | " +
 				posE[i]+" | " +
+				/*
 				posF[i]+" | " +
-				posG[i]+"\n";
+				posG[i]+;
 			*/
-			+"\n";
+			"\n";
 
 		}
 		
@@ -241,7 +250,7 @@ public class BBAnalyzer {
 					typeStr = "Q";
 					break;
 				case PIECE_TYPE_WHITE_KING:
-					typeStr = "k";
+					typeStr = "K";
 					break;
 				case PIECE_TYPE_BLACK_PAWN:
 					typeStr = "p";
@@ -263,7 +272,6 @@ public class BBAnalyzer {
 					break;
 				default:
 					typeStr = "X";
-					System.out.println("WTF");
 					break;
 				}
 				charBoard[pos] = typeStr.charAt(0);

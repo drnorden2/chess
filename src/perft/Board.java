@@ -58,6 +58,20 @@ abstract public class Board {
 	abstract public int getHash();
 	abstract public boolean isWon();
 	abstract public void setMove(int move);
+	public void setMoveByMoveStr(String notation) {
+		int count = this.getMoves();
+		for(int i=0;i<count;i++) {
+			if(this.getMoveStr(i).equals(notation)) {
+				this.doMove(i);
+				return;
+			}
+		}
+		System.out.println("Move not found:"+notation);
+		for(int i=0;i<count;i++) {
+			System.out.println(i+":"+this.getMoveStr(i));
+		}
+		System.exit(-1);
+	}
 	abstract public void unSetMove(int move);
 
 }

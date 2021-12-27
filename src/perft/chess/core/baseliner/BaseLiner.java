@@ -21,11 +21,11 @@ public class BaseLiner {
 	private final int totalObj;
 	private final int totalObjAndInt;
 	
-	public static boolean isAlreadyInSimulation =false;
+	public boolean isAlreadyInSimulation =false;
 
 	//100000,100,500)
 	
-	public BaseLiner (int totalObj, int totalInt, int totalLong, int maxLevel,int maxLocalChanges){
+	public  BaseLiner (int totalObj, int totalInt, int totalLong, int maxLevel,int maxLocalChanges){
 		this.totalObj = totalObj;
 		this.totalObjAndInt = totalObj+totalInt;
 		registry2 = totalObj;
