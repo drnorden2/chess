@@ -23,7 +23,7 @@ public class MBPosition implements Position{
 	
 	
 	//private final Zobrist zobrist;
- 
+  
 	
 	final int depth = 8;
 	public final BaseLiner bl = new BaseLiner(10000,10000,65,depth,1000);
@@ -425,5 +425,12 @@ public class MBPosition implements Position{
 	@Override
 	public void checkLegalMoves() {
 		this.legalMoveTest.checkLegalMovesAll();
+	}
+	public int[] getAttacks (int color){
+		int[] attacks = new int[64];
+		for (int j = 0; j < 64; j++) {
+			attacks[j] = this.attackTable[color].get(j);
+		}
+		return attacks;
 	}
 }

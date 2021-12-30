@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import perft.Player.PlayerType;
 import perft.chess.core.o.O;
+import perft.chess.perftbb.BBAnalyzer;
 
 
 final public class Game {
@@ -171,17 +172,33 @@ final public class Game {
 		}
 		return moveCount;
 	}
-
-	final public  long debugPerft(Board ref, int deep) {
+	
+	private boolean equal (int[] a, int b[]) {
+		for(int i=0;i<a.length;i++) {
+			if(a[i]!=b[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	final public  long debugPerft(Board ref, int deep,String last) {
 		long moveCount=0;
 		int moves = board.getMoves();
 		int other = ref.getMoves();
+		int[] aW = board.getAttacks(0);
+		int[] aB = board.getAttacks(1);
+		int[] bW = ref.getAttacks(0);
+		int[] bB = ref.getAttacks(1);
 		
-		if(moves!=other) {
-			System.out.println("unexpeceded Move amount: "+moves+" (ref:"+other+")");
+		
+		if(moves!=other || !equal(aW,bW)||!equal(aB,bB)) {
+			System.out.println(last);
+			
+			System.out.println("unexpeceded Move amount: "+moves+" (ref:"+other );
 			System.out.println(this.toString());
 			System.out.println(ref.toString());
-			
+			System.out.println(BBAnalyzer.diffPositions(this.toString(),ref.toString()));
 			
 			System.exit(-1);
 		}
@@ -192,14 +209,13 @@ final public class Game {
 		for(int i=0;i<moves;i++) {
 			String moveStr = board.getMoveStr(i);
 			board.doMove(i);
-			O.UT("***********************************************");
-			O.UT((i+1)+"/"+moves+":"+ moveStr +"("+deep+")" +this.toString());
+			String cur ="";
+			cur+= "***********************************************\n";
+			cur+=""+(i+1)+"/"+moves+":"+ moveStr +"("+deep+")" +this.toString()+"\n";
 			ref.setMoveByMoveStr(moveStr);
-			O.UT(ref.toString());
-			O._push("     ");
-			moveCount +=debugPerft(ref, deep-1);
-			O.UT(moveStr+"Movecount("+deep+"):"+moveCount);  
-			O._pop();
+			cur+= ref.toString()+"+\n";
+			moveCount +=debugPerft(ref, deep-1,last+cur);
+			cur+=moveStr+"Movecount("+deep+"):"+moveCount+"\n";  
 			board.undoMove();
 			ref.undoMove();
 		}

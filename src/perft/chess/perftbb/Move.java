@@ -52,7 +52,7 @@ public class Move {
 		this.oldPos= oldPos;
 		this.newPos = newPos;
 		this.moveType = moveType;
-		this.promotePieceType = promotePieceType; 
+		this.promotePieceType = promotePieceType==-1? promotePieceType:(promotePieceType*2+color)*64; 
 		this.rookPos =rookPos;
 		this.dirOfRochade = dirOfRochade ;
 		this.callbackType = callbackType;
@@ -184,14 +184,17 @@ public class Move {
 	public boolean isPromotion() {
 		return (promotePieceType!=-1);
 	}
-	public boolean isNoPromotionOrQueen() {
-		return (promotePieceType==-1||promotePieceType==PIECE_TYPE_QUEEN);
-	}
+	
 	
 	
 	public int getCallbackType() {
 		return this.callbackType;
 	}
+
+	public boolean isRochade() {
+		return this.isRochade;		
+	}
+	
 	public boolean isAttackerMove() {
 		return this.isAttackerMove;		
 	}
@@ -219,7 +222,8 @@ public class Move {
 		int f2 = getFileForPos(newPos);
 		String promotion = "";
 		if(this.getPromotePieceType()!=-1) {
-			switch(this.getPromotePieceType()) {
+			int pieceType  = ((this.getPromotePieceType()/64)-this.color)/2;
+			switch(pieceType) {
 			case PIECE_TYPE_BISHOP:
 				promotion = "b";
 				break;

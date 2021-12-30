@@ -24,6 +24,11 @@ public class ChessBoard extends Board{
 		position.setMove(move);
 	}
 	
+	public int[] getAttacks(int color) {
+		return position.getAttacks(color);
+	}
+
+	
 
 	@Override
 	public void unSetMove(int move) {

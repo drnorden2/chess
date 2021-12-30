@@ -94,11 +94,10 @@ public class BBMoveManager {
 								//O.UT("KING_T "+color+"file "+file +" Rank:"+rank+" Offset:"+offset);
 								//generate the sensing moves to detect pinning
 
-								generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_KING_SENSING,CALLBACK_TYPE_KING_SENSING);
+								//generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_KING_SENSING,CALLBACK_TYPE_KING_SENSING);
 								generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,1, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_ONE_AS_KING);
-								generateMoves(curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 8, file, rank,1, MOVE_TYPE_KING_SENSING,CALLBACK_TYPE_CHECK_KNIGHT_ATTACK);
+								//generateMoves(curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 8, file, rank,1, MOVE_TYPE_KING_SENSING,CALLBACK_TYPE_CHECK_KNIGHT_ATTACK);
 								
-								/* no rochade 
 								// add the rochade as ray moves to 1 and 2 options on the E1/E8 position
 								if((rank ==_1 && file ==_E  && color ==COLOR_WHITE)||(rank == _8 && file ==_E && color ==COLOR_BLACK )) {
 									for(int i=0;i<2;i++) {
@@ -108,7 +107,7 @@ public class BBMoveManager {
 										int rookPos = getPosForFileRank(file+((i==0)?3:-4),rank);
 										curMoves[i][1] = new Move(color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
 									}
-								}*/
+								}
 								break;
 							case PIECE_TYPE_QUEEN:
 								//O.UT("QUEEN "+color+"file "+file +" Rank:"+rank+" Offset:"+offset);
@@ -181,7 +180,7 @@ public class BBMoveManager {
 				for(int j=0;j<curMoves[i].length;j++) {
 					Move oldMove = curMoves[i][j];
 					if(oldMove!=null) {
-						if(!oldMove.isKingSensing()) {
+						if(!oldMove.isKingSensing() && !oldMove.isRochade()) {
 							int newPos = oldMove.getNewPos();
 							mask |= 1L << newPos;
 						}

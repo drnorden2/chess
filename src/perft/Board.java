@@ -16,6 +16,8 @@ abstract public class Board {
 		this();
 	}
 	
+	
+	
 	public final int getMovesPlayed() {
 		return movesPlayed;
 	}
@@ -52,6 +54,7 @@ abstract public class Board {
 		unSetMove(move);
 		movesPlayed--;
 	}
+	abstract public int[] getAttacks(int color);
 	
 	abstract public int getMoves();
 	abstract public String getMoveStr(int move);
@@ -67,6 +70,7 @@ abstract public class Board {
 			}
 		}
 		System.out.println("Move not found:"+notation);
+		System.out.println(this);
 		for(int i=0;i<count;i++) {
 			System.out.println(i+":"+this.getMoveStr(i));
 		}

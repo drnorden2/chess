@@ -84,6 +84,14 @@ public class BLVariableLong {
 				bl.touch(bL_Index);
 			}
 		}
+		public long getAndSet(long value) {
+			long ret = get();
+			if(varStack.addAndTouched(value)) {
+				bl.touch(bL_Index);
+			}
+			return ret;
+		}
+
 		
 		public String toString() {
 			return ""+get();

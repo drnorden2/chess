@@ -22,6 +22,18 @@ public class BBAnalyzer {
 		return this.snapshotToString(snapshot,"CallBacks","Pos:"+pos);
 	}
 
+	private String[] getMovesOfPosToString(int pos) {
+		char[] snapshot = new char[64];
+		long moves = position.allMoves[pos].get();
+
+		for (int j = 0; j < 64; j++) {
+			if(((moves>> j) & 1L)==1L) {
+				snapshot[j]=(char)('1');
+			}
+		}
+		return this.snapshotToString(snapshot,"CallBacks","Pos:"+pos);
+	}
+
 	
 	private String[] getAttackToString(int color) {
 		long own = position.allOfOneColor[color].get();
@@ -30,33 +42,68 @@ public class BBAnalyzer {
 		for (int j = 0; j < 64; j++) {
 			int attack = (int)(Long.bitCount(position.tCallBacks[j].get()&own)
 					- (( correction>> j) & 1 ));
+			if(attack<0) {
+				System.out.println("WTF at pos ("+j+")!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+			
+			}
 			if(attack!=0) {
 				snapshot[j]=(char)('0'+attack);
 			}
 		}
+		
 		return this.snapshotToString(snapshot,"Attacks","Of Col:"+(color==COLOR_WHITE?"W":"B"));
 	}
-	/*
+
+	private String[] getRawAttackToString(int color) {
+		long own = position.allOfOneColor[color].get();
+		long correction = position.correctors[color].get();
+		char[] snapshot = new char[64];
+		for (int j = 0; j < 64; j++) {
+			int attack = (int)(Long.bitCount(position.tCallBacks[j].get()&own));
+			if(attack!=0) {
+				snapshot[j]=(char)('0'+attack);
+			}
+		}
+		
+		return this.snapshotToString(snapshot,"Attacks","Of Col:"+(color==COLOR_WHITE?"W":"B"));
+	}
+	private String[] getAttackCorrectionsToString(int color) {
+		long own = position.allOfOneColor[color].get();
+		long correction = position.correctors[color].get();
+		char[] snapshot = new char[64];
+		for (int j = 0; j < 64; j++) {
+			int attack = (int)(( correction>> j) & 1 );
+			if(attack!=0) {
+				snapshot[j]=(char)('0'+attack);
+			}
+		}
+		
+		return this.snapshotToString(snapshot,"Attacks","Of Col:"+(color==COLOR_WHITE?"W":"B"));
+	}
+
 	private String[] getEnPassanteToString() {
 		char[] snapshot = new char[64];
-		int enpassante = position.enPassantePos.get();
-		if(enpassante!=-1) {
-			for (int j = 0; j < 64; j++) {
-				if(enpassante==j) {
-					snapshot[j]=(char)('X');
+		long enpMask = position.enPassantePos.get();
+		int enpassante =-1;
+		if(enpMask!=0) {
+			enpassante = Long.numberOfTrailingZeros(enpMask);
+			if(enpassante!=-1) {
+				for (int j = 0; j < 64; j++) {
+					if(enpassante==j) {
+						snapshot[j]=(char)('X');
+					}
 				}
 			}
 		}
 		return this.snapshotToString(snapshot,"EnPassante","Pos:"+enpassante);
 	}
-	*/
 
 	
 	private String[] getMovesToString() {
 		char[] snapshot = new char[64];
 		int count=position.getMoves();
 		for(int i=0;i<count;i++){
-			Move move = position.getMoveObj(i);
+			Move move = position.getMove(i);
 			snapshot[move.getOldPos()]++;			
 		}
 		for (int j = 0; j < 64; j++) {
@@ -106,23 +153,21 @@ public class BBAnalyzer {
 
 	}
 	
-/*	
+
 	private String[] getUntouchedToString() {
 		char[] snapshot = new char[64];
-		int count=position.getMoves();
+		long untouched = position.untouched.get();
+		
 		char[] charBoard = new char[64];
-		String offBoardList = getCharBoard(charBoard);
-		for(int i=0;i<count;i++){
-			for (int j = 0; j < 64; j++) {
-				if(position.fields[j].getPiece()!=null &&!position.fields[j].getPiece().isTouched()) {
-					snapshot[j]=charBoard[j];
-				}
+		getCharBoard(charBoard );
+		for (int j = 0; j < 64; j++) {
+			if(((untouched >> j) & 1L)==1L) {
+				snapshot[j]=charBoard[j];
 			}
 		}
 		return this.snapshotToString(snapshot,"Untouched","");
 
 	}
-*/
 	private boolean compareSnapshots(int[][] snapshot1,int[][] snapshot2) {
 		for (int i = 0; i < 2; i++) {
 			for (int j = 0; j < 64; j++) {
@@ -142,16 +187,18 @@ public class BBAnalyzer {
 	
 		String[] attackW = this.getAttackToString(COLOR_WHITE);
 		String[] attackB = this.getAttackToString(COLOR_BLACK);
+		String[] posA = this.getRawAttackToString(COLOR_WHITE);
+		String[] posB = this.getAttackCorrectionsToString(COLOR_WHITE);
 		
-		String[] posA = this.getCallBackOfPosToString(58);//position.getKingPos(Piece.COLOR_WHITE));
-		String[] posB = this.getCallBackOfPosToString(23);
+		//String[] posA = this.getCallBackOfPosToString(4);//position.getKingPos(Piece.COLOR_WHITE));
+		//String[] posB = this.getMovesOfPosToString(4);
 		String[] posC = this.getMovesToString();//this.getColorAtTurn());
 		String[] posD = this.getPseudoMovesToString(COLOR_WHITE);
 		String[] posE = this.getPseudoMovesToString(COLOR_BLACK);
-		/*
+		
 		String[] posF = this.getEnPassanteToString();
 		String[] posG = this.getUntouchedToString();
-		*/
+		
 		String str="\n";
 		for(int i=0;i<board.length;i++) {
 			str +=board[i]
@@ -163,11 +210,8 @@ public class BBAnalyzer {
 				posC[i]+" | " +
 				posD[i]+" | " +
 				posE[i]+" | " +
-				/*
 				posF[i]+" | " +
-				posG[i]+;
-			*/
-			"\n";
+				posG[i] +"\n";
 
 		}
 		
@@ -225,7 +269,6 @@ public class BBAnalyzer {
 	
 	private String getCharBoard(char[] charBoard ) {
 		int[] indices = new int[64];
-		
 		
 		for(int color=0;color<2;color++) {
 			int count1 = updateIndices(indices, position.allOfOneColor[color].get());
@@ -287,7 +330,7 @@ public class BBAnalyzer {
 		return (str+"          ").substring(0,2);
 	}
 	
-	public String diffPositions(String a, String b) {
+	public static String diffPositions(String a, String b) {
 		String out = "";
 		for(int i=0;i<a.length();i++) {
 			if (a.charAt(i)==b.charAt(i)) {

@@ -29,5 +29,8 @@ public interface Position {
 	void checkLegalMoves();
 
 	void setInitialTurn(int colorBlack);
+	
+	int[] getAttacks(int color);
+
 
 }

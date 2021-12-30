@@ -22,12 +22,15 @@ public class Test {
 
 	public static void main(String[] args) {
 		ChessGameFactory.bitBoard=true;
+		test(4,4206408,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		//test(6, 120921506,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+		
 		//debug(1, 16,"3qk3/8/8/8/8/8/8/3QK4 b - - 0 1");
-		test(6, 120921506,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
-				
+		//test(6, 120921506,"r7/pp6/8/8/8/8/PP6/R7 b - - 0 1");
+					
 		//test(2, 1890,"q7/8/8/8/8/8/8/7Q w - - 0 1");
 	
-		//test(3, 8902,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+		//test(6, 120921506,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
 		
 		//test(5, 1890,"k7/8/8/8/8/8/8/7K b - - 0 1");
 		
@@ -193,7 +196,7 @@ public class Test {
 		}else {
 			headLine +="Real Counting";
 		}
-		games = game.debugPerft(reference.getBoard(),depth);
+		games = game.debugPerft(reference.getBoard(),depth,"start");
 		
 		double time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
 		boolean correct = games == nodes;
