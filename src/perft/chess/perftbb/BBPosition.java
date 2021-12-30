@@ -336,9 +336,7 @@ public class BBPosition implements Position {
 			
 			
 			correction &= ~(this.rawCBs[pos].get() & MASK_X_FILE[file]);
-			
 			callbacks = lookUp.getMoveMask(pos + typeColor);
-			
 			
 			long oneUp = (1L << pos) << DIR_UP;
 			long twoUp= ((oneUp  & notOcc & MASK_3_RANK) << DIR_UP) ;
@@ -347,15 +345,6 @@ public class BBPosition implements Position {
 			correction |= callbacks & MASK_X_FILE[file];
 			moves = raw & notOcc;
 			moves |= ((callbacks & MASK_NOT_X_FILE[file]) & (other | (this.enPassantePos.get() & MASK_6_RANK) ));
-			/*
-			moves = ((1L << pos) << DIR_UP) & notOcc;
-			moves |= ((moves & MASK_3_RANK) << DIR_UP) & notOcc;
-			moves |= callbacks & MASK_NOT_X_FILE[file] & (other | (this.enPassantePos.get() & MASK_6_RANK ));
-			*/
-			
-			
-			
-		
 			break;
 		}
 
@@ -376,11 +365,6 @@ public class BBPosition implements Position {
 			
 			moves = raw & notOcc;
 			moves |= ((callbacks & MASK_NOT_X_FILE[file]) & (other | (this.enPassantePos.get() & MASK_3_RANK)));
-			/*
-			moves = ((1L << pos) >> DIR_UP) & notOcc;
-			moves |= ((moves & MASK_6_RANK) >> DIR_UP) & notOcc;
-			moves |= callbacks & MASK_NOT_X_FILE[file] & (other | (this.enPassantePos.get() & MASK_3_RANK) );
-			*/
 			break;
 		}
 		case PIECE_TYPE_BLACK_BISHOP:
