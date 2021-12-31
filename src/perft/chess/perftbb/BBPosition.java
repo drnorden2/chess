@@ -15,15 +15,14 @@ import perft.chess.perftbb.gen.MagicNumberFinder;
 
 public class BBPosition implements Position {
 	public final int depth = 10;
-	public final BaseLiner bl = new BaseLiner(1, 200, 200, depth, 1000);
+	public final BaseLiner bl = new BaseLiner(1, 200, 1000, depth, 1000);
 	MagicNumberFinder mnf = new MagicNumberFinder();
 	private ArrayStack<ArrayStack<Move>> allMovesLists = new ArrayStack<ArrayStack<Move>>(new ArrayStack[depth]);
 	
 	
 	public final BLVariableInt[] fields = new BLVariableInt[64];
 	public final BLVariableLong[] allOfOneColor = new BLVariableLong[2];//@todo WTF -stack
-	public final BLVariableLong[] allMoves = new BLVariableLong[64];
-	public final BLVariableLong[] rawCBs = new BLVariableLong[64];
+	public final BLVariableLong[][] rawCBs = new BLVariableLong[64][4];
 	public final BLVariableLong[] tCallBacks = new BLVariableLong[64];
 	public final BLVariableLong[] correctors = new BLVariableLong[2];
 
@@ -43,10 +42,11 @@ public class BBPosition implements Position {
 	
 	public BBPosition() {
 
-		for (int i = 0; i < allMoves.length; i++) {
-			allMoves[i] = new BLVariableLong(bl, 0L);
+		for (int i = 0; i < 64; i++) {
 			tCallBacks[i] = new BLVariableLong(bl, 0L);
-			rawCBs[i] = new BLVariableLong(bl, 0L);
+			for(int j=0;j<4;j++) {
+				rawCBs[i][j] = new BLVariableLong(bl, 0L);
+			}
 			fields[i] = new BLVariableInt(bl, -1);
 
 		}
@@ -101,7 +101,9 @@ public class BBPosition implements Position {
 		bl.startNextLevel();
 		setMove(move);		
 		this.colorAtTurn = OTHER_COLOR[colorAtTurn];
-		calcNewMoves();
+		int color = this.colorAtTurn;
+		ArrayStack<Move> list = this.allMovesLists.get(getLevel());
+		calcNewMoves(list,color);
 	}
 		
 	private void setMove(Move move) {
@@ -131,7 +133,7 @@ public class BBPosition implements Position {
 		this.allOfOneColor[otherColor].unsetBit(newPos);// might be empty anyways
 		this.allOfOneColor[color].moveBit(oldPos, newPos);
 		// update moves
-		this.allMoves[oldPos].set(0L);
+		//this.allMoves[oldPos].set(0L);
 		
 		long cbs = this.tCallBacks[newPos].get() | this.tCallBacks[oldPos].get();
 
@@ -144,7 +146,7 @@ public class BBPosition implements Position {
 				cbs |= this.tCallBacks[enpPawnPos].get(); 				
 				int enpTypeColor = fields[enpPawnPos].get();
 				this.fields[enpPawnPos].set(-1);
-				this.allMoves[enpPawnPos].set(0L);
+				//this.allMoves[enpPawnPos].set(0L);
 				this.allOfOneColor[otherColor].unsetBit(enpPawnPos);// might be empty anyways
 				removePseudoMoves(enpTypeColor,enpPawnPos);
 			}
@@ -184,48 +186,99 @@ public class BBPosition implements Position {
 	}
 
 
-	public int calcNewMoves() {
-		ArrayStack<Move> list = this.allMovesLists.get(getLevel());
+	public void calcNewMoves(ArrayStack<Move> list, int color) {
 		list.reset();
+		int otherColor = OTHER_COLOR[color];
+	
+		long own = this.allOfOneColor[color].get();// @todo WTF too expensive
+		long other = this.allOfOneColor[otherColor].get();
+		long occ = (own | other);
+		long notOcc = ~occ;
+	
 		
 		/** READ ONLY **/
-		int color = this.colorAtTurn;
-		long own = this.allOfOneColor[color].get();
 		// long notOwn = ~own;
 		int count1 = updateIndices(indices1, own);
 		for (int i = 0; i < count1; i++) {
 			int pos = indices1[i];
-			long moveMask = this.allMoves[pos].get();// * & notOwn;
-			int index = pos + fields[pos].get();
+			int typeColor = fields[pos].get();
+			int index = pos + typeColor;
 			Move[] moves = lookUp.getMoveMap(index);
-			int count2 = updateIndices(indices2, moveMask);
-			// System.out.println(i+":"+count2);
-			// out(moveMask);
-			for (int j = 0; j < count2; j++) {
-				Move move = moves[indices2[j]];// TBD
-				if(move.isPromotion()) {
-					//System.out.println(move);
-					//out(moveMask);
-						
-					int curPos = indices2[j];
-					int rank = getRankForPos(curPos);
-					int file = getFileForPos(curPos);
-					
-					while(moves[curPos]!=null) {
-						list.add(moves[curPos]);
-						rank=(rank-PAWN_MOVE_DIR[move.getColor()]);
-						curPos = getPosForFileRank(file,rank);
+			
+			
+			long moveMask =0L;
+			boolean isPawn = false;
+			switch (typeColor) {
+				case PIECE_TYPE_WHITE_PAWN: 
+				case PIECE_TYPE_BLACK_PAWN: {
+					isPawn = true;
+					long ENP_RANK = color==COLOR_WHITE?MASK_6_RANK:MASK_3_RANK;
+					moveMask = this.rawCBs[pos][0].get() & (other | (this.enPassantePos.get() & ENP_RANK));
+					moveMask|= this.rawCBs[pos][1].get() & notOcc;
+					break;
+				}
+				case PIECE_TYPE_BLACK_BISHOP:
+				case PIECE_TYPE_WHITE_BISHOP: 
+				case PIECE_TYPE_BLACK_ROOK:
+				case PIECE_TYPE_WHITE_ROOK: 
+				case PIECE_TYPE_WHITE_KNIGHT:
+				case PIECE_TYPE_BLACK_KNIGHT: {
+					long callbacks = this.rawCBs[pos][0].get();
+					moveMask = callbacks & ~own;
+					break;
+				}
+				case PIECE_TYPE_BLACK_QUEEN:
+				case PIECE_TYPE_WHITE_QUEEN: {
+					long callbacks = this.rawCBs[pos][0].get()|this.rawCBs[pos][1].get();
+					moveMask = callbacks & ~own;
+					break;
+				}
+				case PIECE_TYPE_BLACK_KING: {
+					long callbacks0 = this.rawCBs[pos][0].get();
+					long callbacks1 = this.rawCBs[pos][1].get();
+					moveMask = callbacks0 & ~own;
+					if ((callbacks1&MASK_CASTLE_KING_k)!=0L && (occ & MASK_CASTLE_OCC_k) == 0L) {
+						moveMask |= MASK_CASTLE_KING_k;
 					}
-				}else {
-					list.add(move);
+					if ((callbacks1&MASK_CASTLE_KING_q)!=0L && (occ & MASK_CASTLE_OCC_q) == 0L) {
+						moveMask |= MASK_CASTLE_KING_q;
+					}
+					break;
+				}
+				case PIECE_TYPE_WHITE_KING: {
+					long callbacks0 = this.rawCBs[pos][0].get();
+					long callbacks1 = this.rawCBs[pos][1].get();
+					moveMask = callbacks0 & ~own;
+					if ((callbacks1&MASK_CASTLE_KING_K)!=0L && (occ & MASK_CASTLE_OCC_K) == 0L) {
+						moveMask |= MASK_CASTLE_KING_K;
+					}
+					if ((callbacks1&MASK_CASTLE_KING_Q)!=0L && (occ & MASK_CASTLE_OCC_Q) == 0L) {
+						moveMask |= MASK_CASTLE_KING_Q;
+					}
+					break;
 				}
 			}
+	
+			int count2 = updateIndices(indices2, moveMask);
+			if(isPawn && (moveMask & MASK_OUTER_RANKS)!=0L)  {
+				int dir = PAWN_MOVE_DIR[color]*8;
+				for (int j = 0; j < count2; j++) {
+					int curPos = indices2[j];
+					list.add(moves[curPos]);
+					curPos = curPos-dir;
+					list.add(moves[curPos]);
+					curPos = curPos-dir;
+					list.add(moves[curPos]);
+					curPos = curPos-dir;
+					list.add(moves[curPos]);
+				}
+			}else {
+				for (int j = 0; j < count2; j++) {
+					list.add(moves[indices2[j]]);
+				}	
+			}
+			
 		}
-		/*
-		 * if(list.size()>30) { System.out.println("moves:"+list.size());
-		 * System.out.println(this); out(all); getMoves(); System.exit(1); }
-		 */
-		return list.size();
 	}
 
 	@Override
@@ -250,43 +303,39 @@ public class BBPosition implements Position {
 				updatePseudoMoves(typeColor, pos);
 			}
 		}
-		calcNewMoves();
+		int color = this.colorAtTurn;
+		ArrayStack<Move> list = this.allMovesLists.get(getLevel());
+		calcNewMoves(list,color);
 	}
 
-	private int removePseudoMoves(int typeColor, int pos) {
-		long oldCBs = this.rawCBs[pos].get();
-		this.rawCBs[pos].set(0L);
-		int count = updateIndices(indices3, oldCBs);
-		for (int i = 0; i < count; i++) {
-			this.tCallBacks[indices3[i]].toggleBit(pos);
-		}
-		allMoves[pos].set(0L);
+	private void removePseudoMoves(int typeColor, int pos) {
 		int color = typeColor >> 6 & 1;
-		long correction =this.correctors[color].get();
-		
-		int file = getFileForPos(pos);
 		switch (typeColor) {
-			case PIECE_TYPE_WHITE_PAWN: {
-				long delete = (MASK_X_FILE[file] & oldCBs);
-				correction &= ~delete;
-				break;
-				}
+			case PIECE_TYPE_WHITE_PAWN: 
 			case PIECE_TYPE_BLACK_PAWN: {
-				long delete = (MASK_X_FILE[file] & oldCBs);
-				correction  &= ~delete;
+				long correction =this.correctors[color].get();
+				correction  &= ~this.rawCBs[pos][1].get();
+				this.correctors[color].set(correction);
 				break;
 			}
-			case PIECE_TYPE_BLACK_KING: {
-				correction&= ~MASK_8_RANK; //delete old corrections
-				break;
-			}
+			case PIECE_TYPE_BLACK_KING: 
 			case PIECE_TYPE_WHITE_KING: {
+				long correction =this.correctors[color].get();
 				correction&= ~MASK_1_RANK; //delete old corrections
+				this.correctors[color].set(correction);
 				break;
 			}
 		}
-		this.correctors[color].set(correction);
-		return 0;
+		//@TODO WTF 
+		for(int i=0;i<2;i++) {
+			long oldCBs = rawCBs[pos][i].get();
+			this.rawCBs[pos][i].set(0L);
+			int count = updateIndices(indices3, oldCBs);
+			for (int j = 0; j < count; j++) {
+				this.tCallBacks[indices3[j]].toggleBit(pos);
+			}
+		}
+		//allMoves[pos].set(0L);
 	}
 
 	/*
@@ -314,11 +363,12 @@ public class BBPosition implements Position {
 	 * getAttacks():getCallBacks()-corrector;
 	 * 
 	 */
-
-	private int updatePseudoMoves(int typeColor, int pos) {
-		
+	private long[] callbacks = new long[4];
+	private void updatePseudoMoves(int typeColor, int pos) {
+		callbacks[0] = 0L;
+		callbacks[1] = 0L;
 		long moves = 0L;
-		long callbacks = 0L;
+		
 		//typecolor ((type * 2 + color) * 64);
 		int color = typeColor >> 6 & 1;
 		//int type = (typeColor >> 6 - color)>>1;
@@ -335,148 +385,130 @@ public class BBPosition implements Position {
 			int file = getFileForPos(pos);
 			
 			
-			correction &= ~(this.rawCBs[pos].get() & MASK_X_FILE[file]);
-			callbacks = lookUp.getMoveMask(pos + typeColor);
-			
 			long oneUp = (1L << pos) << DIR_UP;
-			long twoUp= ((oneUp  & notOcc & MASK_3_RANK) << DIR_UP) ;
-			long raw = (oneUp|twoUp);
-			callbacks = (callbacks & MASK_NOT_X_FILE[file]) | raw;
-			correction |= callbacks & MASK_X_FILE[file];
-			moves = raw & notOcc;
-			moves |= ((callbacks & MASK_NOT_X_FILE[file]) & (other | (this.enPassantePos.get() & MASK_6_RANK) ));
+			long twoUp= oneUp|((oneUp  & notOcc & MASK_3_RANK) << DIR_UP) ;
+			
+			correction &= ~(this.rawCBs[pos][1].get());
+			correction |= twoUp;
+			
+			callbacks[0] = lookUp.getMoveMask(pos + typeColor) & MASK_NOT_X_FILE[file];
+			callbacks[1] = twoUp;
+
 			break;
 		}
 
 		case PIECE_TYPE_BLACK_PAWN: {
-			
 			long other = this.allOfOneColor[otherColor].get();
 			long notOcc = ~(own | other);
 			int file = getFileForPos(pos);
 			
 			
-			correction &= ~(this.rawCBs[pos].get() & MASK_X_FILE[file]);
-			callbacks = lookUp.getMoveMask(pos + typeColor);
 			long oneUp = (1L << pos) >> DIR_UP;
-			long twoUp= ((oneUp  & notOcc & MASK_6_RANK) >> DIR_UP) ;
-			long raw = (oneUp|twoUp);
-			callbacks = (callbacks & MASK_NOT_X_FILE[file]) | raw;
-			correction |= callbacks & MASK_X_FILE[file];
+			long twoUp= oneUp|((oneUp  & notOcc & MASK_6_RANK)>> DIR_UP) ;
 			
-			moves = raw & notOcc;
-			moves |= ((callbacks & MASK_NOT_X_FILE[file]) & (other | (this.enPassantePos.get() & MASK_3_RANK)));
+			correction &= ~(this.rawCBs[pos][1].get());
+			correction |= twoUp;
+			
+			callbacks[0] = lookUp.getMoveMask(pos + typeColor) & MASK_NOT_X_FILE[file];
+			callbacks[1] = twoUp;
+
 			break;
 		}
 		case PIECE_TYPE_BLACK_BISHOP:
 		case PIECE_TYPE_WHITE_BISHOP: {
 			long other = this.allOfOneColor[otherColor].get();
 			long occ = own | other;
-			long notOwn = ~own;
-			callbacks = mnf.getBishopAttacks(pos, occ);
-			moves = callbacks & notOwn;
+			callbacks[0] = mnf.getBishopAttacks(pos, occ);
 			break;
 		}
 		case PIECE_TYPE_BLACK_ROOK:
 		case PIECE_TYPE_WHITE_ROOK: {
 			long other = this.allOfOneColor[otherColor].get();
 			long occ = own | other;
-			long notOwn = ~own;
-			callbacks = mnf.getRookAttacks(pos, occ);
-			moves = callbacks & notOwn;
+			callbacks[0] = mnf.getRookAttacks(pos, occ);
 			break;
 		}
 		case PIECE_TYPE_BLACK_QUEEN:
 		case PIECE_TYPE_WHITE_QUEEN: {
 			long other = this.allOfOneColor[otherColor].get();
 			long occ = own | other;
-			long notOwn = ~own;
-			callbacks = mnf.getBishopAttacks(pos, occ);
-			callbacks |= mnf.getRookAttacks(pos, occ);
-			moves = callbacks & notOwn;
+			callbacks[0] = mnf.getBishopAttacks(pos, occ);
+			callbacks[1] = mnf.getRookAttacks(pos, occ);
 			break;
 		}
 		case PIECE_TYPE_WHITE_KNIGHT:
 		case PIECE_TYPE_BLACK_KNIGHT: {
-			long notOwn = ~own;
-			callbacks = lookUp.getMoveMask(pos + typeColor);
-			moves = callbacks & notOwn;
+			callbacks[0] = lookUp.getMoveMask(pos + typeColor);
+			break;
+		}
+		
+		case PIECE_TYPE_WHITE_KING: {
+			callbacks[0] = lookUp.getMoveMask(pos + typeColor);
+			long ntchd = untouched.get();
+			correction &= ~MASK_1_RANK; //delete old corrections
+			if ((ntchd & MASK_E1) !=0L) {
+				moves &= ~MASK_CASTLE_KING_K&~MASK_CASTLE_KING_Q; // callbacks are still just the 8 direct fields				
+				long scan =0;
+				if ((ntchd & MASK_H1) !=0L) {
+					/*
+					if ((occ & MASK_CASTLE_OCC_K) == 0L) {
+						moves |= MASK_CASTLE_KING_K;
+					}*/
+					scan = MASK_CASTLE_ALL_K;
+				}
+				if ((ntchd & MASK_A1) !=0L) {
+					/*
+					if ((occ & MASK_CASTLE_OCC_Q) == 0L) {
+						moves |= MASK_CASTLE_KING_Q;
+					}*/
+					scan |= MASK_CASTLE_ALL_Q;
+				}
+				scan &= ~callbacks[0];
+				correction |= scan;
+				callbacks[1] |= scan;
+
+			}
 			break;
 		}
 		case PIECE_TYPE_BLACK_KING: {
-			long other = this.allOfOneColor[otherColor].get();
-			long notOwn = ~own;
-			long occ = own | other;
-			//long notOcc = ~occ;
-
-			callbacks = lookUp.getMoveMask(pos + typeColor);
-			moves = callbacks & notOwn ;
+			callbacks[0] = lookUp.getMoveMask(pos + typeColor);
+			
 			long ntchd = untouched.get();
 			correction&= ~MASK_8_RANK; //delete old corrections
 			if ((ntchd & MASK_E8) !=0L) {
+				long scan =0;
 				if ((ntchd & MASK_H8) !=0L) {
-					if ((occ & MASK_CASTLE_OCC_k) == 0L) {
-						moves |= MASK_CASTLE_KING_k;
-					}
-					correction |= MASK_CASTLE_ALL_k&~callbacks;
-					callbacks |=MASK_CASTLE_ALL_k;
-				}
-				if ((ntchd & MASK_A8) !=0L) {
-					if ((occ & MASK_CASTLE_OCC_q) == 0L) {
-						moves |= MASK_CASTLE_KING_q;
-					}
-					correction |= MASK_CASTLE_ALL_q&~callbacks;
-					callbacks |=MASK_CASTLE_ALL_q;
-				}
-			}
-			break;
-		}
-		case PIECE_TYPE_WHITE_KING: {
-			long other = this.allOfOneColor[otherColor].get();
-			long notOwn = ~own;
-			long occ = own | other;
-			
-			callbacks = lookUp.getMoveMask(pos + typeColor);
-			moves = callbacks & notOwn;
-
-			long ntchd = untouched.get();
-			correction&= ~MASK_1_RANK; //delete old corrections
-			if ((ntchd & MASK_E1) !=0) {
-				moves &= ~MASK_CASTLE_KING_K&~MASK_CASTLE_KING_Q; // callbacks are still just the 8 direct fields				
-				
-				if ((ntchd & MASK_H1) !=0L) {
+					/*
 					if ((occ & MASK_CASTLE_OCC_K) == 0L) {
 						moves |= MASK_CASTLE_KING_K;
-					}
-					correction |= MASK_CASTLE_ALL_K&~callbacks;
-					callbacks |= MASK_CASTLE_ALL_K;
+					}*/
+					scan = MASK_CASTLE_ALL_k;
 				}
-				if ((ntchd & MASK_A1) !=0L) {
+				if ((ntchd & MASK_A8) !=0L) {
+					/*
 					if ((occ & MASK_CASTLE_OCC_Q) == 0L) {
 						moves |= MASK_CASTLE_KING_Q;
-					}
-					correction |= MASK_CASTLE_ALL_Q&~callbacks;//@@tbd wtf
-					callbacks |= MASK_CASTLE_ALL_Q;
+					}*/
+					scan |= MASK_CASTLE_ALL_q;
 				}
+				scan &= ~callbacks[0];
+				correction |= scan;
+				callbacks[1] |= scan;
+				break;
 			}
-			break;
 		}
 		}
-		long oldCBs = this.rawCBs[pos].get();
-		//out (oldCBs);
-		this.rawCBs[pos].set(callbacks);
-		//out (callbacks);
+		long toggleCallbacks = this.rawCBs[pos][0].get() ^ callbacks[0];
+		toggleCallbacks|= this.rawCBs[pos][1].get() ^ callbacks[1];
+		int count = updateIndices(indices3, toggleCallbacks);
+		for (int j = 0; j < count; j++) {
+			this.tCallBacks[indices3[j]].toggleBit(pos);
+		}
+		this.rawCBs[pos][0].set(callbacks[0]);
+		this.rawCBs[pos][1].set(callbacks[1]);
 		
-		long deltaCallbacks = oldCBs ^ callbacks;
-		//out (deltaCallbacks);
-
-		int count = updateIndices(indices3, deltaCallbacks);
-		for (int i = 0; i < count; i++) {
-			this.tCallBacks[indices3[i]].toggleBit(pos);
-		}
-		allMoves[pos].set(moves);
+		
 		this.correctors[color].set(correction);
-		//out(correction);
-		return Long.bitCount(moves);
 	}
 
 	@Override
@@ -518,6 +550,4 @@ public class BBPosition implements Position {
 	public Move getMove(int index) {
 		return this.allMovesLists.get(getLevel()).get(index);
 	}
-
-
 }

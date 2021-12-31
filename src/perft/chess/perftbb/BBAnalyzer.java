@@ -1,6 +1,8 @@
 package perft.chess.perftbb;
 import static perft.chess.Definitions.*;
 
+import perft.chess.core.datastruct.ArrayStack;
+
 
 
 public class BBAnalyzer {
@@ -24,7 +26,7 @@ public class BBAnalyzer {
 
 	private String[] getMovesOfPosToString(int pos) {
 		char[] snapshot = new char[64];
-		long moves = position.allMoves[pos].get();
+		long moves = 0L;///position.allMoves[pos].get();
 
 		for (int j = 0; j < 64; j++) {
 			if(((moves>> j) & 1L)==1L) {
@@ -56,7 +58,6 @@ public class BBAnalyzer {
 
 	private String[] getRawAttackToString(int color) {
 		long own = position.allOfOneColor[color].get();
-		long correction = position.correctors[color].get();
 		char[] snapshot = new char[64];
 		for (int j = 0; j < 64; j++) {
 			int attack = (int)(Long.bitCount(position.tCallBacks[j].get()&own));
@@ -65,10 +66,9 @@ public class BBAnalyzer {
 			}
 		}
 		
-		return this.snapshotToString(snapshot,"Attacks","Of Col:"+(color==COLOR_WHITE?"W":"B"));
+		return this.snapshotToString(snapshot,"RawAttac","Of Col:"+(color==COLOR_WHITE?"W":"B"));
 	}
 	private String[] getAttackCorrectionsToString(int color) {
-		long own = position.allOfOneColor[color].get();
 		long correction = position.correctors[color].get();
 		char[] snapshot = new char[64];
 		for (int j = 0; j < 64; j++) {
@@ -78,7 +78,7 @@ public class BBAnalyzer {
 			}
 		}
 		
-		return this.snapshotToString(snapshot,"Attacks","Of Col:"+(color==COLOR_WHITE?"W":"B"));
+		return this.snapshotToString(snapshot,"Correctn","Of Col:"+(color==COLOR_WHITE?"W":"B"));
 	}
 
 	private String[] getEnPassanteToString() {
@@ -119,38 +119,22 @@ public class BBAnalyzer {
 	private String[] getPseudoMovesToString(int color) {
 		
 		char[] snapshot = new char[64];
-		int count =0;
-		int[] indices1 = new int[64];
-		long own = position.allOfOneColor[color].get();
-		long notOwn = ~own;
-		int count1 = updateIndices(indices1, own);
-		
-		for (int i = 0; i < count1; i++) {
-			int pos = indices1[i];
-			long moveMask = position.allMoves[pos].get() & notOwn;
-			
-			int index = pos + position.fields[pos].get();
-			Move[] moves = position.lookUp.getMoveMap(index);
-			int[] indices2 = new int[64];
-			int count2 = updateIndices(indices2, moveMask);	
-			//System.out.println(i+":"+count2);
-			//out(moveMask);
-			for (int j = 0; j < count2; j++) {
-				Move move = moves[indices2[j]];//TBD
-				int movePos = move.getOldPos();
-					
-				snapshot[movePos]++;			
-				count++;	
-			}
+		ArrayStack<Move> list = new ArrayStack<Move>(new Move[100]);
+		position.calcNewMoves(list,color);
+
+		int count = list.size();			
+		for(int i=0;i<count;i++) {
+			Move move = list.get(i);
+			snapshot[move.getOldPos()]++;
 		}
+		
 		for (int j = 0; j < 64; j++) {
 			if(snapshot[j]>0) {
 				snapshot[j]=(char)('0'+(snapshot[j]%10));
 			}
-
 		}
-		return this.snapshotToString(snapshot,"PMovs:"+(position.getColorAtTurn()==COLOR_WHITE?"W":"B"),"Size:"+count);
 
+		return this.snapshotToString(snapshot,"PMovs:"+(position.getColorAtTurn()==COLOR_WHITE?"W":"B"),"Size:"+count);
 	}
 	
 

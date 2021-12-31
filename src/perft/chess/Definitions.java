@@ -1,5 +1,8 @@
 package perft.chess;
 
+import static perft.chess.Definitions.MASK_1_RANK;
+import static perft.chess.Definitions.MASK_8_RANK;
+
 import perft.chess.core.datastruct.BitBoard;
 
 public class Definitions {
@@ -129,6 +132,8 @@ public class Definitions {
 	public final static long MASK_6_RANK = rankMask(_6);
 	public final static long MASK_7_RANK = rankMask(_7);
 	public final static long MASK_8_RANK = rankMask(_8);
+	public final static long MASK_OUTER_RANKS = MASK_8_RANK |MASK_1_RANK;
+	
 	
 	public final static long[] MASK_X_RANK = new long[]{
 			MASK_1_RANK,
