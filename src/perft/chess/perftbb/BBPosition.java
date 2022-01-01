@@ -69,125 +69,9 @@ public class BBPosition implements Position {
 		
 	}
 
-	@Override
-	public void initialAddToBoard(int color, int type, int pos) {
-		fields[pos].set((type * 2 + color) * 64);
-		allOfOneColor[color].setBit(pos);
-	}
-
-	@Override
-	public void setUntouched(int rank, int file) {
-		untouched.setBit(getPosForFileRank(file, rank));
-	}
-
-	@Override
-	public void setEnPassantePos(int enpassantePos) {
-		this.enPassantePos.set(enpassantePos);
-	}
-
-	@Override
-	public void unSetMove(int move) {
-		// TODO Auto-generated method stub
-		bl.undo();
-		this.colorAtTurn = OTHER_COLOR[colorAtTurn];
-	}
-
-	int getLevel(){
-		return bl.getLevel()-1;
-	}
-
 
 
 	
-	
-	@Override
-	public void setMove(int index) {
-		/** MODIFY **/
-		Move move = getMove(index);
-		bl.startNextLevel();
-		setMove(move);		
-		this.colorAtTurn = OTHER_COLOR[colorAtTurn];
-		int color = this.colorAtTurn;
-		//IndexedList<Move> list = allMovesLists[getLevel()];
-		//calcNewMoves(list,color);
-	}
-		
-	private void setMove(Move move) {
-		//@todo use masks for move
-		//out(this.allMoves[3].get());
-		int oldPos = move.getOldPos();
-		int newPos = move.getNewPos();
-		int color = this.colorAtTurn;
-		int otherColor = OTHER_COLOR[color];
-
-		// update fields
-/*u*/	this.untouched.unsetBit(oldPos);
-		// update fields
-/*u*/	this.untouched.unsetBit(newPos);
-		
-/*E*/	int otherTypeColor = fields[newPos].get();
-		if(otherTypeColor!=-1) {
-/*E*/			removePseudoMoves(otherTypeColor,newPos);
-		}
-		int typeColor = fields[oldPos].getAndSet(-1);
-		removePseudoMoves(typeColor,oldPos);
-		if(move.isPromotion()) {
-			typeColor = move.getPromotePieceType();
-		}
-/*u*/	fields[newPos].set(typeColor);
-		// update occupancy
-/*u*/	this.allOfOneColor[otherColor].unsetBit(newPos);// might be empty anyways
-/*u*/	this.allOfOneColor[color].moveBit(oldPos, newPos);
-		// update moves
-		
-		long cbs = this.tCallBacks[newPos].get() | this.tCallBacks[oldPos].get();
-
-		long enpMask = this.enPassantePos.getAndSet(0L);
-		if(enpMask!=0L)	{
-			int enpPos = Long.numberOfTrailingZeros(enpMask);
-			cbs |= this.tCallBacks[enpPos].get(); 				
-			if(move.getEnPassanteSquare()==enpPos) {
-				int enpPawnPos = move.getEnPassantePawnPos();
-				cbs |= this.tCallBacks[enpPawnPos].get(); 				
-				int enpTypeColor = fields[enpPawnPos].get();
-/*u*/			this.fields[enpPawnPos].set(-1);
-/*u*/			this.allOfOneColor[otherColor].unsetBit(enpPawnPos);// might be empty anyways
-				removePseudoMoves(enpTypeColor,enpPawnPos);
-			}
-		}
-
-		this.updatePseudoMoves(typeColor, newPos);
-		
-		if(move.isTwoSquarePush()) {
-			int enpSquare= move.getEnPassanteSquare();
-			this.enPassantePos.set(1L<<enpSquare);//@TBD always set (geht mit stack)
-			cbs |= this.tCallBacks[enpSquare].get(); 
-		}
-		
-		cbs &= (this.allOfOneColor[color].get() | this.allOfOneColor[otherColor].get());//@todo occ var
-		// get callbacks
-
-		int count = updateIndices(indices4, cbs);
-		for (int i = 0; i < count; i++) {
-			int cbPos = indices4[i];
-			if (cbPos == newPos||cbPos == oldPos) {
-				continue;// @todo Wtf
-			}
-			int cbTypeColor = fields[cbPos].get();
-			this.updatePseudoMoves(cbTypeColor, cbPos);
-		}
-		
-		if(move.isRochade()) {
-			this.setMove(move.getRookMove());
-		}
-	}
-
-	@Override
-	public void setInitialTurn(int color) {
-		colorAtTurn = color;
-	}
-
-
 /*
   	public void calcNewMoves(IndexedList<Move> list, int color) {
  
@@ -227,16 +111,6 @@ public class BBPosition implements Position {
 		}
 	}
 */
-	@Override
-	public int getHash() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public String getNotation(int index) {
-		return this.getMove(index).getNotation();
-	}
 
 	@Override
 	public void initialEval() {
@@ -495,6 +369,117 @@ public class BBPosition implements Position {
 	}
 
 	@Override
+	public void setMove(int index) {
+		/** MODIFY **/
+		Move move = getMove(index);
+		bl.startNextLevel();
+		setMove(move);		
+		this.colorAtTurn = OTHER_COLOR[colorAtTurn];
+		int color = this.colorAtTurn;
+		//IndexedList<Move> list = allMovesLists[getLevel()];
+		//calcNewMoves(list,color);
+	}
+		
+	private void setMove(Move move) {
+		//@todo use masks for move
+		//out(this.allMoves[3].get());
+		int oldPos = move.getOldPos();
+		int newPos = move.getNewPos();
+		int color = this.colorAtTurn;
+		int otherColor = OTHER_COLOR[color];
+
+		// update fields
+/*u*/	this.untouched.unsetBit(oldPos);
+		// update fields
+/*u*/	this.untouched.unsetBit(newPos);
+		
+/*E*/	int otherTypeColor = fields[newPos].get();
+		if(otherTypeColor!=-1) {
+/*E*/			removePseudoMoves(otherTypeColor,newPos);
+		}
+		int typeColor = fields[oldPos].getAndSet(-1);
+		removePseudoMoves(typeColor,oldPos);
+		if(move.isPromotion()) {
+			typeColor = move.getPromotePieceType();
+		}
+/*u*/	fields[newPos].set(typeColor);
+		// update occupancy
+/*u*/	this.allOfOneColor[otherColor].unsetBit(newPos);// might be empty anyways
+/*u*/	this.allOfOneColor[color].moveBit(oldPos, newPos);
+		// update moves
+		
+		long cbs = this.tCallBacks[newPos].get() | this.tCallBacks[oldPos].get();
+
+		long enpMask = this.enPassantePos.getAndSet(0L);
+		if(enpMask!=0L)	{
+			int enpPos = Long.numberOfTrailingZeros(enpMask);
+			cbs |= this.tCallBacks[enpPos].get(); 				
+			if(move.getEnPassanteSquare()==enpPos) {
+				int enpPawnPos = move.getEnPassantePawnPos();
+				cbs |= this.tCallBacks[enpPawnPos].get(); 				
+				int enpTypeColor = fields[enpPawnPos].get();
+/*u*/			this.fields[enpPawnPos].set(-1);
+/*u*/			this.allOfOneColor[otherColor].unsetBit(enpPawnPos);// might be empty anyways
+				removePseudoMoves(enpTypeColor,enpPawnPos);
+			}
+		}
+
+		this.updatePseudoMoves(typeColor, newPos);
+		
+		if(move.isTwoSquarePush()) {
+			int enpSquare= move.getEnPassanteSquare();
+			this.enPassantePos.set(1L<<enpSquare);//@TBD always set (geht mit stack)
+			cbs |= this.tCallBacks[enpSquare].get(); 
+		}
+		
+		cbs &= (this.allOfOneColor[color].get() | this.allOfOneColor[otherColor].get());//@todo occ var
+		// get callbacks
+
+		int count = updateIndices(indices4, cbs);
+		for (int i = 0; i < count; i++) {
+			int cbPos = indices4[i];
+			if (cbPos == newPos||cbPos == oldPos) {
+				continue;// @todo Wtf
+			}
+			int cbTypeColor = fields[cbPos].get();
+			this.updatePseudoMoves(cbTypeColor, cbPos);
+		}
+		
+		if(move.isRochade()) {
+			this.setMove(move.getRookMove());
+		}
+	}
+
+
+	@Override
+	public void unSetMove(int move) {
+		// TODO Auto-generated method stub
+		bl.undo();
+		this.colorAtTurn = OTHER_COLOR[colorAtTurn];
+	}
+
+	@Override
+	public void setInitialTurn(int color) {
+		colorAtTurn = color;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	@Override
 	public int getColorAtTurn() {
 		return this.colorAtTurn;
 	}
@@ -511,10 +496,51 @@ public class BBPosition implements Position {
 
 	}
 
+	
+
+	public int getMoves() {
+		return moveCount[colorAtTurn].get();
+	}
+	
+	public Move getMove(int index) {
+		return this.allMovesLists[colorAtTurn].getElement(index);
+	}
+
+	int getLevel(){
+		return bl.getLevel()-1;
+	}
+
 	public String toString() {
 		return analyzer.toString();
 	}
 	
+	
+	@Override
+	public void initialAddToBoard(int color, int type, int pos) {
+		fields[pos].set((type * 2 + color) * 64);
+		allOfOneColor[color].setBit(pos);
+	}
+
+	@Override
+	public void setUntouched(int rank, int file) {
+		untouched.setBit(getPosForFileRank(file, rank));
+	}
+
+	@Override
+	public void setEnPassantePos(int enpassantePos) {
+		this.enPassantePos.set(enpassantePos);
+	}
+	@Override
+	public int getHash() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public String getNotation(int index) {
+		return this.getMove(index).getNotation();
+	}
+
 	public int[] getAttacks (int color){
 		System.out.println("+");
 		int[] attacks = new int[64];
@@ -527,11 +553,4 @@ public class BBPosition implements Position {
 		return attacks;
 	}
 
-	public int getMoves() {
-		return moveCount[colorAtTurn].get();
-	}
-	
-	public Move getMove(int index) {
-		return this.allMovesLists[colorAtTurn].getElement(index);
-	}
 }
