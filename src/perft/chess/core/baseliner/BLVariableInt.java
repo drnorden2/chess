@@ -47,6 +47,16 @@ public class BLVariableInt {
 			bl.touch(bL_Index);
 		}
 	}
+	public void addition(int value) {
+		if(varStack.additionAndTouched(value)) {
+			bl.touch(bL_Index);
+		}
+	}
+	public void subtraction(int value) {
+		if(varStack.subtractionAndTouched(value)) {
+			bl.touch(bL_Index);
+		}
+	}
 	
 	public void XOR(int value) {
 		if(varStack.xorAndTouched(value)) {

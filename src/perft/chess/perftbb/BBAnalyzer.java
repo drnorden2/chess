@@ -1,7 +1,7 @@
 package perft.chess.perftbb;
 import static perft.chess.Definitions.*;
 
-import perft.chess.core.datastruct.ArrayStack;
+import perft.chess.core.baseliner.BLIndexedList;
 
 
 
@@ -119,12 +119,11 @@ public class BBAnalyzer {
 	private String[] getPseudoMovesToString(int color) {
 		
 		char[] snapshot = new char[64];
-		ArrayStack<Move> list = new ArrayStack<Move>(new Move[100]);
-		position.calcNewMoves(list,color);
-
+		BLIndexedList<Move> list = position.allMovesLists[color];
+		
 		int count = list.size();			
 		for(int i=0;i<count;i++) {
-			Move move = list.get(i);
+			Move move = list.getElement(i);
 			snapshot[move.getOldPos()]++;
 		}
 		

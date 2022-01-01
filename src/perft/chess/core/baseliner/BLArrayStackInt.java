@@ -28,7 +28,14 @@ public class BLArrayStackInt {
 		int val = stack[head]+1;
 		return addAndTouched(val);
 	}
-
+	public boolean additionAndTouched(int value) {
+		int val = stack[head]+value;
+		return addAndTouched(val);
+	}
+	public boolean subtractionAndTouched(int value) {
+		int val = stack[head]-value;
+		return addAndTouched(val);
+	}
 
 	
 	

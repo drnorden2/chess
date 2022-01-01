@@ -2,31 +2,33 @@ package perft.chess.perftbb;
 
 import static perft.chess.Definitions.*;
 
-import java.util.ArrayList;
 
 import perft.chess.Position;
+import perft.chess.core.baseliner.BLIndexedList;
 import perft.chess.core.baseliner.BLVariableInt;
 import perft.chess.core.baseliner.BLVariableLong;
 import perft.chess.core.baseliner.BaseLiner;
-import perft.chess.core.datastruct.ArrayStack;
 import perft.chess.perftbb.gen.MagicNumberFinder;
 
 
 
 public class BBPosition implements Position {
 	public final int depth = 10;
-	public final BaseLiner bl = new BaseLiner(1, 200, 1000, depth, 1000);
+	public final BaseLiner bl = new BaseLiner(7928, 20000, 1000, depth, 1000);
 	MagicNumberFinder mnf = new MagicNumberFinder();
-	private ArrayStack<ArrayStack<Move>> allMovesLists = new ArrayStack<ArrayStack<Move>>(new ArrayStack[depth]);
+	BLIndexedList<Move>[] allMovesLists=new BLIndexedList[2];
 	
 	
 	public final BLVariableInt[] fields = new BLVariableInt[64];
 	public final BLVariableLong[] allOfOneColor = new BLVariableLong[2];//@todo WTF -stack
-	public final BLVariableLong[][] rawCBs = new BLVariableLong[64][4];
+	public final BLVariableLong[][] callBacks = new BLVariableLong[64][4];
+	public final BLVariableLong[] moveMasks = new BLVariableLong[64];
+	
 	public final BLVariableLong[] tCallBacks = new BLVariableLong[64];
 	public final BLVariableLong[] correctors = new BLVariableLong[2];
 
 	public final BLVariableLong untouched;
+	public final BLVariableInt moveCount[] = new BLVariableInt[2];
 	public final BLVariableLong enPassantePos;;//@todo WTF -stack
 
 	public BBAnalyzer analyzer = new BBAnalyzer(this);
@@ -44,11 +46,13 @@ public class BBPosition implements Position {
 
 		for (int i = 0; i < 64; i++) {
 			tCallBacks[i] = new BLVariableLong(bl, 0L);
+			moveMasks[i] = new BLVariableLong(bl, 0L);
+			
 			for(int j=0;j<4;j++) {
-				rawCBs[i][j] = new BLVariableLong(bl, 0L);
+				callBacks[i][j] = new BLVariableLong(bl, 0L);
 			}
 			fields[i] = new BLVariableInt(bl, -1);
-
+					 
 		}
 
 		enPassantePos = new BLVariableLong(bl, 0);
@@ -57,10 +61,12 @@ public class BBPosition implements Position {
 		allOfOneColor[COLOR_BLACK] = new BLVariableLong(bl, 0L);
 		correctors[COLOR_WHITE] = new BLVariableLong(bl, 0L);
 		correctors[COLOR_BLACK] = new BLVariableLong(bl, 0L);
-		for(int i=0;i<depth;i++) {
-			ArrayStack<Move> allMoves = new ArrayStack<Move>(new Move[36*16]);
-			this.allMovesLists.add(allMoves);
-		}
+		allMovesLists[COLOR_WHITE]  = new BLIndexedList<Move>(bl,28*16,7928);
+		allMovesLists[COLOR_BLACK]  = new BLIndexedList<Move>(bl,28*16,7928);
+		moveCount[COLOR_WHITE]  = new BLVariableInt(bl,0);
+		moveCount[COLOR_BLACK]  = new BLVariableInt(bl,0);
+		
+		
 	}
 
 	@Override
@@ -102,8 +108,8 @@ public class BBPosition implements Position {
 		setMove(move);		
 		this.colorAtTurn = OTHER_COLOR[colorAtTurn];
 		int color = this.colorAtTurn;
-		ArrayStack<Move> list = this.allMovesLists.get(getLevel());
-		calcNewMoves(list,color);
+		//IndexedList<Move> list = allMovesLists[getLevel()];
+		//calcNewMoves(list,color);
 	}
 		
 	private void setMove(Move move) {
@@ -115,25 +121,24 @@ public class BBPosition implements Position {
 		int otherColor = OTHER_COLOR[color];
 
 		// update fields
-		this.untouched.unsetBit(oldPos);
+/*u*/	this.untouched.unsetBit(oldPos);
 		// update fields
-		this.untouched.unsetBit(newPos);
+/*u*/	this.untouched.unsetBit(newPos);
 		
-		int otherTypeColor = fields[newPos].get();
+/*E*/	int otherTypeColor = fields[newPos].get();
 		if(otherTypeColor!=-1) {
-			removePseudoMoves(otherTypeColor,newPos);
+/*E*/			removePseudoMoves(otherTypeColor,newPos);
 		}
 		int typeColor = fields[oldPos].getAndSet(-1);
 		removePseudoMoves(typeColor,oldPos);
 		if(move.isPromotion()) {
 			typeColor = move.getPromotePieceType();
 		}
-		fields[newPos].set(typeColor);
+/*u*/	fields[newPos].set(typeColor);
 		// update occupancy
-		this.allOfOneColor[otherColor].unsetBit(newPos);// might be empty anyways
-		this.allOfOneColor[color].moveBit(oldPos, newPos);
+/*u*/	this.allOfOneColor[otherColor].unsetBit(newPos);// might be empty anyways
+/*u*/	this.allOfOneColor[color].moveBit(oldPos, newPos);
 		// update moves
-		//this.allMoves[oldPos].set(0L);
 		
 		long cbs = this.tCallBacks[newPos].get() | this.tCallBacks[oldPos].get();
 
@@ -145,14 +150,12 @@ public class BBPosition implements Position {
 				int enpPawnPos = move.getEnPassantePawnPos();
 				cbs |= this.tCallBacks[enpPawnPos].get(); 				
 				int enpTypeColor = fields[enpPawnPos].get();
-				this.fields[enpPawnPos].set(-1);
-				//this.allMoves[enpPawnPos].set(0L);
-				this.allOfOneColor[otherColor].unsetBit(enpPawnPos);// might be empty anyways
+/*u*/			this.fields[enpPawnPos].set(-1);
+/*u*/			this.allOfOneColor[otherColor].unsetBit(enpPawnPos);// might be empty anyways
 				removePseudoMoves(enpTypeColor,enpPawnPos);
 			}
 		}
 
-		removePseudoMoves(typeColor,newPos);
 		this.updatePseudoMoves(typeColor, newPos);
 		
 		if(move.isTwoSquarePush()) {
@@ -165,7 +168,6 @@ public class BBPosition implements Position {
 		// get callbacks
 
 		int count = updateIndices(indices4, cbs);
-
 		for (int i = 0; i < count; i++) {
 			int cbPos = indices4[i];
 			if (cbPos == newPos||cbPos == oldPos) {
@@ -186,17 +188,15 @@ public class BBPosition implements Position {
 	}
 
 
-	public void calcNewMoves(ArrayStack<Move> list, int color) {
+/*
+  	public void calcNewMoves(IndexedList<Move> list, int color) {
+ 
 		list.reset();
 		int otherColor = OTHER_COLOR[color];
-	
+		
 		long own = this.allOfOneColor[color].get();// @todo WTF too expensive
-		long other = this.allOfOneColor[otherColor].get();
-		long occ = (own | other);
-		long notOcc = ~occ;
 	
 		
-		/** READ ONLY **/
 		// long notOwn = ~own;
 		int count1 = updateIndices(indices1, own);
 		for (int i = 0; i < count1; i++) {
@@ -204,63 +204,9 @@ public class BBPosition implements Position {
 			int typeColor = fields[pos].get();
 			int index = pos + typeColor;
 			Move[] moves = lookUp.getMoveMap(index);
-			
-			
-			long moveMask =0L;
-			boolean isPawn = false;
-			switch (typeColor) {
-				case PIECE_TYPE_WHITE_PAWN: 
-				case PIECE_TYPE_BLACK_PAWN: {
-					isPawn = true;
-					long ENP_RANK = color==COLOR_WHITE?MASK_6_RANK:MASK_3_RANK;
-					moveMask = this.rawCBs[pos][0].get() & (other | (this.enPassantePos.get() & ENP_RANK));
-					moveMask|= this.rawCBs[pos][1].get() & notOcc;
-					break;
-				}
-				case PIECE_TYPE_BLACK_BISHOP:
-				case PIECE_TYPE_WHITE_BISHOP: 
-				case PIECE_TYPE_BLACK_ROOK:
-				case PIECE_TYPE_WHITE_ROOK: 
-				case PIECE_TYPE_WHITE_KNIGHT:
-				case PIECE_TYPE_BLACK_KNIGHT: {
-					long callbacks = this.rawCBs[pos][0].get();
-					moveMask = callbacks & ~own;
-					break;
-				}
-				case PIECE_TYPE_BLACK_QUEEN:
-				case PIECE_TYPE_WHITE_QUEEN: {
-					long callbacks = this.rawCBs[pos][0].get()|this.rawCBs[pos][1].get();
-					moveMask = callbacks & ~own;
-					break;
-				}
-				case PIECE_TYPE_BLACK_KING: {
-					long callbacks0 = this.rawCBs[pos][0].get();
-					long callbacks1 = this.rawCBs[pos][1].get();
-					moveMask = callbacks0 & ~own;
-					if ((callbacks1&MASK_CASTLE_KING_k)!=0L && (occ & MASK_CASTLE_OCC_k) == 0L) {
-						moveMask |= MASK_CASTLE_KING_k;
-					}
-					if ((callbacks1&MASK_CASTLE_KING_q)!=0L && (occ & MASK_CASTLE_OCC_q) == 0L) {
-						moveMask |= MASK_CASTLE_KING_q;
-					}
-					break;
-				}
-				case PIECE_TYPE_WHITE_KING: {
-					long callbacks0 = this.rawCBs[pos][0].get();
-					long callbacks1 = this.rawCBs[pos][1].get();
-					moveMask = callbacks0 & ~own;
-					if ((callbacks1&MASK_CASTLE_KING_K)!=0L && (occ & MASK_CASTLE_OCC_K) == 0L) {
-						moveMask |= MASK_CASTLE_KING_K;
-					}
-					if ((callbacks1&MASK_CASTLE_KING_Q)!=0L && (occ & MASK_CASTLE_OCC_Q) == 0L) {
-						moveMask |= MASK_CASTLE_KING_Q;
-					}
-					break;
-				}
-			}
-	
+			long moveMask = this.moveMasks[pos].get();
 			int count2 = updateIndices(indices2, moveMask);
-			if(isPawn && (moveMask & MASK_OUTER_RANKS)!=0L)  {
+			if((typeColor==0 || typeColor ==64 )&& (moveMask & MASK_OUTER_RANKS)!=0L)  {
 				int dir = PAWN_MOVE_DIR[color]*8;
 				for (int j = 0; j < count2; j++) {
 					int curPos = indices2[j];
@@ -280,7 +226,7 @@ public class BBPosition implements Position {
 			
 		}
 	}
-
+*/
 	@Override
 	public int getHash() {
 		// TODO Auto-generated method stub
@@ -303,9 +249,6 @@ public class BBPosition implements Position {
 				updatePseudoMoves(typeColor, pos);
 			}
 		}
-		int color = this.colorAtTurn;
-		ArrayStack<Move> list = this.allMovesLists.get(getLevel());
-		calcNewMoves(list,color);
 	}
 
 	private void removePseudoMoves(int typeColor, int pos) {
@@ -314,7 +257,7 @@ public class BBPosition implements Position {
 			case PIECE_TYPE_WHITE_PAWN: 
 			case PIECE_TYPE_BLACK_PAWN: {
 				long correction =this.correctors[color].get();
-				correction  &= ~this.rawCBs[pos][1].get();
+				correction  &= ~this.callBacks[pos][1].get();
 				this.correctors[color].set(correction);
 				break;
 			}
@@ -327,51 +270,41 @@ public class BBPosition implements Position {
 			}
 		}
 		//@TODO WTF 
-		for(int i=0;i<2;i++) {
-			long oldCBs = rawCBs[pos][i].get();
-			this.rawCBs[pos][i].set(0L);
-			int count = updateIndices(indices3, oldCBs);
-			for (int j = 0; j < count; j++) {
-				this.tCallBacks[indices3[j]].toggleBit(pos);
-			}
+		long oldCBs = callBacks[pos][0].get()|callBacks[pos][1].get();
+		this.callBacks[pos][0].set(0L);
+		this.callBacks[pos][1].set(0L);
+		long oldMoves = moveMasks[pos].get();
+		this.moveCount[color].subtraction(Long.bitCount(moveMasks[pos].getAndSet(0L)));;
+		
+		Move[] moveObjs = lookUp.getMoveMap(pos + typeColor);
+		BLIndexedList <Move> list = this.allMovesLists[color];
+							
+		int count = updateIndices(indices3, oldCBs&~oldMoves);
+		for (int j = 0; j < count; j++) {
+			this.tCallBacks[indices3[j]].toggleBit(pos);
 		}
-		//allMoves[pos].set(0L);
+		
+		count = updateIndices(indices3, oldCBs&oldMoves);
+		for (int j = 0; j < count; j++) {
+			int index = indices3[j];
+			this.tCallBacks[index].toggleBit(pos);
+			list.remove(moveObjs[index]);
+
+		}
+		
+		count = updateIndices(indices3, ~oldCBs&oldMoves);
+		for (int j = 0; j < count; j++) {
+			list.remove(moveObjs[indices3[j]]);		
+		}
 	}
 
-	/*
-	 * 
-	 * PSEUDO_MOVES we need: - callBacks[64] - rawMoves[64] - correctors[2]
-	 * 
-	 * 
-	 * pawn ==> callBacks = getCallBacks() <= CALLBACKS_PAWN; ==> push() corrector
-	 * for push (1x and 2x -regardlessly) ==> realMoves = getrawMoves ():
-	 * getCallBacks() && pawnAttackMoveLookup(other) |getCallBacks() &&
-	 * pawnPushMovelookup (occ) ==> realAttacks = getAttacks() <=
-	 * getCallBacks()-corrector;
-	 * 
-	 * king ==> callBacks = getCallBacks() <= lookup king ATTACKS() + rochade_push()
-	 * ==> corrector ==> realMoves = getrawMoves ():getCallBacks() & (notown) &
-	 * not_rochade_possible) ==> realAttacks =
-	 * getAttacks():getCallBacks()-corrector;
-	 * 
-	 * Knight ==> callBacks = getCallBacks() <= KNIGHT_ATTACK ==> realMoves =
-	 * getrawMoves ():getCallBacks() & notown ==> realAttacks =
-	 * getAttacks():getCallBacks()-corrector;
-	 * 
-	 * other ==> callBacks = getCallBacks() <= lookup ray-attacks(); ==> realMoves =
-	 * getrawMoves ():getCallBacks() & notown ==> realAttacks =
-	 * getAttacks():getCallBacks()-corrector;
-	 * 
-	 */
 	private long[] callbacks = new long[4];
 	private void updatePseudoMoves(int typeColor, int pos) {
 		callbacks[0] = 0L;
 		callbacks[1] = 0L;
 		long moves = 0L;
 		
-		//typecolor ((type * 2 + color) * 64);
 		int color = typeColor >> 6 & 1;
-		//int type = (typeColor >> 6 - color)>>1;
 			
 		long correction = this.correctors[color].get();
 		
@@ -388,12 +321,20 @@ public class BBPosition implements Position {
 			long oneUp = (1L << pos) << DIR_UP;
 			long twoUp= oneUp|((oneUp  & notOcc & MASK_3_RANK) << DIR_UP) ;
 			
-			correction &= ~(this.rawCBs[pos][1].get());
+			correction &= ~(this.callBacks[pos][1].get());
 			correction |= twoUp;
 			
 			callbacks[0] = lookUp.getMoveMask(pos + typeColor) & MASK_NOT_X_FILE[file];
 			callbacks[1] = twoUp;
-
+			
+			moves = callbacks[0] & (other | (this.enPassantePos.get() & MASK_6_RANK));
+			moves |= callbacks[1] & notOcc;
+			
+			if((moves & MASK_OUTER_RANKS)!=0L)  {
+				moves|= moves>>DIR_UP;
+				moves|= moves>>DIR_UP;
+				moves|= moves>>DIR_UP;
+			}
 			break;
 		}
 
@@ -406,12 +347,21 @@ public class BBPosition implements Position {
 			long oneUp = (1L << pos) >> DIR_UP;
 			long twoUp= oneUp|((oneUp  & notOcc & MASK_6_RANK)>> DIR_UP) ;
 			
-			correction &= ~(this.rawCBs[pos][1].get());
+			correction &= ~(this.callBacks[pos][1].get());
 			correction |= twoUp;
 			
 			callbacks[0] = lookUp.getMoveMask(pos + typeColor) & MASK_NOT_X_FILE[file];
 			callbacks[1] = twoUp;
-
+	
+			moves = callbacks[0] & (other | (this.enPassantePos.get() & MASK_3_RANK));
+			moves |= callbacks[1] & notOcc;
+			
+			if((moves & MASK_OUTER_RANKS)!=0L)  {
+				moves|= moves<<DIR_UP;
+				moves|= moves<<DIR_UP;
+				moves|= moves<<DIR_UP;
+			}
+			
 			break;
 		}
 		case PIECE_TYPE_BLACK_BISHOP:
@@ -419,6 +369,7 @@ public class BBPosition implements Position {
 			long other = this.allOfOneColor[otherColor].get();
 			long occ = own | other;
 			callbacks[0] = mnf.getBishopAttacks(pos, occ);
+			moves = callbacks[0] & ~own;
 			break;
 		}
 		case PIECE_TYPE_BLACK_ROOK:
@@ -426,6 +377,7 @@ public class BBPosition implements Position {
 			long other = this.allOfOneColor[otherColor].get();
 			long occ = own | other;
 			callbacks[0] = mnf.getRookAttacks(pos, occ);
+			moves = callbacks[0] & ~own;
 			break;
 		}
 		case PIECE_TYPE_BLACK_QUEEN:
@@ -434,33 +386,36 @@ public class BBPosition implements Position {
 			long occ = own | other;
 			callbacks[0] = mnf.getBishopAttacks(pos, occ);
 			callbacks[1] = mnf.getRookAttacks(pos, occ);
+			moves = (callbacks[0]|callbacks[1]) & ~own;
 			break;
 		}
 		case PIECE_TYPE_WHITE_KNIGHT:
 		case PIECE_TYPE_BLACK_KNIGHT: {
 			callbacks[0] = lookUp.getMoveMask(pos + typeColor);
+			moves = callbacks[0] & ~own;
 			break;
 		}
 		
 		case PIECE_TYPE_WHITE_KING: {
 			callbacks[0] = lookUp.getMoveMask(pos + typeColor);
+			moves = callbacks[0] & ~own;
 			long ntchd = untouched.get();
+			long other = this.allOfOneColor[otherColor].get();
+			long occ = own | other;
 			correction &= ~MASK_1_RANK; //delete old corrections
 			if ((ntchd & MASK_E1) !=0L) {
 				moves &= ~MASK_CASTLE_KING_K&~MASK_CASTLE_KING_Q; // callbacks are still just the 8 direct fields				
 				long scan =0;
 				if ((ntchd & MASK_H1) !=0L) {
-					/*
 					if ((occ & MASK_CASTLE_OCC_K) == 0L) {
 						moves |= MASK_CASTLE_KING_K;
-					}*/
+					}
 					scan = MASK_CASTLE_ALL_K;
 				}
 				if ((ntchd & MASK_A1) !=0L) {
-					/*
 					if ((occ & MASK_CASTLE_OCC_Q) == 0L) {
 						moves |= MASK_CASTLE_KING_Q;
-					}*/
+					}
 					scan |= MASK_CASTLE_ALL_Q;
 				}
 				scan &= ~callbacks[0];
@@ -469,26 +424,31 @@ public class BBPosition implements Position {
 
 			}
 			break;
+			
+			
+			
+			
 		}
 		case PIECE_TYPE_BLACK_KING: {
 			callbacks[0] = lookUp.getMoveMask(pos + typeColor);
-			
+			moves = callbacks[0] & ~own;
+			long other = this.allOfOneColor[otherColor].get();
+			long occ = own | other;
 			long ntchd = untouched.get();
 			correction&= ~MASK_8_RANK; //delete old corrections
 			if ((ntchd & MASK_E8) !=0L) {
 				long scan =0;
 				if ((ntchd & MASK_H8) !=0L) {
-					/*
-					if ((occ & MASK_CASTLE_OCC_K) == 0L) {
-						moves |= MASK_CASTLE_KING_K;
-					}*/
+					if ((occ & MASK_CASTLE_OCC_k) == 0L) {
+						moves |= MASK_CASTLE_KING_k;
+					}
 					scan = MASK_CASTLE_ALL_k;
 				}
 				if ((ntchd & MASK_A8) !=0L) {
-					/*
-					if ((occ & MASK_CASTLE_OCC_Q) == 0L) {
-						moves |= MASK_CASTLE_KING_Q;
-					}*/
+					
+					if ((occ & MASK_CASTLE_OCC_q) == 0L) {
+						moves |= MASK_CASTLE_KING_q;
+					}
 					scan |= MASK_CASTLE_ALL_q;
 				}
 				scan &= ~callbacks[0];
@@ -498,16 +458,39 @@ public class BBPosition implements Position {
 			}
 		}
 		}
-		long toggleCallbacks = this.rawCBs[pos][0].get() ^ callbacks[0];
-		toggleCallbacks|= this.rawCBs[pos][1].get() ^ callbacks[1];
-		int count = updateIndices(indices3, toggleCallbacks);
+		Move[] moveObjs = lookUp.getMoveMap(pos + typeColor);
+		
+		long toggleCallbacks = this.callBacks[pos][0].get() ^ callbacks[0];
+		toggleCallbacks|= this.callBacks[pos][1].get() ^ callbacks[1];
+		long oldMoves = this.moveMasks[pos].get() ;
+		long toggleMoves = oldMoves ^ moves;
+		int delta = Long.bitCount(moves) - Long.bitCount(oldMoves);
+		this.moveCount[color].addition(delta);;
+		int count = updateIndices(indices3, toggleCallbacks & ~toggleMoves);
 		for (int j = 0; j < count; j++) {
 			this.tCallBacks[indices3[j]].toggleBit(pos);
 		}
-		this.rawCBs[pos][0].set(callbacks[0]);
-		this.rawCBs[pos][1].set(callbacks[1]);
+		BLIndexedList <Move> list = this.allMovesLists[color];
+		long mask = toggleCallbacks & toggleMoves;
+		count = updateIndices(indices3, mask);
+		for (int j = 0; j < count; j++) {
+			this.tCallBacks[indices3[j]].toggleBit(pos);
+			int index = indices3[j];
+			list.toggle(moveObjs[index]);
+		}
+			
+		mask = ~toggleCallbacks & toggleMoves;
+		count = updateIndices(indices3, mask);
+		for (int j = 0; j < count; j++) {
+			int index = indices3[j];
+			list.toggle(moveObjs[index]);
+		}
 		
 		
+		this.callBacks[pos][0].set(callbacks[0]);
+		this.callBacks[pos][1].set(callbacks[1]);
+		
+		this.moveMasks[pos].set(moves);
 		this.correctors[color].set(correction);
 	}
 
@@ -533,6 +516,7 @@ public class BBPosition implements Position {
 	}
 	
 	public int[] getAttacks (int color){
+		System.out.println("+");
 		int[] attacks = new int[64];
 		long own = allOfOneColor[color].get();
 		long correction = correctors[color].get();
@@ -544,10 +528,10 @@ public class BBPosition implements Position {
 	}
 
 	public int getMoves() {
-		return allMovesLists.get(getLevel()).size();
+		return moveCount[colorAtTurn].get();
 	}
 	
 	public Move getMove(int index) {
-		return this.allMovesLists.get(getLevel()).get(index);
+		return this.allMovesLists[colorAtTurn].getElement(index);
 	}
 }

@@ -85,10 +85,10 @@ final public class Game {
 		int level = depth - deep;
 		
 		for(int i=0;i<moves;i++) {
-			String moveStr = board.getMoveStr(i);
 			boolean printMove=false;
 			try {
 				if(!debugIgnore && level<debugMoves.length) {
+					String moveStr = board.getMoveStr(i);
 					if(debugMoves[level].equals(moveStr)) {
 						System.out.println("Move:" + moveStr+" ");
 						printMove=true;
@@ -136,6 +136,7 @@ final public class Game {
 				board.undoMove();
 				
 				if(debugMoves.length==level) {
+					String moveStr = board.getMoveStr(i);
 					if(refMap!=null) {
 						Long val = refMap.get(moveStr);
 						val= (val==null?0:val);
@@ -148,7 +149,7 @@ final public class Game {
 				}
 				moveCount +=curMoveCount;	
 			}catch(Exception e){
-				System.out.println("Error in Move:"+moveStr);
+				System.out.println("Error in Move:"+e);
 				//System.out.println(board);
 				e.printStackTrace();
 				throw e;

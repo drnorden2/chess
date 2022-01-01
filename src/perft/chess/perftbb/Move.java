@@ -3,17 +3,16 @@ package perft.chess.perftbb;
 
 import static perft.chess.Definitions.*;
 
+import perft.chess.core.datastruct.IndexedElement;
 
-public class Move {
+
+public class Move implements IndexedElement  {
 	
 
-	
+	private static int moveIDCounter =0;
 	private final String notation;
 	private final int oldPos;
 	private final int newPos;
-	
-	private final int ii;
-	private final int jj;
 	
 	private final int moveType;
 	private final int elementIndex;
@@ -34,7 +33,13 @@ public class Move {
 	private final int dirY;
 	private final int color;
 	
+	public static int getMaxMoveID() {
+		return moveIDCounter;
+	}
 	
+	public static void resetMoveIDs() {
+		moveIDCounter =0;
+	}
 	public Move(int color, int callbackType,int oldPos, int newPos, int moveType,int dirX, int dirY) {
 		this(color,callbackType, oldPos, newPos, moveType, dirX, dirY,-1);
 	}
@@ -45,9 +50,7 @@ public class Move {
 	
 	
 	public Move(int color, int callbackType, int oldPos, int newPos, int moveType,int dirX, int dirY,int promotePieceType, int rookPos, int dirOfRochade) {
-		this.elementIndex=-1;
-		this.ii =-1;
-		this.jj =-1;
+		this.elementIndex= Move.moveIDCounter++;
 		this.color = color;
 		this.oldPos= oldPos;
 		this.newPos = newPos;
@@ -113,7 +116,7 @@ public class Move {
 		
 	}
 	
-	
+	/*
 	public Move (Move move, int ii, int jj, int moveIndex ) {
 		this.ii =-1;
 		this.jj =-1;
@@ -137,7 +140,7 @@ public class Move {
 		this.dirY = move.dirY;
 		this.color = move.color;
 	}
-
+*/
 	public int getElementIndex() {
 		return this.elementIndex;
 	}
@@ -212,6 +215,7 @@ public class Move {
 		return this.moveType==MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE ;
 	}
 	public String getNotation() {
+		System.out.println("+");
 		return notation;
 	}
 	
@@ -243,15 +247,8 @@ public class Move {
 				+((char)('a'+f2))  +""+ (1+r2)+promotion+"";
 	}	
 	
-	public int getII() {
-		return ii;
-	}
-	public int getJJ() {
-		return jj;
-	}
 	
 	public int getColor() {
 		return color;
 	}
-
 }

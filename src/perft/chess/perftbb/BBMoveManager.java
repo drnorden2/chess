@@ -10,6 +10,7 @@ public class BBMoveManager {
 		public static final long [] moveMasks = new long[1280];
 
 		public BBMoveManager() {
+			Move.resetMoveIDs();
 			setup();
 		}
 		
@@ -231,7 +232,7 @@ public class BBMoveManager {
 						rank=(rank-PAWN_MOVE_DIR[move.getColor()]);
 						curPos = getPosForFileRank(file,rank);
 					}
-					moveMap[curPos] = new Move(move,validRayCursor,j,moveIndex++);
+					moveMap[curPos] = move;
 					
 				}
 			}

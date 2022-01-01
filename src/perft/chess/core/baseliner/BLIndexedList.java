@@ -72,6 +72,28 @@ public class BLIndexedList <T extends IndexedElement>{
 		}
 	}
 	
+	public void toggle(T element){
+		int elementIndex = element.getElementIndex();
+		if(position.get(elementIndex )!=-1) {
+			int toDeletePosition = position.get(elementIndex);
+			int curCounter =counter.get();
+			counter.set(--curCounter);//--
+			T filler = elements.get(curCounter); 
+		
+			int fillerElementIndex = filler.getElementIndex();
+			
+			if(curCounter>0) {// otherwise last removed
+				elements.set(toDeletePosition,filler);
+				position.set(fillerElementIndex,toDeletePosition);
+			}
+			position.set(elementIndex,-1);
+		}else{
+			int curCounter = counter.get();
+			elements.set(curCounter,element);
+			position.set(elementIndex ,curCounter);
+			counter.set(++curCounter);			
+		}
+	}
 	
 	
 	
