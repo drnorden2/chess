@@ -15,7 +15,14 @@ public class Test {
 	Perft(5) = 4865609 in 0.419626 sec
 	Perft(6) = 119060324 in 10.080624 sec		   
 	Perft(7) = 3195901860 in 277.148570 sec
+	perft( 1)=           20 ( 0.000 sec)
+	perft( 2)=          400 ( 0.000 sec)
+	perft( 3)=         8902 ( 0.000 sec)
+	perft( 4)=       197281 ( 0.000 sec)
+	perft( 5)=      4865609 ( 0.016 sec)
+	perft( 6)=    119060324 ( 0.414 sec)
 	*/
+
 	private static ChessGameFactory factory  = new ChessGameFactory();
 
 	private static boolean useBulk = true;

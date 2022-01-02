@@ -24,20 +24,20 @@ public class BLArrayInt {
 	
 	public void incr(int index) {
 		if(array[index].incrAndTouched()) {
-			bl.touch(bL_Index+index);
+			bl.touchInt(bL_Index+index);
 		}
 	}
 
 	public void decr(int index) {
 		if(array[index].decrAndTouched()) {
-			bl.touch(bL_Index+index);
+			bl.touchInt(bL_Index+index);
 		}
 	}
 
 	
 	public void set(int index, int value) {
 		if(array[index].addAndTouched(value)) {
-			bl.touch(bL_Index+index);
+			bl.touchInt(bL_Index+index);
 		}
 	}
 	

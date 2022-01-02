@@ -21,7 +21,7 @@ public class BLVariable<T> {
 
 	public void set(T value) {
 		if(varStack.addAndTouched(value)) {
-			bl.touch(bL_Index);
+			bl.touchObj(bL_Index);
 		}
 	}
 	public T get() {

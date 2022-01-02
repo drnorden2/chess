@@ -92,27 +92,48 @@ public class Definitions {
 	public final static long MASK_NONE = 0L;
 	public final static long MASK_ALL = ~MASK_NONE;
 	
+	public static final long _A1=0;
+	public static final long _B1=1;
+	public static final long _C1=2;
+	public static final long _D1=3;
+	public static final long _E1=4;
+	public static final long _F1=5;
+	public static final long _G1=6;
+	public static final long _H1=7;
+
 	
-	public static final long MASK_A1=1L<<0;
-	public static final long MASK_B1=1L<<1;
-	public static final long MASK_C1=1L<<2;
-	public static final long MASK_D1=1L<<3;
-	public static final long MASK_E1=1L<<4;
-	public static final long MASK_F1=1L<<5;
-	public static final long MASK_G1=1L<<6;
-	public static final long MASK_H1=1L<<7;
+	public static final long MASK_A1=1L<<_A1;
+	public static final long MASK_B1=1L<<_B1;
+	public static final long MASK_C1=1L<<_C1;
+	public static final long MASK_D1=1L<<_D1;
+	public static final long MASK_E1=1L<<_E1;
+	public static final long MASK_F1=1L<<_F1;
+	public static final long MASK_G1=1L<<_G1;
+	public static final long MASK_H1=1L<<_H1;
+
+	public static final long _A8=56;
+	public static final long _B8=57;
+	public static final long _C8=58;
+	public static final long _D8=59;
+	public static final long _E8=60;
+	public static final long _F8=61;
+	public static final long _G8=62;
+	public static final long _H8=63;
+
 	
-	public static final long MASK_A8=1L<<56;
-	public static final long MASK_B8=1L<<57;
-	public static final long MASK_C8=1L<<58;
-	public static final long MASK_D8=1L<<59;
-	public static final long MASK_E8=1L<<60;
-	public static final long MASK_F8=1L<<61;
-	public static final long MASK_G8=1L<<62;
-	public static final long MASK_H8=1L<<63;
+	public static final long MASK_A8=1L<<_A8;
+	public static final long MASK_B8=1L<<_B8;
+	public static final long MASK_C8=1L<<_C8;
+	public static final long MASK_D8=1L<<_D8;
+	public static final long MASK_E8=1L<<_E8;
+	public static final long MASK_F8=1L<<_F8;
+	public static final long MASK_G8=1L<<_G8;
+	public static final long MASK_H8=1L<<_H8;	
 	
-	
-	
+	public static final long MASK_E8_A8=MASK_E8|MASK_A8;
+	public static final long MASK_E8_H8=MASK_E8|MASK_H8;
+	public static final long MASK_E1_A1=MASK_E1|MASK_A1;
+	public static final long MASK_E1_H1=MASK_E1|MASK_H1;
 	
 	public final static long MASK_NOT_A_FILE = not(MASK_A_FILE);
 	public final static long MASK_NOT_B_FILE = not(MASK_B_FILE);
@@ -165,6 +186,8 @@ public class Definitions {
 			MASK_NOT_G_FILE,
 			MASK_NOT_H_FILE
 	};
+	public final static long[] MASK_NOT_X_FILE_FOR_POS = getMaskNotXFilesForPos();
+	
 	
 	public final static long MASK_NOT_1_RANK = not(MASK_1_RANK);
 	public final static long MASK_NOT_2_RANK = not(MASK_2_RANK);
@@ -175,16 +198,19 @@ public class Definitions {
 	public final static long MASK_NOT_7_RANK = not(MASK_7_RANK);
 	public final static long MASK_NOT_8_RANK = not(MASK_8_RANK);
 
-	public final static long MASK_CASTLE_OCC_Q = MASK_B1|MASK_C1|MASK_D1;
-	public final static long MASK_CASTLE_ALL_Q = MASK_A1|MASK_B1|MASK_C1|MASK_D1|MASK_E1;
-	public final static long MASK_CASTLE_OCC_K = MASK_F1|MASK_G1;
-	public final static long MASK_CASTLE_ALL_K = MASK_E1|MASK_F1|MASK_G1|MASK_H1;
+	public final static long[] MASK_NOT_BASE_RANK = new long[] {MASK_8_RANK,MASK_1_RANK};
 	
+	
+	public final static long MASK_CASTLE_OCC_Q = MASK_B1|MASK_C1|MASK_D1;
+	public final static long MASK_CASTLE_OCC_K = MASK_F1|MASK_G1;
 
+	public final static long MASK_CASTLE_ALL_Q = MASK_A1|MASK_B1|MASK_C1|/*MASK_D1|*/MASK_E1;
+	public final static long MASK_CASTLE_ALL_K = MASK_E1|/*|MASK_F1|*/MASK_G1|MASK_H1;
+	
 	public final static long MASK_CASTLE_OCC_q = MASK_B8|MASK_C8|MASK_D8;
-	public final static long MASK_CASTLE_ALL_q = MASK_A8|MASK_B8|MASK_C8|MASK_D8|MASK_E8;
 	public final static long MASK_CASTLE_OCC_k = MASK_F8|MASK_G8;
-	public final static long MASK_CASTLE_ALL_k = MASK_E8|MASK_F8|MASK_G8|MASK_H8;
+	public final static long MASK_CASTLE_ALL_q = MASK_A8|MASK_B8|MASK_C8|/*MASK_D8|*/MASK_E8;
+	public final static long MASK_CASTLE_ALL_k = MASK_E8|/*|MASK_F8|*/MASK_G8|MASK_H8;
 	
 	public final static long MASK_CASTLE_KING_Q = MASK_C1;
 	public final static long MASK_CASTLE_KING_K = MASK_G1;
@@ -266,6 +292,18 @@ public class Definitions {
 		}
 		return retVal ;
 	}
+	private static long[] getMaskNotXFilesForPos() {
+		long[] retVal = new long[64];
+		int counter=0;
+		for(int i=0;i<8;i++) {
+			for(int j=0;j<8;j++) {
+				retVal[counter++]=MASK_NOT_X_FILE[j];
+			}
+		}
+		return retVal ;
+	}
+	
+	
 	public static final int PIECE_TYPE_WHITE_PAWN = (PIECE_TYPE_PAWN  * 2 + COLOR_WHITE) * 64;
 	public static final int PIECE_TYPE_WHITE_KNIGHT = (PIECE_TYPE_KNIGHT* 2 + COLOR_WHITE) * 64;
 	public static final int PIECE_TYPE_WHITE_BISHOP = (PIECE_TYPE_BISHOP* 2 + COLOR_WHITE) * 64;

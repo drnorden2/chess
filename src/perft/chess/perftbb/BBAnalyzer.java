@@ -2,6 +2,7 @@ package perft.chess.perftbb;
 import static perft.chess.Definitions.*;
 
 import perft.chess.core.baseliner.BLIndexedList;
+import perft.chess.core.datastruct.ArrayStack;
 
 
 
@@ -102,6 +103,7 @@ public class BBAnalyzer {
 	private String[] getMovesToString() {
 		char[] snapshot = new char[64];
 		int count=position.getMoves();
+		/*
 		for(int i=0;i<count;i++){
 			Move move = position.getMove(i);
 			snapshot[move.getOldPos()]++;			
@@ -111,19 +113,21 @@ public class BBAnalyzer {
 				snapshot[j]=(char)('0'+(snapshot[j]%10));
 			}
 
-		}
+		}*/
 		return this.snapshotToString(snapshot,"Moves:"+(position.getColorAtTurn()==COLOR_WHITE?"W":"B"),"Size:"+count);
 	}
-	private int wtfcount;
 	
 	private String[] getPseudoMovesToString(int color) {
 		
 		char[] snapshot = new char[64];
-		BLIndexedList<Move> list = position.allMovesLists[color];
 		
-		int count = list.size();			
+		//ArrayStack<Move> list = new ArrayStack<Move>(new Move[28*16]);
+		position.calcNewMoves(color);
+		
+		int count = position.getMoves();			
+		/*
 		for(int i=0;i<count;i++) {
-			Move move = list.getElement(i);
+			Move move = position.getMove(0);
 			snapshot[move.getOldPos()]++;
 		}
 		
@@ -132,7 +136,7 @@ public class BBAnalyzer {
 				snapshot[j]=(char)('0'+(snapshot[j]%10));
 			}
 		}
-
+*/
 		return this.snapshotToString(snapshot,"PMovs:"+(position.getColorAtTurn()==COLOR_WHITE?"W":"B"),"Size:"+count);
 	}
 	

@@ -12,17 +12,19 @@ public class BLArrayStack {
 	}
 	
 	public boolean addAndTouched(Object o) {
-		if(head !=-1 && stack[head] == o) {
-			return false;
+		if(head !=-1 )  {
+			if(touchedInLevel[head]>= bl.level ) {
+				stack[head] = o;
+				return false;
+			}
+			if(stack[head] == o) {
+				return false;
+			}
 		}
-		if(head ==-1 || touchedInLevel[head]< bl.level) {
-			touchedInLevel[++head] = bl.level;
-			stack[head] = o;
-			return true;
-		}else {
-			stack[head] = o;
-			return false;
-		}
+		touchedInLevel[++head] = bl.level;
+		stack[head] = o;
+		return true;
+	
 	}
 	public Object get() {
 		return stack[head];

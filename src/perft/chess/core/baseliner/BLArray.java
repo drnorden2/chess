@@ -22,7 +22,7 @@ public class BLArray<T> {
 	
 	public void set(int index, T value) {
 		if(array[index].addAndTouched(value)) {
-			bl.touch(bL_Index+index);
+			bl.touchObj(bL_Index+index);
 		}
 	}
 	private void setTouchLess(int index, T value) {

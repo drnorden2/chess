@@ -20,18 +20,18 @@ public class BLVariableLong {
 
 		public void set(long value) {
 			if(varStack.addAndTouched(value)) {
-				bl.touch(bL_Index);
+				bl.touchLong(bL_Index);
 			}
 		}
 		
 		public void toggleBit(int bitIndex) {
 			if(varStack.toggleBitTouched(bitIndex)){
-				bl.touch(bL_Index);
+				bl.touchLong(bL_Index);
 			}
 		}
 		public void moveBit(int oldIndex, int newIndex) {
 			if(varStack.moveBitTouched(oldIndex, newIndex)){
-				bl.touch(bL_Index);
+				bl.touchLong(bL_Index);
 			}
 		}
 		
@@ -39,7 +39,7 @@ public class BLVariableLong {
 		
 		public void setBit(int bitIndex) {
 			if(varStack.setBitTouched(bitIndex)){
-				bl.touch(bL_Index);
+				bl.touchLong(bL_Index);
 			}
 		}
 		
@@ -50,7 +50,7 @@ public class BLVariableLong {
 		
 		public void unsetBit(int bitIndex) {
 			if(varStack.unsetBitTouched(bitIndex)){
-				bl.touch(bL_Index);
+				bl.touchLong(bL_Index);
 			}
 		}
 		public boolean getBit(int bitIndex) {
@@ -70,24 +70,35 @@ public class BLVariableLong {
 		}
 		public void decr() {
 			if(varStack.decrAndTouched()) {
-				bl.touch(bL_Index);
+				bl.touchLong(bL_Index);
 			}
 		}
 		public void incr() {
 			if(varStack.incrAndTouched()) {
-				bl.touch(bL_Index);
+				bl.touchLong(bL_Index);
+			}
+		}
+		public void OR(long value) {
+			if(varStack.orAndTouched(value)) {
+				bl.touchLong(bL_Index);
+			}
+		}
+		public void AND_NOT(long value) {
+			if(varStack.andNotTouched(value)) {
+				bl.touchLong(bL_Index);
 			}
 		}
 		
+		
 		public void XOR(long value) {
 			if(varStack.xorAndTouched(value)) {
-				bl.touch(bL_Index);
+				bl.touchLong(bL_Index);
 			}
 		}
 		public long getAndSet(long value) {
 			long ret = get();
 			if(varStack.addAndTouched(value)) {
-				bl.touch(bL_Index);
+				bl.touchLong(bL_Index);
 			}
 			return ret;
 		}

@@ -32,6 +32,9 @@ public class Move implements IndexedElement  {
 	private final int dirX;
 	private final int dirY;
 	private final int color;
+	private final int type;
+	private final int typeColor;
+	private final int rochadeDisabler;
 	
 	public static int getMaxMoveID() {
 		return moveIDCounter;
@@ -40,17 +43,19 @@ public class Move implements IndexedElement  {
 	public static void resetMoveIDs() {
 		moveIDCounter =0;
 	}
-	public Move(int color, int callbackType,int oldPos, int newPos, int moveType,int dirX, int dirY) {
-		this(color,callbackType, oldPos, newPos, moveType, dirX, dirY,-1);
+	public Move(int type, int typeColor, int color, int callbackType,int oldPos, int newPos, int moveType,int dirX, int dirY) {
+		this(type, typeColor,color,callbackType, oldPos, newPos, moveType, dirX, dirY,-1);
 	}
 	
-	public Move(int color, int callbackType,int oldPos, int newPos, int moveType,int dirX, int dirY,int promotePieceType) {
-		this(color,callbackType, oldPos, newPos, moveType,dirX, dirY, promotePieceType, -1, 0);		
+	public Move(int type, int typeColor, int color, int callbackType,int oldPos, int newPos, int moveType,int dirX, int dirY,int promotePieceType) {
+		this(type, typeColor,color,callbackType, oldPos, newPos, moveType,dirX, dirY, promotePieceType, -1, 0);		
 	}
 	
 	
-	public Move(int color, int callbackType, int oldPos, int newPos, int moveType,int dirX, int dirY,int promotePieceType, int rookPos, int dirOfRochade) {
+	public Move(int type, int typeColor, int color, int callbackType, int oldPos, int newPos, int moveType,int dirX, int dirY,int promotePieceType, int rookPos, int dirOfRochade) {
 		this.elementIndex= Move.moveIDCounter++;
+		this.type = type;
+		this.typeColor = typeColor;
 		this.color = color;
 		this.oldPos= oldPos;
 		this.newPos = newPos;
@@ -59,12 +64,18 @@ public class Move implements IndexedElement  {
 		this.rookPos =rookPos;
 		this.dirOfRochade = dirOfRochade ;
 		this.callbackType = callbackType;
+		this.rochadeDisabler = (typeColor == PIECE_TYPE_WHITE_ROOK&&(oldPos==_A1 ||oldPos==_H1))||
+								(typeColor == PIECE_TYPE_BLACK_ROOK&&(oldPos==_A8 ||oldPos==_H8))||
+								(typeColor == PIECE_TYPE_WHITE_KING&&(oldPos==_E1))||
+								(typeColor == PIECE_TYPE_BLACK_KING&&(oldPos==_E8))||
+								(color==COLOR_WHITE&&(newPos==_A1 ||newPos==_H1))||
+								(color==COLOR_BLACK&&(newPos==_A8 ||newPos==_H8))?1:0;
 		this.dirX=dirX;
 		this.dirY=dirY;
 		if(rookPos==-1) {
 			rookMove = null;
 		}else {
-			rookMove = new Move(color, CALLBACK_TYPE_OTHER, rookPos, oldPos+(dirOfRochade),MOVE_TYPE_PUSH_BEAT,dirX*-1,dirY);
+			rookMove = new Move(PIECE_TYPE_ROOK,(PIECE_TYPE_ROOK * 2 + color) << 6, color, CALLBACK_TYPE_OTHER, rookPos, oldPos+(dirOfRochade),MOVE_TYPE_PUSH_BEAT,dirX*-1,dirY);
 		}
 		if(moveType ==MOVE_TYPE_PAWN_PUSH) {
 			if(getRankForPos(oldPos)==_2 &&  getRankForPos(newPos)==_4) {
@@ -215,7 +226,7 @@ public class Move implements IndexedElement  {
 		return this.moveType==MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE ;
 	}
 	public String getNotation() {
-		System.out.println("+");
+     	System.out.println("+");
 		return notation;
 	}
 	
@@ -250,5 +261,8 @@ public class Move implements IndexedElement  {
 	
 	public int getColor() {
 		return color;
+	}
+	public int getRochadeDisabler() {
+		return this.rochadeDisabler;
 	}
 }

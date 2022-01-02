@@ -12,16 +12,19 @@ public class BLArrayStackLong {
 	}
 	
 	public boolean addAndTouched(long val) {
-		boolean touched =false;
-
-		int level = this.bl.getLevel();
-		if(head ==-1 || touchedInLevel[head]==0 ||touchedInLevel[head]< level) {
-			head++;
-			touchedInLevel[head] = level;
-			touched =true;
+		if(head !=-1 )  {
+			if(touchedInLevel[head]>= bl.level ) {
+				stack[head] = val;
+				return false;
+			}
+			if(stack[head] == val) {
+				return false;
+			}
 		}
+		touchedInLevel[++head] = bl.level;
 		stack[head] = val;
-		return touched;
+		return true;
+	
 	}
 
 	public boolean incrAndTouched() {
@@ -78,6 +81,15 @@ public class BLArrayStackLong {
 		return addAndTouched(val);
 	}
 
+	public boolean orAndTouched(long value) {
+		long val = stack[head]|value;
+		return addAndTouched(val);
+	}
+
+	public boolean andNotTouched(long value) {
+		long val = stack[head]&~value;
+		return addAndTouched(val);
+	}
 	
 	public long get() {
 		return stack[head];

@@ -11,19 +11,25 @@ public class BLArrayStackInt {
 		this.bl = bl;
 	}
 	
+	
+	
 	public boolean addAndTouched(int val) {
-		boolean touched =false;
-
-		int level = this.bl.getLevel();
-		if(head ==-1 || touchedInLevel[head]==0 ||touchedInLevel[head]< level) {
-			head++;
-			touchedInLevel[head] = level;
-			touched =true;
+		if(head !=-1 )  {
+			if(touchedInLevel[head]>= bl.level ) {
+				stack[head] = val;
+				return false;
+			}
+			if(stack[head] == val) {
+				return false;
+			}
 		}
+		touchedInLevel[++head] = bl.level;
 		stack[head] = val;
-		return touched;
+		return true;
+	
 	}
 
+	
 	public boolean incrAndTouched() {
 		int val = stack[head]+1;
 		return addAndTouched(val);

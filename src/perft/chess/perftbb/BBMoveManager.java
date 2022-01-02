@@ -39,7 +39,7 @@ public class BBMoveManager {
 											moveType = MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE;
 											callbackType = CALLBACK_TYPE_OTHER;
 										}
-										generateMoves(curMoves, color,new int[][]{{-1,colorSwitch},{1,colorSwitch}}, 0, file, rank,1, moveType,callbackType);
+										generateMoves(pieceType,curMoves, color,new int[][]{{-1,colorSwitch},{1,colorSwitch}}, 0, file, rank,1, moveType,callbackType);
 									}
 									int steps =1;
 									//2 steps if 2nd row
@@ -47,7 +47,7 @@ public class BBMoveManager {
 										steps =2;
 									}
 									
-									generateMoves(curMoves, color,new int[][]{{0,colorSwitch}}, 2, file, rank,steps,MOVE_TYPE_PAWN_PUSH,CALLBACK_TYPE_PUSH_RAY);
+									generateMoves(pieceType,curMoves, color,new int[][]{{0,colorSwitch}}, 2, file, rank,steps,MOVE_TYPE_PAWN_PUSH,CALLBACK_TYPE_PUSH_RAY);
 									//if right before finish line
 									if((rank ==_2 && color ==COLOR_BLACK)||(rank == _7 && color ==COLOR_WHITE )) {
 										for(int i=0;i<3;i++) {
@@ -67,7 +67,7 @@ public class BBMoveManager {
 												//4 options rook, bishop, knight and queen 
 												for(int j=3;j>=0;j--) {
 													int promotePieceType = j+1; //bishop, knight, rook, queen
-													curMoves[3+(4*i)+j] = new Move[] {new Move(color,callbackType ,oldMove.getOldPos(),oldMove.getNewPos(), moveType,0,0,promotePieceType)}; 
+													curMoves[3+(4*i)+j] = new Move[] {new Move(pieceType,(pieceType * 2 + color) << 6,color,callbackType ,oldMove.getOldPos(),oldMove.getNewPos(), moveType,0,0,promotePieceType)}; 
 												}
 											}
 										}
@@ -77,16 +77,16 @@ public class BBMoveManager {
 								break;
 							case PIECE_TYPE_BISHOP:
 								//O.UT("BISHOP "+color);
-								generateMoves(curMoves,color, new int[][]{{-1,-1},{-1,1},{1,-1},{1,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_RAY);
+								generateMoves(pieceType,curMoves,color, new int[][]{{-1,-1},{-1,1},{1,-1},{1,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_RAY);
 								break;
 							case PIECE_TYPE_KNIGHT:
 								//O.UT("KNIGHT "+color);
-								generateMoves(curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 0, file, rank,1, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_ONE);
+								generateMoves(pieceType,curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 0, file, rank,1, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_ONE);
 								break;
 							
 							case PIECE_TYPE_ROOK:
 								//O.UT("ROOK_T "+color);
-								generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_RAY);
+								generateMoves(pieceType,curMoves, color,new int[][]{{1,0},{-1,0},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_RAY);
 								break;
 								
 							
@@ -96,7 +96,7 @@ public class BBMoveManager {
 								//generate the sensing moves to detect pinning
 
 								//generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_KING_SENSING,CALLBACK_TYPE_KING_SENSING);
-								generateMoves(curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,1, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_ONE_AS_KING);
+								generateMoves(pieceType,curMoves, color,new int[][]{{1,0},{-1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,1, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_ONE_AS_KING);
 								//generateMoves(curMoves, color,new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}}, 8, file, rank,1, MOVE_TYPE_KING_SENSING,CALLBACK_TYPE_CHECK_KNIGHT_ATTACK);
 								
 								// add the rochade as ray moves to 1 and 2 options on the E1/E8 position
@@ -106,18 +106,18 @@ public class BBMoveManager {
 										int oldPos = getPosForFileRank(file,rank);
 										int newPos = getPosForFileRank(file+2*dir,rank);
 										int rookPos = getPosForFileRank(file+((i==0)?3:-4),rank);
-										curMoves[i][1] = new Move(color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
+										curMoves[i][1] = new Move(pieceType,(pieceType * 2 + color) << 6,color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
 									}
 								}
 								break;
 							case PIECE_TYPE_QUEEN:
 								//O.UT("QUEEN "+color+"file "+file +" Rank:"+rank+" Offset:"+offset);
-								generateMoves(curMoves, color,new int[][]{{-1,0},{1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_RAY);
+								generateMoves(pieceType,curMoves, color,new int[][]{{-1,0},{1,0},{-1,-1},{-1,1},{1,-1},{1,1},{0,-1},{0,1}}, 0, file, rank,7, MOVE_TYPE_PUSH_BEAT,CALLBACK_TYPE_BEAT_RAY);
 								break;
 							
 							case PIECE_TYPE_ANY:
 								//public Move(BaseLiner bl,int callbackType, int oldPos, int newPos, int moveType) {
-								curMoves[0] = new Move[] {new Move(color,CALLBACK_TYPE_OTHER , getPosForFileRank(file,rank),getPosForFileRank(file,rank), MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
+								curMoves[0] = new Move[] {new Move(pieceType,(pieceType * 2 + color) << 6,color,CALLBACK_TYPE_OTHER , getPosForFileRank(file,rank),getPosForFileRank(file,rank), MOVE_TYPE_INITAL_PLACEMENT,0,0)}; 
 								break;						
 							}
 							this.addMoves(curMoves, offset, getPosForFileRank(file,rank),pieceType);
@@ -133,7 +133,7 @@ public class BBMoveManager {
 		}
 
 		
-		private void generateMoves(Move[][] curMoves, int color, int[][]  dirs, int rayOffset,int file, int rank,int maxSteps,int moveType, int callbackType) {
+		private void generateMoves(int pieceType,Move[][] curMoves, int color, int[][]  dirs, int rayOffset,int file, int rank,int maxSteps,int moveType, int callbackType) {
 			for (int ray = 0; ray < dirs.length; ray++) {
 				int dirX = dirs[ray][0];
 				int dirY = dirs[ray][1];
@@ -157,7 +157,7 @@ public class BBMoveManager {
 						if(cb == CALLBACK_TYPE_BEAT_RAY && last) {
 							cb = CALLBACK_TYPE_BEAT_ONE;
 						}
-						Move curMove = new Move(color,cb ,oldPos, newPos, moveType,dirX,dirY); ;				
+						Move curMove = new Move(pieceType,(pieceType * 2 + color) << 6,color,cb ,oldPos, newPos, moveType,dirX,dirY); ;				
 						curMoves[ray+rayOffset][cursor++] = curMove;
 					} else {
 						break;

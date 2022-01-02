@@ -20,7 +20,7 @@ public class BLVariableInt {
 
 	public void set(int value) {
 		if(varStack.addAndTouched(value)) {
-			bl.touch(bL_Index);
+			bl.touchInt(bL_Index);
 		}
 	}
 	public int get() {
@@ -29,7 +29,7 @@ public class BLVariableInt {
 	public int getAndSet(int value) {
 		int ret = get();
 		if(varStack.addAndTouched(value)) {
-			bl.touch(bL_Index);
+			bl.touchInt(bL_Index);
 		}
 		return ret;
 	}
@@ -39,28 +39,28 @@ public class BLVariableInt {
 	}
 	public void decr() {
 		if(varStack.decrAndTouched()) {
-			bl.touch(bL_Index);
+			bl.touchInt(bL_Index);
 		}
 	}
 	public void incr() {
 		if(varStack.incrAndTouched()) {
-			bl.touch(bL_Index);
+			bl.touchInt(bL_Index);
 		}
 	}
 	public void addition(int value) {
 		if(varStack.additionAndTouched(value)) {
-			bl.touch(bL_Index);
+			bl.touchInt(bL_Index);
 		}
 	}
 	public void subtraction(int value) {
 		if(varStack.subtractionAndTouched(value)) {
-			bl.touch(bL_Index);
+			bl.touchInt(bL_Index);
 		}
 	}
 	
 	public void XOR(int value) {
 		if(varStack.xorAndTouched(value)) {
-			bl.touch(bL_Index);
+			bl.touchInt(bL_Index);
 		}
 	}
 	
