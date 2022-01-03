@@ -37,6 +37,9 @@ public class BLArrayStackLong {
 		return ((stack[head] >> bitIndex) & 1L)==1L;
 	}
 	
+	public int getBitAsInt(int bitIndex) {
+		return(int)((stack[head] >> bitIndex) & 1);
+	}
 	
 	public int updateIndices(int[] indices) {
 		long copy = stack[head];

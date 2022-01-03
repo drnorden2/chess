@@ -265,4 +265,10 @@ public class Move implements IndexedElement  {
 	public int getRochadeDisabler() {
 		return this.rochadeDisabler;
 	}
+	public int getPieceType() {
+		return this.type;
+	}
+	public int getTypeColor() {
+		return this.type;
+	}
 }

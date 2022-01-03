@@ -56,6 +56,9 @@ public class BLVariableLong {
 		public boolean getBit(int bitIndex) {
 			return varStack.getBit(bitIndex);
 		}
+		public int getBitAsInt(int bitIndex) {
+			return varStack.getBitAsInt(bitIndex);
+		}
 		
 		public int updateIndices(int[] indices) {
 			return varStack.updateIndices(indices);
