@@ -2,6 +2,12 @@ package perft.chess;
 
 import static perft.chess.Definitions.MASK_1_RANK;
 import static perft.chess.Definitions.MASK_8_RANK;
+import static perft.chess.Definitions.PIECE_TYPE_BISHOP;
+import static perft.chess.Definitions.PIECE_TYPE_KING;
+import static perft.chess.Definitions.PIECE_TYPE_KNIGHT;
+import static perft.chess.Definitions.PIECE_TYPE_PAWN;
+import static perft.chess.Definitions.PIECE_TYPE_QUEEN;
+import static perft.chess.Definitions.PIECE_TYPE_ROOK;
 
 import perft.chess.core.datastruct.BitBoard;
 
@@ -92,14 +98,14 @@ public class Definitions {
 	public final static long MASK_NONE = 0L;
 	public final static long MASK_ALL = ~MASK_NONE;
 	
-	public static final long _A1=0;
-	public static final long _B1=1;
-	public static final long _C1=2;
-	public static final long _D1=3;
-	public static final long _E1=4;
-	public static final long _F1=5;
-	public static final long _G1=6;
-	public static final long _H1=7;
+	public static final int _A1=0;
+	public static final int _B1=1;
+	public static final int _C1=2;
+	public static final int _D1=3;
+	public static final int _E1=4;
+	public static final int _F1=5;
+	public static final int _G1=6;
+	public static final int _H1=7;
 
 	
 	public static final long MASK_A1=1L<<_A1;
@@ -111,14 +117,14 @@ public class Definitions {
 	public static final long MASK_G1=1L<<_G1;
 	public static final long MASK_H1=1L<<_H1;
 
-	public static final long _A8=56;
-	public static final long _B8=57;
-	public static final long _C8=58;
-	public static final long _D8=59;
-	public static final long _E8=60;
-	public static final long _F8=61;
-	public static final long _G8=62;
-	public static final long _H8=63;
+	public static final int _A8=56;
+	public static final int _B8=57;
+	public static final int _C8=58;
+	public static final int _D8=59;
+	public static final int _E8=60;
+	public static final int _F8=61;
+	public static final int _G8=62;
+	public static final int _H8=63;
 
 	
 	public static final long MASK_A8=1L<<_A8;
@@ -154,6 +160,14 @@ public class Definitions {
 	public final static long MASK_7_RANK = rankMask(_7);
 	public final static long MASK_8_RANK = rankMask(_8);
 	public final static long MASK_OUTER_RANKS = MASK_8_RANK |MASK_1_RANK;
+	public final static long MASK_NOT_ALL_ROOKS = ~(MASK_A1|MASK_A8|MASK_H1|MASK_H8);
+	public final static long MASK_ALL_ROOKS = (MASK_A1|MASK_A8|MASK_H1|MASK_H8);
+	public final static long MASK_ALL_ROOKS_KINGS = ~(MASK_A1|MASK_A8|MASK_H1|MASK_H8|MASK_E1|MASK_E8);
+	public final static long MASK_NOT_ALL_ROOKS_KINGS = ~(MASK_A1|MASK_A8|MASK_H1|MASK_H8|MASK_E1|MASK_E8);
+	public final static long MASK_ALL_KINGS = MASK_E1|MASK_E8;
+	
+	
+	
 	
 	
 	public final static long[] MASK_X_RANK = new long[]{
@@ -187,6 +201,8 @@ public class Definitions {
 			MASK_NOT_H_FILE
 	};
 	public final static long[] MASK_NOT_X_FILE_FOR_POS = getMaskNotXFilesForPos();
+	public final static long[] MASK_X_FILE_FOR_POS = getMaskXFilesForPos();
+	
 	
 	
 	public final static long MASK_NOT_1_RANK = not(MASK_1_RANK);
@@ -204,31 +220,40 @@ public class Definitions {
 	public final static long MASK_CASTLE_OCC_Q = MASK_B1|MASK_C1|MASK_D1;
 	public final static long MASK_CASTLE_OCC_K = MASK_F1|MASK_G1;
 
+	//public final static long MASK_CASTLE_ALL_Q = MASK_A1|MASK_B1|MASK_C1|/*MASK_D1|*/MASK_E1;
+	//public final static long MASK_CASTLE_ALL_K = MASK_E1|/*|MASK_F1|*/MASK_G1|MASK_H1;
+	//public final static long MASK_CASTLE_ALL_q = MASK_A8|MASK_B8|MASK_C8|/*MASK_D8|*/MASK_E8;
+	//public final static long MASK_CASTLE_ALL_k = MASK_E8|/*|MASK_F8|*/MASK_G8|MASK_H8;
+	
 	public final static long MASK_CASTLE_ALL_Q = MASK_A1|MASK_B1|MASK_C1|/*MASK_D1|*/MASK_E1;
 	public final static long MASK_CASTLE_ALL_K = MASK_E1|/*|MASK_F1|*/MASK_G1|MASK_H1;
-	
-	public final static long MASK_CASTLE_OCC_q = MASK_B8|MASK_C8|MASK_D8;
-	public final static long MASK_CASTLE_OCC_k = MASK_F8|MASK_G8;
 	public final static long MASK_CASTLE_ALL_q = MASK_A8|MASK_B8|MASK_C8|/*MASK_D8|*/MASK_E8;
 	public final static long MASK_CASTLE_ALL_k = MASK_E8|/*|MASK_F8|*/MASK_G8|MASK_H8;
+		
+	public final static long MASK_CASTLE_OCC_q = MASK_B8|MASK_C8|MASK_D8;
+	public final static long MASK_CASTLE_OCC_k = MASK_F8|MASK_G8;
 	
 	public final static long MASK_CASTLE_KING_Q = MASK_C1;
 	public final static long MASK_CASTLE_KING_K = MASK_G1;
 	public final static long MASK_CASTLE_KING_q = MASK_C8;
 	public final static long MASK_CASTLE_KING_k = MASK_G8;
 	
+	public final static long MASK_CASTLE_KING_KQkq = MASK_C1|MASK_G1|MASK_G8|MASK_G1;
+	
+	
 
 	public final static int DIR_UP_LEFT = 9;
 	public final static int DIR_UP_RIGHT = 7;
 	public final static int DIR_LEFT = 1;
 	public final static int DIR_UP = 8;
+	public final static int DIR_2_UP = 16;
 
 	public static final long[] PAWN_SECOND_LINE = new long[] {MASK_6_RANK,MASK_3_RANK};
 	public static final long[] PAWN_LAST_LINE = new long[] {MASK_1_RANK,MASK_8_RANK};
 	public static final int[] OTHER_COLOR = new int[] {COLOR_WHITE,COLOR_BLACK};
 	public static final int[] PAWN_MOVE_DIR = new int[] {-1,1};
 
-
+	
 			
 /*Static*/
 	
@@ -302,6 +327,16 @@ public class Definitions {
 		}
 		return retVal ;
 	}
+	private static long[] getMaskXFilesForPos() {
+		long[] retVal = new long[64];
+		int counter=0;
+		for(int i=0;i<8;i++) {
+			for(int j=0;j<8;j++) {
+				retVal[counter++]=MASK_X_FILE[j];
+			}
+		}
+		return retVal ;
+	}
 	
 	
 	public static final int PIECE_TYPE_WHITE_PAWN = (PIECE_TYPE_PAWN  * 2 + COLOR_WHITE) * 64;
@@ -318,6 +353,24 @@ public class Definitions {
 	public static final int PIECE_TYPE_BLACK_QUEEN = (PIECE_TYPE_QUEEN* 2 + COLOR_BLACK) * 64;
 	public static final int PIECE_TYPE_BLACK_KING= (PIECE_TYPE_KING* 2 + COLOR_BLACK) * 64;
 
+	public static final int[] PIECE_TYPE_X_PAWN = new int[] {PIECE_TYPE_BLACK_PAWN,PIECE_TYPE_WHITE_PAWN};
+	public static final int[] PIECE_TYPE_X_KNIGHT = new int[] {PIECE_TYPE_BLACK_KNIGHT,PIECE_TYPE_WHITE_KNIGHT};
+	public static final int[] PIECE_TYPE_X_BISHOP = new int[] {PIECE_TYPE_BLACK_BISHOP,PIECE_TYPE_WHITE_BISHOP};
+	public static final int[] PIECE_TYPE_X_ROOK = new int[] {PIECE_TYPE_BLACK_ROOK,PIECE_TYPE_WHITE_ROOK};
+	public static final int[] PIECE_TYPE_X_QUEEN = new int[] {PIECE_TYPE_BLACK_QUEEN,PIECE_TYPE_WHITE_QUEEN};
+	public static final int[] PIECE_TYPE_X_KING = new int[] {PIECE_TYPE_BLACK_KING,PIECE_TYPE_WHITE_KING};
 	
 	
+	
+	public static final String CHESS_MAN_CHARS = "pnbrqkPNBRQK";
+	public static char getPieceCharForTypeColor(int typeColor) {
+		//PIECE * 2 + COLOR) * 64
+		int color = typeColor >> 6 & 1;
+		int type = typeColor >> 7;
+		return CHESS_MAN_CHARS.charAt(type+6*color);
+	}
+	public static char getPieceCharForPieceType(int type) {
+		return CHESS_MAN_CHARS.charAt(type);
+	}
+
 }

@@ -7,7 +7,6 @@ import perft.chess.core.datastruct.IndexedElement;
 
 
 public class Move implements IndexedElement  {
-	
 
 	private static int moveIDCounter =0;
 	private final String notation;
@@ -34,7 +33,9 @@ public class Move implements IndexedElement  {
 	private final int color;
 	private final int type;
 	private final int typeColor;
-	private final int rochadeDisabler;
+	private final boolean isRochadeDisabler;
+	private int[] pawnNewAttacks;
+	private long pawnNewAttackMask;
 	
 	public static int getMaxMoveID() {
 		return moveIDCounter;
@@ -64,12 +65,12 @@ public class Move implements IndexedElement  {
 		this.rookPos =rookPos;
 		this.dirOfRochade = dirOfRochade ;
 		this.callbackType = callbackType;
-		this.rochadeDisabler = (typeColor == PIECE_TYPE_WHITE_ROOK&&(oldPos==_A1 ||oldPos==_H1))||
+		this.isRochadeDisabler = (typeColor == PIECE_TYPE_WHITE_ROOK&&(oldPos==_A1 ||oldPos==_H1))||
 								(typeColor == PIECE_TYPE_BLACK_ROOK&&(oldPos==_A8 ||oldPos==_H8))||
 								(typeColor == PIECE_TYPE_WHITE_KING&&(oldPos==_E1))||
 								(typeColor == PIECE_TYPE_BLACK_KING&&(oldPos==_E8))||
 								(color==COLOR_WHITE&&(newPos==_A1 ||newPos==_H1))||
-								(color==COLOR_BLACK&&(newPos==_A8 ||newPos==_H8))?1:0;
+								(color==COLOR_BLACK&&(newPos==_A8 ||newPos==_H8));
 		this.dirX=dirX;
 		this.dirY=dirY;
 		if(rookPos==-1) {
@@ -124,6 +125,28 @@ public class Move implements IndexedElement  {
 		this.isKingSensing = (moveType==MOVE_TYPE_KING_SENSING);
 		this.isRochade = this.dirOfRochade!=0;
 		this.notation = generateNotation();
+		if(type == PIECE_TYPE_PAWN) {
+			int[] attacks;
+			long mask = 0L;
+			int file = getFileForPos(newPos);
+			if(file!=_A && file!=_H) {
+				attacks=new int[2];
+			}else {
+				attacks=new int[1];
+			}
+			int counter =0;
+			if(file!=_A) {
+				attacks[counter]= color==COLOR_WHITE?newPos+7:newPos-9;
+				mask|=1L<<attacks[counter];
+				counter++;
+			}
+			if(file!=_H) {
+				attacks[counter]=color==COLOR_WHITE?newPos+9:newPos-7;
+				mask|=1L<<attacks[counter];
+			}
+			this.pawnNewAttacks=attacks;
+			this.pawnNewAttackMask=mask;
+		}
 		
 	}
 	
@@ -175,7 +198,7 @@ public class Move implements IndexedElement  {
 	
 	
 	public String toString () {
-		String val ="["+elementIndex+"] From "+oldPos+" to "+newPos+" : Promotion:"+this.getPromotePieceType();	
+		String val ="["+elementIndex+"] "+getPieceCharForTypeColor(typeColor) + " : "+generateNotation()+  "   From "+oldPos+" to "+newPos+" : Promotion:"+this.getPromotePieceType();	
 		return val;
 	}
 	public Move getRookMove() {
@@ -227,7 +250,7 @@ public class Move implements IndexedElement  {
 	}
 	public String getNotation() {
      	System.out.println("+");
-		return notation;
+		return this.notation;
 	}
 	
 	private  String generateNotation () {
@@ -237,38 +260,28 @@ public class Move implements IndexedElement  {
 		int f2 = getFileForPos(newPos);
 		String promotion = "";
 		if(this.getPromotePieceType()!=-1) {
-			int pieceType  = ((this.getPromotePieceType()/64)-this.color)/2;
-			switch(pieceType) {
-			case PIECE_TYPE_BISHOP:
-				promotion = "b";
-				break;
-			case PIECE_TYPE_KNIGHT:
-				promotion = "n";
-				break;
-			case PIECE_TYPE_QUEEN:
-				promotion = "q";
-				break;
-			case PIECE_TYPE_ROOK:
-				promotion = "r";
-				break;
-			}
-			
+			promotion += getPieceCharForTypeColor(this.getPromotePieceType());
 		}
 		return ""+((char)('a'+f1))  +""+ (1+r1)+""
 				+((char)('a'+f2))  +""+ (1+r2)+promotion+"";
 	}	
 	
-	
 	public int getColor() {
-		return color;
+		return this.color;
 	}
-	public int getRochadeDisabler() {
-		return this.rochadeDisabler;
+	public boolean isRochadeDisabler() {
+		return this.isRochadeDisabler;
 	}
 	public int getPieceType() {
 		return this.type;
 	}
 	public int getTypeColor() {
-		return this.type;
+		return this.typeColor;
+	}
+	public int[] getPawnNewAttacks() {
+		return this.pawnNewAttacks;
+	}
+	public long getPawnNewAttackMask() {
+		return this.pawnNewAttackMask;
 	}
 }

@@ -5,6 +5,13 @@ import perft.chess.perftmb.Field;
 
 
 public class Main {
+	public static void main(String[] args) {
+		System.out.println("1L<<3:"+(32L<<3));
+		System.out.println("1L>>-3:"+(32L>>-3));
+		System.out.println("1L>>>-3:"+(32L>>>-3));
+		
+		
+	}
 }
 
 

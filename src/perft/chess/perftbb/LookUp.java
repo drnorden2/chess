@@ -1,6 +1,6 @@
 package perft.chess.perftbb;
 
-import perft.chess.core.datastruct.BitBoard;
+
 
 public class LookUp {
 	private BBMoveManager moveManager = new BBMoveManager();
@@ -10,7 +10,19 @@ public class LookUp {
 		return moveManager.moveMasks[index];
 	}
 	public Move[] getMoveMap(int index) {
-		return moveManager.moves[index];
+		Move[] moves= moveManager.moves[index];
+/*
+		boolean found =false;
+		for(int i=0;i<moves.length;i++) {
+			if (moves[i]!=null) {
+				found=true;
+				break;
+			}
+		}
+		if(!found) {
+			throw new RuntimeException("Fishy stuff!");
+		}*/
+		return moves;
 	}
 	
 

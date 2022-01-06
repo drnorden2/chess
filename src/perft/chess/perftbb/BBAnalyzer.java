@@ -103,7 +103,7 @@ public class BBAnalyzer {
 	private String[] getMovesToString() {
 		char[] snapshot = new char[64];
 		int count=position.getMoves();
-		/*
+		
 		for(int i=0;i<count;i++){
 			Move move = position.getMove(i);
 			snapshot[move.getOldPos()]++;			
@@ -113,7 +113,7 @@ public class BBAnalyzer {
 				snapshot[j]=(char)('0'+(snapshot[j]%10));
 			}
 
-		}*/
+		}
 		return this.snapshotToString(snapshot,"Moves:"+(position.getColorAtTurn()==COLOR_WHITE?"W":"B"),"Size:"+count);
 	}
 	
