@@ -40,11 +40,9 @@ public class BBAnalyzer {
 	
 	private String[] getAttackToString(int color) {
 		long own = position.allOfOneColor[color].get();
-		long correction = position.correctors[color].get();
 		char[] snapshot = new char[64];
 		for (int j = 0; j < 64; j++) {
-			int attack = (int)(Long.bitCount(position.tCallBacks[j].get()&own)
-					- (( correction>> j) & 1 ));
+			int attack = (int)(Long.bitCount(position.tCallBacks[j].get()&own));
 			if(attack<0) {
 				System.out.println("WTF at pos ("+j+")!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			
@@ -69,19 +67,7 @@ public class BBAnalyzer {
 		
 		return this.snapshotToString(snapshot,"RawAttac","Of Col:"+(color==COLOR_WHITE?"W":"B"));
 	}
-	private String[] getAttackCorrectionsToString(int color) {
-		long correction = position.correctors[color].get();
-		char[] snapshot = new char[64];
-		for (int j = 0; j < 64; j++) {
-			int attack = (int)(( correction>> j) & 1 );
-			if(attack!=0) {
-				snapshot[j]=(char)('0'+attack);
-			}
-		}
-		
-		return this.snapshotToString(snapshot,"Correctn","Of Col:"+(color==COLOR_WHITE?"W":"B"));
-	}
-
+	
 	private String[] getEnPassanteToString() {
 		char[] snapshot = new char[64];
 		long enpMask = position.enPassanteMask.get();
@@ -175,11 +161,9 @@ public class BBAnalyzer {
 	
 		String[] attackW = this.getAttackToString(COLOR_WHITE);
 		String[] attackB = this.getAttackToString(COLOR_BLACK);
-		String[] posA = this.getRawAttackToString(COLOR_WHITE);
-		String[] posB = this.getAttackCorrectionsToString(COLOR_WHITE);
 		
-		//String[] posA = this.getCallBackOfPosToString(4);//position.getKingPos(Piece.COLOR_WHITE));
-		//String[] posB = this.getMovesOfPosToString(4);
+		String[] posA = this.getCallBackOfPosToString(4);//position.getKingPos(Piece.COLOR_WHITE));
+		String[] posB = this.getMovesOfPosToString(4);
 		String[] posC = this.getMovesToString();//this.getColorAtTurn());
 		String[] posD = this.getPseudoMovesToString(COLOR_WHITE);
 		String[] posE = this.getPseudoMovesToString(COLOR_BLACK);
