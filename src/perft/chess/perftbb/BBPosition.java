@@ -4,15 +4,11 @@ import static perft.chess.Definitions.*;
 
 
 import perft.chess.Position;
-import perft.chess.core.baseliner.BLIndexedList;
 import perft.chess.core.baseliner.BLVariableInt;
 import perft.chess.core.baseliner.BLVariableLong;
 import perft.chess.core.baseliner.BaseLiner;
 import perft.chess.core.datastruct.ArrayStack;
 import perft.chess.perftbb.gen.MagicNumberFinder;
-import perft.chess.perftmb.Field;
-import perft.chess.perftmb.FieldCallback;
-import perft.chess.perftmb.Piece;
 
 
 
@@ -31,20 +27,16 @@ public class BBPosition implements Position {
 	public final BLVariableLong[] allOfOneColor = new BLVariableLong[2];//@todo WTF -stack
 	public final BLVariableLong[] kings = new BLVariableLong[2];
 	public final BLVariableLong[] pawns = new BLVariableLong[2];
-	
+	public final BLVariableLong untouched;
+	public final BLVariableInt moveCount [] = new BLVariableInt[2];
+	public final BLVariableLong enPassanteMask;//@todo WTF -stack
+
 	public final BLVariableLong[] mLeft = new BLVariableLong[2];
 	public final BLVariableLong[] mRight = new BLVariableLong[2];
 	public final BLVariableLong[] mOneUp = new BLVariableLong[2];
 	public final BLVariableLong[] mTwoUp = new BLVariableLong[2];
 
 	
-	
-	public final BLVariableLong[] correctors = new BLVariableLong[2];
-
-	public final BLVariableLong untouched;
-	public final BLVariableInt moveCount [] = new BLVariableInt[2];
-	public final BLVariableLong enPassanteMask;//@todo WTF -stack
-
 	public BBAnalyzer analyzer = new BBAnalyzer(this);
 	public LookUp lookUp = new LookUp();
 
@@ -68,7 +60,6 @@ public class BBPosition implements Position {
 		
 		for (int i = 0; i < 2; i++) {
 			allOfOneColor[i] = new BLVariableLong(bl, 0L);
-			correctors[i] = new BLVariableLong(bl, 0L);
 			moveCount[i]  = new BLVariableInt(bl,0);
 			kings[i] = new BLVariableLong(bl, 0L);
 			pawns[i] = new BLVariableLong(bl, 0L);

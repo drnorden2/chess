@@ -53,21 +53,6 @@ public class ContextLevel {
 		int retVal = Long.bitCount(idMask);
 		for(int i=0;i<retVal;i++) {
 			moves[i]=rawMoves[Long.numberOfTrailingZeros(idMask)];
-			if(moves[i]==null) {
-				System.out.println("ULTRA WTF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-				System.out.println("Pos:"+pos+" "+getPieceCharForTypeColor(idTypeColor) +"."+ idTypeColor);
-				out(1L<<24);
-				
-				System.out.println("Mask");
-				out(idsMask[pos]);
-				System.out.println("lookup");
-				out(getMoveMask(moves));
-				System.out.println("raw");
-				out(getMoveMask(rawMoves));
-				
-				
-				System.exit(-1);
-			}
 			idMask&= idMask- 1;			
 		}
 		moves[retVal]=null;//stopMove
