@@ -1,8 +1,9 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import perft.Game;
 import perft.chess.ChessGameFactory;
-
+import perft.chess.core.datastruct.ArrayStack;
 import perft.chess.core.o.O;
 import perft.chess.perftbb.BBPosition;
 import perft.chess.perftmb.MBPosition;
@@ -30,7 +31,7 @@ public class Test {
 
 	public static void main(String[] args) {
 		ChessGameFactory.bitBoard=true;
-		debug (5,202355867,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		test (5,202355867,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		//test(6, 120921506,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
 		//debug(1, 16,"3qk3/8/8/8/8/8/8/3QK4 b - - 0 1");
 		//test(6, 120921506,"r7/pp6/8/8/8/8/PP6/R7 b - - 0 1");
@@ -203,7 +204,7 @@ public class Test {
 		}else {
 			headLine +="Real Counting";
 		}
-		games = game.debugPerft(reference.getBoard(),depth,"start");
+		games = game.debugPerft(reference.getBoard(),depth,null);
 		
 		double time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
 		boolean correct = games == nodes;

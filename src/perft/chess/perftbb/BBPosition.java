@@ -298,8 +298,8 @@ public class BBPosition implements Position {
 					mask =(pOneMask|pTwoMask)&MASK_X_FILE_FOR_POS[pos]|aMask&mLeft|aMask&mRight;
 					long last =mask& MASK_8_RANK;
 					if((last)!=0L)  {
-						mask|= last>>DIR_UP;
-						mask|= last>>DIR_UP;
+						last|= last>>DIR_UP;
+						last|= last>>DIR_UP;
 						mask|= last>>DIR_UP;
 					}
 					long oldMask = this.moveMasks[pos].getAndSet(mask);
@@ -696,7 +696,6 @@ public class BBPosition implements Position {
 	}
 
 	public int[] getAttacks (int color){
-		System.out.println("+");
 		int[] attacks = new int[64];
 		long own = allOfOneColor[color].get();
 		for (int j = 0; j < 64; j++) {

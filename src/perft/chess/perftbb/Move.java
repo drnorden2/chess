@@ -250,8 +250,7 @@ public class Move implements IndexedElement  {
 		return this.moveType==MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE ;
 	}
 	public String getNotation() {
-     	System.out.println("+");
-		return this.notation;
+     	return this.notation;
 	}
 	
 	private  String generateNotation () {
