@@ -1,6 +1,5 @@
 package perft.chess.perftbb;
 
-import java.util.Arrays;
 
 import static perft.chess.Definitions.*;
 
@@ -29,10 +28,11 @@ public class ContextLevel {
 	public long[] mRightOld=new long[2];
 	public long[] mOneUpOld=new long[2];
 	public long[] mTwoUpOld=new long[2];
-	public int oldCastleMoves;
+	public int oldCastleMovesKQCount;
+	public int oldCastleMoveskqCount;
 	public long oldCastleMovesKQ;
 	public long oldCastleMoveskq;
-	
+	public Move move;
 	
 	public int pawnMovesOld=0;
 	public int limit;

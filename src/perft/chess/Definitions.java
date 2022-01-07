@@ -13,11 +13,11 @@ import perft.chess.core.datastruct.BitBoard;
 
 public class Definitions {
 	public static final int PIECE_TYPE_PAWN = 0;
-	public static final int PIECE_TYPE_KNIGHT = 1;
-	public static final int PIECE_TYPE_BISHOP = 2;
-	public static final int PIECE_TYPE_ROOK = 3;
-	public static final int PIECE_TYPE_QUEEN = 4;
-	public static final int PIECE_TYPE_KING= 5;
+	public static final int PIECE_TYPE_KING= 1;
+	public static final int PIECE_TYPE_KNIGHT = 2;
+	public static final int PIECE_TYPE_BISHOP = 3;
+	public static final int PIECE_TYPE_ROOK = 4;
+	public static final int PIECE_TYPE_QUEEN = 5;
 	public static final int PIECE_TYPE_ANY = 6;
 	public static final int PIECE_TYPE_PAWN_ENPASSANTE_OFFER= 7;
 	
@@ -225,10 +225,10 @@ public class Definitions {
 	//public final static long MASK_CASTLE_ALL_q = MASK_A8|MASK_B8|MASK_C8|/*MASK_D8|*/MASK_E8;
 	//public final static long MASK_CASTLE_ALL_k = MASK_E8|/*|MASK_F8|*/MASK_G8|MASK_H8;
 	
-	public final static long MASK_CASTLE_ALL_Q = MASK_A1|MASK_B1|MASK_C1|/*MASK_D1|*/MASK_E1;
-	public final static long MASK_CASTLE_ALL_K = MASK_E1|/*|MASK_F1|*/MASK_G1|MASK_H1;
-	public final static long MASK_CASTLE_ALL_q = MASK_A8|MASK_B8|MASK_C8|/*MASK_D8|*/MASK_E8;
-	public final static long MASK_CASTLE_ALL_k = MASK_E8|/*|MASK_F8|*/MASK_G8|MASK_H8;
+	public final static long MASK_CASTLE_ALL_Q = MASK_A1|MASK_B1|MASK_C1|MASK_D1|MASK_E1;
+	public final static long MASK_CASTLE_ALL_K = MASK_E1|MASK_F1|MASK_G1|MASK_H1;
+	public final static long MASK_CASTLE_ALL_q = MASK_A8|MASK_B8|MASK_C8|MASK_D8|MASK_E8;
+	public final static long MASK_CASTLE_ALL_k = MASK_E8|MASK_F8|MASK_G8|MASK_H8;
 		
 	public final static long MASK_CASTLE_OCC_q = MASK_B8|MASK_C8|MASK_D8;
 	public final static long MASK_CASTLE_OCC_k = MASK_F8|MASK_G8;
@@ -238,13 +238,14 @@ public class Definitions {
 	public final static long MASK_CASTLE_KING_q = MASK_C8;
 	public final static long MASK_CASTLE_KING_k = MASK_G8;
 	
-	public final static long MASK_CASTLE_KING_KQkq = MASK_C1|MASK_G1|MASK_G8|MASK_G1;
+	public final static long MASK_CASTLE_KING_KQkq = MASK_C1|MASK_G1|MASK_C8|MASK_G8;
+	public final static long MASK_NOT_CASTLE_KING_KQkq = ~MASK_CASTLE_KING_KQkq ;
 	
 	
 
-	public final static int DIR_UP_LEFT = 9;
-	public final static int DIR_UP_RIGHT = 7;
-	public final static int DIR_LEFT = 1;
+	public final static int DIR_UP_RIGHT = 9;
+	public final static int DIR_UP_LEFT = 7;
+	public final static int DIR_RIGHT = 1;
 	public final static int DIR_UP = 8;
 	public final static int DIR_2_UP = 16;
 
@@ -252,7 +253,7 @@ public class Definitions {
 	public static final long[] PAWN_LAST_LINE = new long[] {MASK_1_RANK,MASK_8_RANK};
 	public static final int[] OTHER_COLOR = new int[] {COLOR_WHITE,COLOR_BLACK};
 	public static final int[] PAWN_MOVE_DIR = new int[] {-1,1};
-
+	public static final long[] MASK_ONE_UP_AND_DOWN = getAllOneUPandDown() ;
 	
 			
 /*Static*/
@@ -362,7 +363,7 @@ public class Definitions {
 	
 	
 	
-	public static final String CHESS_MAN_CHARS = "pnbrqkPNBRQK";
+	public static final String CHESS_MAN_CHARS = "pknbrqPKNBRQ";
 	public static char getPieceCharForTypeColor(int typeColor) {
 		//PIECE * 2 + COLOR) * 64
 		int color = typeColor >> 6 & 1;
@@ -372,5 +373,19 @@ public class Definitions {
 	public static char getPieceCharForPieceType(int type) {
 		return CHESS_MAN_CHARS.charAt(type);
 	}
-
+	private static long[] getAllOneUPandDown() {
+		long[] all = new long[64];
+		for(int i=0;i<8;i++) {
+			for (int j=0;j<8;j++) {
+				int pos = getPosForFileRank(i, j);
+				if(j!=0) {
+					all[pos]|=(1L<<getPosForFileRank(i, j-1));
+				}
+				if(j!=8) {
+					all[pos]|=(1L<<getPosForFileRank(i, j+1));
+				}
+			}
+		}
+		return all;
+	}
 }

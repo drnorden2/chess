@@ -86,6 +86,12 @@ public class BLVariableLong {
 				bl.touchLong(bL_Index);
 			}
 		}
+		public void AND(long value) {
+			if(varStack.andAndTouched(value)) {
+				bl.touchLong(bL_Index);
+			}
+		}
+		
 		public void AND_NOT(long value) {
 			if(varStack.andNotTouched(value)) {
 				bl.touchLong(bL_Index);

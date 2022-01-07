@@ -76,8 +76,9 @@ public class MoveManager {
 											Move oldMove = curMoves[i][0];
 											curMoves[i][0] =null; //deleted for potential promotions
 											//4 options rook, bishop, knight and queen 
+											int piece = PIECE_TYPE_KNIGHT;
 											for(int j=3;j>=0;j--) {
-												int promotePieceType = j+1; //bishop, knight, rook, queen
+												int promotePieceType = piece++; //knight,bishop,  rook, queen
 												curMoves[3+(4*i)+j] = new Move[] {new Move(color,callbackType ,oldMove.getOldPos(),oldMove.getNewPos(), moveType,0,0,promotePieceType)}; 
 											}
 										}

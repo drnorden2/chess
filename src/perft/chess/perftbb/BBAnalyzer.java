@@ -84,7 +84,7 @@ public class BBAnalyzer {
 
 	private String[] getEnPassanteToString() {
 		char[] snapshot = new char[64];
-		long enpMask = position.enPassantePos.get();
+		long enpMask = position.enPassanteMask.get();
 		int enpassante =-1;
 		if(enpMask!=0) {
 			enpassante = Long.numberOfTrailingZeros(enpMask);
@@ -118,26 +118,27 @@ public class BBAnalyzer {
 	}
 	
 	private String[] getPseudoMovesToString(int color) {
-		
 		char[] snapshot = new char[64];
 		
-		//ArrayStack<Move> list = new ArrayStack<Move>(new Move[28*16]);
-		position.calcNewMoves(color);
-		
-		int count = position.getMoves();			
-		/*
-		for(int i=0;i<count;i++) {
-			Move move = position.getMove(0);
-			snapshot[move.getOldPos()]++;
+  		long bits = position.allOfOneColor[color].get();
+  		int retVal = Long.bitCount(bits);
+  		int total = 0;
+  		for(int i=0;i<retVal;i++) {
+  			int pos = Long.numberOfTrailingZeros(bits);
+			bits &= bits - 1;
+			long moveMask = position.moveMasks[pos].get();
+			int retVal2 = Long.bitCount(moveMask);
+	  		total +=retVal2 ;
+	  		snapshot[pos]=(char)retVal2;
+	  		
 		}
-		
+
 		for (int j = 0; j < 64; j++) {
 			if(snapshot[j]>0) {
 				snapshot[j]=(char)('0'+(snapshot[j]%10));
 			}
 		}
-*/
-		return this.snapshotToString(snapshot,"PMovs:"+(position.getColorAtTurn()==COLOR_WHITE?"W":"B"),"Size:"+count);
+		return this.snapshotToString(snapshot,"PMovs:"+(position.getColorAtTurn()==COLOR_WHITE?"W":"B"),"Size:"+total);
 	}
 	
 

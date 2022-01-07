@@ -42,8 +42,8 @@ public class BBPosition implements Position {
 	public final BLVariableLong[] correctors = new BLVariableLong[2];
 
 	public final BLVariableLong untouched;
-	public final BLVariableInt moveCount[] = new BLVariableInt[2];
-	public final BLVariableLong enPassantePos;;//@todo WTF -stack
+	public final BLVariableInt moveCount [] = new BLVariableInt[2];
+	public final BLVariableLong enPassanteMask;//@todo WTF -stack
 
 	public BBAnalyzer analyzer = new BBAnalyzer(this);
 	public LookUp lookUp = new LookUp();
@@ -63,7 +63,7 @@ public class BBPosition implements Position {
 		}
 		
 		
-		enPassantePos = new BLVariableLong(bl, 0);
+		enPassanteMask = new BLVariableLong(bl, 0);
 		untouched = new BLVariableLong(bl, 0L);
 		
 		for (int i = 0; i < 2; i++) {
@@ -140,7 +140,7 @@ public class BBPosition implements Position {
 					context.ntchd = 0L;
 					untouched.set(0L);
 				}
-				updateNonPawnPseudoMoves(typeColor, pos);
+				updateNonPawnPseudoMoves(typeColor, pos,true);
 			}
 			retVal = Long.bitCount(pawn);
 			for(int j=0;j<retVal;j++) {
@@ -165,6 +165,7 @@ public class BBPosition implements Position {
 			context.pawns[COLOR_BLACK]=this.pawns[COLOR_BLACK].get();
 			updatePawnPseudoMoves(i);
 		}
+		checkRochade(context,null); 
 
 		//checkMoves() ;
 	}
@@ -173,7 +174,6 @@ public class BBPosition implements Position {
 		int color = typeColor >> 6 & 1;
 		//remove moves
 		this.moveCount[color].subtraction(Long.bitCount(moveMasks[pos].getAndSet(0L)));;
-		
 		//remove attacks
 		long oldCBs = callBacks[pos].getAndSet(0L);
 		int retVal = Long.bitCount(oldCBs);
@@ -184,130 +184,150 @@ public class BBPosition implements Position {
 	}
 
 	
-	private void updateNonPawnPseudoMoves(int typeColor, int pos) {
+	
+	private void updateNonPawnPseudoMoves(int typeColor, int pos,boolean isAdded) {
 		int color = typeColor >> 6 & 1;
+		int type = typeColor >>7;
+		
 		
 		ContextLevel context = this.contextLevels.get(getLevel()-1);
 		long callbacks = 0L;
 		long moves = 0L;
 		long own = this.allOfOneColor[color].get();// @todo WTF too expensive
+		boolean needsCBUpdate=true;
 		
-
-		switch (typeColor) {
-		case PIECE_TYPE_BLACK_BISHOP:
-		case PIECE_TYPE_WHITE_BISHOP: {
-			callbacks = mnf.getBishopAttacks(pos, context.occ);
-			moves = callbacks & ~own;
-			break;
-		}
-		case PIECE_TYPE_BLACK_ROOK:
-		case PIECE_TYPE_WHITE_ROOK: {
-			callbacks = mnf.getRookAttacks(pos, context.occ);
-			moves = callbacks & ~own;
-			break;
-		}
-		case PIECE_TYPE_BLACK_QUEEN:
-		case PIECE_TYPE_WHITE_QUEEN: {
-			callbacks = mnf.getBishopAttacks(pos, context.occ);
-			callbacks|= mnf.getRookAttacks(pos, context.occ);
-			moves = (callbacks) & ~own;
-			break;
-		}
-		case PIECE_TYPE_WHITE_KNIGHT:
-		case PIECE_TYPE_BLACK_KNIGHT: {
+		if(type<=PIECE_TYPE_KNIGHT) {
 			callbacks = lookUp.getMoveMask(pos + typeColor);
 			moves = callbacks & ~own;
-			break;
-		}
-		
-		case PIECE_TYPE_WHITE_KING: {
-			callbacks = lookUp.getMoveMask(pos + typeColor);
-			moves = callbacks & ~own;
-			break;	
-		}
-		case PIECE_TYPE_BLACK_KING: {
-			callbacks = lookUp.getMoveMask(pos + typeColor);
-			moves = callbacks & ~own;
-			break;	
-		}
-		}
-		
-		long toggleCallbacks = this.callBacks[pos].get() ^ callbacks;
-		
-		int retVal = Long.bitCount(toggleCallbacks);
-		if(retVal>0) {
-			for(int i=0;i<retVal;i++) {
-				this.tCallBacks[Long.numberOfTrailingZeros(toggleCallbacks)].toggleBit(pos);
-				toggleCallbacks &= toggleCallbacks - 1;			
+			needsCBUpdate=isAdded;
+		}else {
+			switch (type) {
+			case PIECE_TYPE_BISHOP:{
+				callbacks = mnf.getBishopAttacks(pos, context.occ);
+				moves = callbacks & ~own;
+				break;
 			}
-			this.callBacks[pos].set(callbacks);
+			case PIECE_TYPE_ROOK:{
+				callbacks = mnf.getRookAttacks(pos, context.occ);
+				moves = callbacks & ~own;
+			
+				break;
+			}
+			case PIECE_TYPE_QUEEN: {
+				callbacks = mnf.getBishopAttacks(pos, context.occ);
+				callbacks|= mnf.getRookAttacks(pos, context.occ);
+				moves = (callbacks) & ~own;
+				break;
+			}
+			}
 		}
-	
+		if(needsCBUpdate) {
+			long toggleCallbacks = this.callBacks[pos].get() ^ callbacks;
+			int retVal = Long.bitCount(toggleCallbacks);
+			if(retVal>0) {
+				for(int i=0;i<retVal;i++) {
+					int curCB = Long.numberOfTrailingZeros(toggleCallbacks);
+					this.tCallBacks[curCB].toggleBit(pos);
+					toggleCallbacks &= toggleCallbacks - 1;			
+				}
+				this.callBacks[pos].set(callbacks);
+			}
+		}
 		
 		long oldMoves = this.moveMasks[pos].get() ;
 		if(oldMoves!=moves) {
+			this.moveMasks[pos].set(moves);
 			int delta = Long.bitCount(moves) - Long.bitCount(oldMoves);
 			if(delta!=0) {
 				this.moveCount[color].addition(delta);
 			}
-			this.moveMasks[pos].set(moves);
 		}
 	}
-	
+	int counta =0;
 	private void updatePawnPseudoMoves(int color) {
 		ContextLevel context = this.contextLevels.get(getLevel()-1);
 		int otherColor = OTHER_COLOR[color];
-		long other = this.allOfOneColor[otherColor].get();
+		long other = context.allOfOneColor[otherColor];
 		long ownPawns = context.pawns[color];
 		
-		long mLeft,mRight,mOneUp,mTwoUp,mAllUp,delta;
+		long mLeft,mRight,mOneUp,mTwoUp ,delta;
 		if(color==COLOR_WHITE) {
-			other|=(this.enPassantePos.get() & MASK_6_RANK);
+			//out(ownPawns);
+
+			other|=(this.enPassanteMask.get() & MASK_6_RANK);
+			//out(other);
 			mLeft= (ownPawns <<DIR_UP_LEFT) & MASK_NOT_H_FILE&other;
+			//out(mLeft);
 			mRight=(ownPawns <<DIR_UP_RIGHT) & MASK_NOT_A_FILE&other;
+			//out(mRight);
 			mOneUp = (ownPawns << DIR_UP)& context.notOcc ;
 			mTwoUp = ((mOneUp  & context.notOcc & MASK_3_RANK) << DIR_UP)& context.notOcc;
-			mAllUp = mOneUp|mTwoUp;
 			
-			//out(ownPawns);
 			//out(mOneUp);
-			//out(context.mOneUpOld[color]);
+			//out(mTwoUp);
 		
 			delta = (mLeft^context.mLeftOld[color])>>DIR_UP_LEFT;
-			delta |= (mRight^context.mRightOld[color])>>DIR_UP_RIGHT;
-			delta |= (mOneUp^context.mOneUpOld[color])>>DIR_UP;
-			delta |= (mTwoUp^context.mTwoUpOld[color])>>DIR_2_UP;
+			//out(context.mLeftOld[color]);
 			//out(delta);
-			if((mAllUp & MASK_8_RANK)!=0L)  {
-				mAllUp|= mAllUp>>DIR_UP;
-				mAllUp|= mAllUp>>DIR_UP;
-				mAllUp|= mAllUp>>DIR_UP;
+			delta |= (mRight^context.mRightOld[color])>>DIR_UP_RIGHT;
+			//out(context.mRightOld[color]);
+			//out(delta);
+			delta |= (mOneUp^context.mOneUpOld[color])>>DIR_UP;
+			//out(delta);
+			delta |= (mTwoUp^context.mTwoUpOld[color])>>DIR_2_UP;
+
+			// only pawns that existed in the first place
+			delta&=ownPawns;
+			
+			//out(delta);
+			
+			int retVal = Long.bitCount(delta);
+			int moveCountDelta =0;
+			if(retVal>0) {
+				for(int i=0;i<retVal;i++) {
+					int pos = Long.numberOfTrailingZeros(delta); 
+					delta &= delta - 1;			
+					long mask = this.lookUp.getMoveMask(PIECE_TYPE_X_PAWN[color] +pos);
+					//out(mask);
+					long pOneMask = mask&mOneUp & MASK_ONE_UP_AND_DOWN[pos];
+					//out(pOneMask);
+					long pTwoMask =mask&mTwoUp & ~MASK_ONE_UP_AND_DOWN[pos];
+					//out(pTwoMask);
+					long aMask=mask&MASK_NOT_X_FILE_FOR_POS[pos];
+					//out(aMask);
+					mask =(pOneMask|pTwoMask)&MASK_X_FILE_FOR_POS[pos]|aMask&mLeft|aMask&mRight;
+					long last =mask& MASK_8_RANK;
+					if((last)!=0L)  {
+						mask|= last>>DIR_UP;
+						mask|= last>>DIR_UP;
+						mask|= last>>DIR_UP;
+					}
+					long oldMask = this.moveMasks[pos].getAndSet(mask);
+					//out(oldMask);
+					moveCountDelta+=Long.bitCount(mask)- Long.bitCount(oldMask);
+				}
 			}
-			if((mLeft & MASK_8_RANK)!=0L)  {
-				mLeft|= mLeft>>DIR_UP;
-				mLeft|= mLeft>>DIR_UP;
-				mLeft|= mLeft>>DIR_UP;
-			}
-			if((mRight & MASK_8_RANK)!=0L)  {
-				mRight|= mRight>>DIR_UP;
-				mRight|= mRight>>DIR_UP;
-				mRight|= mRight>>DIR_UP;
-			}
+			this.mLeft[color].set(mLeft);
+			this.mRight[color].set(mRight);
+			this.mOneUp[color].set(mOneUp);
+			this.mTwoUp[color].set(mTwoUp);
+			//= Long.bitCount(mOneUp|mTwoUp)+Long.bitCount(mLeft)+Long.bitCount(mRight);
+			this.moveCount[color].addition(moveCountDelta);
 
 		}else {
+			
+			
 			//out(ownPawns);
-			other|=(this.enPassantePos.get() & MASK_3_RANK);
+			other|=(this.enPassanteMask.get() & MASK_3_RANK);
 			//out(other);
-			mLeft= (ownPawns >>DIR_UP_LEFT) & MASK_NOT_H_FILE&other;
+			mLeft= (ownPawns >>DIR_UP_LEFT) & MASK_NOT_A_FILE&other;
 			//out(mLeft);
-			mRight=(ownPawns >>DIR_UP_RIGHT) & MASK_NOT_A_FILE&other;
+			mRight=(ownPawns >>DIR_UP_RIGHT) & MASK_NOT_H_FILE&other;
 			//out(mRight);
 			mOneUp = (ownPawns >> DIR_UP) & context.notOcc ;
 			//out(mOneUp);
 			mTwoUp = (((mOneUp & MASK_6_RANK) >> DIR_UP)& context.notOcc ) ;
 			//out(mTwoUp);
-			mAllUp = mOneUp|mTwoUp;
-			//out(mAllUp);
 			delta = (mLeft^context.mLeftOld[color])<<DIR_UP_LEFT;
 			//out(context.mLeftOld[color]);
 			//out(delta);
@@ -318,64 +338,47 @@ public class BBPosition implements Position {
 			//out(context.mOneUpOld[color]);
 			//out(delta);
 			delta |= (mTwoUp^context.mTwoUpOld[color])<<DIR_2_UP;
-			//out(context.mTwoUpOld[color]);
+		
+			// only pawns that existed in the first place
+			delta&=ownPawns;
+			
 			//out(delta);
-			//@TODO WTF IDEA=> implement in Magic bitboard Lookup
-			if((mAllUp & MASK_1_RANK)!=0L)  {
-				mAllUp|= mAllUp<<DIR_UP;
-				mAllUp|= mAllUp<<DIR_UP;
-				mAllUp|= mAllUp<<DIR_UP;
-			}
-			if((mLeft & MASK_1_RANK)!=0L)  {
-				mLeft|= mLeft<<DIR_UP;
-				mLeft|= mLeft<<DIR_UP;
-				mLeft|= mLeft<<DIR_UP;
-			}
-			if((mRight & MASK_1_RANK)!=0L)  {
-				mRight|= mRight<<DIR_UP;
-				mRight|= mRight<<DIR_UP;
-				mRight|= mRight<<DIR_UP;
-			}
-		}
-		// only pawns that existed in the first place
-		delta&=ownPawns;
-		
-		//out(delta);
-		
-		int retVal = Long.bitCount(delta);
-		int moveCountDelta =0;
-		if(retVal>0) {
-			for(int i=0;i<retVal;i++) {
-				int pos = Long.numberOfTrailingZeros(delta); 
-				delta &= delta - 1;			
-				long mask = this.lookUp.getMoveMask(PIECE_TYPE_X_PAWN[color] +pos);
-				//out(mask);
-				long pMask =mask&mAllUp&MASK_X_FILE_FOR_POS[pos];
-				//out(pMask);
-				long aMask=mask&MASK_NOT_X_FILE_FOR_POS[pos];
-				//out(aMask);
-				mask =pMask|aMask&mLeft|aMask&mRight;
+			
+			int retVal = Long.bitCount(delta);
+			int moveCountDelta =0;
+			if(retVal>0) {
+				for(int i=0;i<retVal;i++) {
+					int pos = Long.numberOfTrailingZeros(delta); 
+					delta &= delta - 1;			
+					long mask = this.lookUp.getMoveMask(PIECE_TYPE_X_PAWN[color] +pos);
+					//out(mask);
+					long pOneMask =mask&mOneUp &MASK_ONE_UP_AND_DOWN[pos];
+					long pTwoMask =mask&mTwoUp &~MASK_ONE_UP_AND_DOWN[pos];
+					//out(pMask);
+					long aMask=mask&MASK_NOT_X_FILE_FOR_POS[pos];
+					//out(aMask);
+					//out(mLeft);
+					//out(mRight);
+					mask =((pOneMask|pTwoMask)&MASK_X_FILE_FOR_POS[pos])|aMask&mLeft|aMask&mRight;
+					long last =mask& MASK_1_RANK;
+					if((last)!=0L)  {
+						last|= last<<DIR_UP;
+						last|= last<<DIR_UP;
+						mask|= last<<DIR_UP;
+					}
+					//out(mask);
+					long oldMask = this.moveMasks[pos].getAndSet(mask);
+					moveCountDelta+=Long.bitCount(mask)- Long.bitCount(oldMask);
+				}
 				
-				
-				//out(mask);
-				/*if(pos==24) {
-					System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-					System.out.println("For Pos 24: TypeColor:"+fields[24]+"");
-					out(mask);
-					System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-				}*/
-				long oldMask = this.moveMasks[pos].getAndSet(mask);
-				//out(oldMask);
-				moveCountDelta+=Long.bitCount(mask)- Long.bitCount(oldMask);
 			}
+			this.mLeft[color].set(mLeft);
+			this.mRight[color].set(mRight);
+			this.mOneUp[color].set(mOneUp);
+			this.mTwoUp[color].set(mTwoUp);
+			//= Long.bitCount(mOneUp|mTwoUp)+Long.bitCount(mLeft)+Long.bitCount(mRight);
+			this.moveCount[color].addition(moveCountDelta);
 		}
-		this.mLeft[color].set(mLeft);
-		this.mRight[color].set(mRight);
-		this.mOneUp[color].set(mOneUp);
-		this.mTwoUp[color].set(mTwoUp);
-		//= Long.bitCount(mOneUp|mTwoUp)+Long.bitCount(mLeft)+Long.bitCount(mRight);
-		this.moveCount[color].addition(moveCountDelta);
-  		
 	}
 
 	
@@ -387,13 +390,24 @@ public class BBPosition implements Position {
 		ContextLevel context = this.contextLevels.get(getLevel()-1);
 		context.pawns[COLOR_WHITE]=this.pawns[COLOR_WHITE].get();
 		context.pawns[COLOR_BLACK]=this.pawns[COLOR_BLACK].get();
-		setMove(move,context);		
+		context.enpMask = this.enPassanteMask.getAndSet(0);//@todo WTF could happen on level -level
+		context.enpPos= Long.numberOfTrailingZeros(context.enpMask);
+	
+		int color = this.colorAtTurn;
+		int otherColor = OTHER_COLOR[color];
+		setMove(move,context);
+		this.updatePawnPseudoMoves(color);
+		this.updatePawnPseudoMoves(otherColor);
+ 		if(context.ntchd!=0) {
+			checkRochade(context,move); 
+		}			
 		this.pawns[COLOR_WHITE].set(context.pawns[COLOR_WHITE]);
 		this.pawns[COLOR_BLACK].set(context.pawns[COLOR_BLACK]);
 		checkLegalMoves();
 		this.colorAtTurn = OTHER_COLOR[colorAtTurn];
-	//	System.out.println(this);
 	}
+	
+	
 	/*	
 	private void checkMoves() {
 		int[] testCount=new int[2];
@@ -426,24 +440,43 @@ public class BBPosition implements Position {
 	}*/
 	int movecount =0;
 	private void setMove(Move move,ContextLevel context ) {
-		//checkMoves() ;
-		
 		/*
-		if(move.getNotation().equals("a8a7")) {
-			System.out.println("WTF");
-			out(this.tCallBacks[41].get());			
-			out(context.occ);
-			
-		}
 		
-		
-		
-		if(movecount==48) {
+		if(movecount==2152) {
 			System.out.println("WTF");
 		}
 		
-		System.out.println("Move("+move+"):"+movecount++);
+		System.out.println("Move("+move+"):"+(movecount++));
+		
+		//checkMoves() ;
 		*/
+		//System.out.println("Move("+move+"):"+(movecount++));
+		
+		
+		
+		
+		
+		
+		context.ntchd = untouched.get();
+		if(context.ntchd!=0) {
+			if(((context.ntchd & MASK_NOT_ALL_ROOKS) ==0 || (context.ntchd & MASK_ALL_ROOKS)==0)) {
+				context.ntchd = 0L;
+				untouched.set(0L);
+			}else {
+				//out(moveMasks[_E1].get());
+				context.oldCastleMovesKQ = moveMasks[_E1].get()& MASK_CASTLE_KING_KQkq;
+				//out(context.oldCastleMovesKQ);
+				
+				//out(moveMasks[_E8].get());
+				context.oldCastleMoveskq = moveMasks[_E8].get()& MASK_CASTLE_KING_KQkq;
+				//out(context.oldCastleMoveskq);
+				
+				context.oldCastleMovesKQCount = Long.bitCount(context.oldCastleMovesKQ);
+				context.oldCastleMoveskqCount = Long.bitCount(context.oldCastleMoveskq);
+			}
+		}
+		
+		
 		//@todo use masks for move
 		int oldPos = move.getOldPos();
 		int newPos = move.getNewPos();
@@ -463,16 +496,18 @@ public class BBPosition implements Position {
 		
 /*E*/	int otherTypeColor = fields[newPos].get();
 		if(otherTypeColor!=-1) {
+			//alter moves(ok), moveCount(ok), allOfOneColor(ok), fields(later), callbacks(ok), tcallbacks(ok) and if neccessary pawns!(ok)
 /*!!!*/		removePseudoMoves(otherTypeColor,newPos);
-			cbsNewPosReplace= this.tCallBacks[newPos].get();
 			this.allOfOneColor[otherColor].XOR(newPosMask);
 			if(otherTypeColor>>7==PIECE_TYPE_PAWN) {
 				context.pawns[otherColor]^=newPosMask;
 			}
+			cbsNewPosReplace= this.tCallBacks[newPos].get();
 		}else {
 			cbsNewPosEmptyBefore = this.tCallBacks[newPos].get();
 		}
-
+		
+		
 		
 		int typeColor = fields[oldPos].getAndSet(-1);
 
@@ -481,10 +516,13 @@ public class BBPosition implements Position {
 		if(move.isPromotion()) {
 			typeColor = move.getPromotePieceType();
 			pieceType = typeColor>>7;
+			context.pawns[color]&=~oldPosMask;
 		}
-/*u*/	fields[newPos].set(typeColor);
+
+		//alter moves(ok), moveCount(ok), allOfOneColor(ok), fields(later), callbacks(ok), tcallbacks(ok) and if neccessary pawns!(ok)
+		/*u*/	fields[newPos].set(typeColor);
 		// update occupancy
-/*u*/	this.allOfOneColor[color].XOR(moveMask);
+		/*u*/	this.allOfOneColor[color].XOR(moveMask);
 		// update moves
 		
 		cbsOldPos = this.tCallBacks[oldPos].get();
@@ -492,20 +530,16 @@ public class BBPosition implements Position {
 			this.kings[color].set(1L<<newPos);
 		}
 		if(pieceType==PIECE_TYPE_PAWN) {
-			//out(moveMask);
-			//out(context.pawns[color]);
 			context.pawns[color]^=moveMask;
-			//out(context.pawns[color]);
-			
 		}
+		
 		if(context.enpMask!=0L)	{
 			if(move.getEnPassanteSquare()==context.enpPos) {
 				int enpPawnPos = move.getEnPassantePawnPos();
 				cbsEnpPawnRemoved = this.tCallBacks[enpPawnPos].get(); 				
-				int enpTypeColor = fields[enpPawnPos].get();
-/*u*/			this.fields[enpPawnPos].set(-1);
+				int enpTypeColor = fields[enpPawnPos].getAndSet(-1);
 /*u*/			this.allOfOneColor[otherColor].unsetBit(enpPawnPos);// might be empty anyways
-				context.pawns[color]^=newPosMask;
+				context.pawns[otherColor]&=~(1L<<enpPawnPos);
 				removePseudoMoves(enpTypeColor,enpPawnPos);
 			}
 		}
@@ -513,7 +547,7 @@ public class BBPosition implements Position {
 			
 		if(move.isTwoSquarePush()) {
 			int enpSquare= move.getEnPassanteSquare();
-			this.enPassantePos.set(1L<<enpSquare);//@TBD always set (geht mit stack)
+			this.enPassanteMask.set(1L<<enpSquare);//@TBD always set (geht mit stack)
 		}
 
 		
@@ -524,7 +558,8 @@ public class BBPosition implements Position {
 		context.notOcc = ~(context.occ);
 				
 		if(pieceType!=PIECE_TYPE_PAWN) {
-			this.updateNonPawnPseudoMoves(typeColor, newPos);
+			context.move = move; 
+			this.updateNonPawnPseudoMoves(typeColor, newPos,true);
 		}else {
 			//for Pawns just add the two attackers
 			int[] attacks = move.getPawnNewAttacks();
@@ -535,23 +570,6 @@ public class BBPosition implements Position {
 
 			this.callBacks[newPos].set(move.getPawnNewAttackMask());
 		}
-			
-		long cbs = cbsNewPosEmptyBefore|(cbsNewPosReplace) |cbsOldPos|cbsEnpPawnRemoved;
-		cbs &= (context.occ)&~(moveMask)&~(context.pawns[COLOR_WHITE]|context.pawns[COLOR_BLACK]);//@todo occ var
-		
-		long kingsCalled = cbs&MASK_ALL_KINGS;
-		int retVal = Long.bitCount(cbs);
-		for(int i=0;i<retVal;i++) {
-			int cbPos = Long.numberOfTrailingZeros(cbs);
-			//long cbPosMask = 1L<<cbPos;
-			cbs &= cbs - 1;				
-			int cbTypeColor = fields[cbPos].get();
-			cbscounter++;
-			this.updateNonPawnPseudoMoves(cbTypeColor, cbPos);
-		}
-		
-		this.updatePawnPseudoMoves(color);
-		this.updatePawnPseudoMoves(otherColor);
 		
 		if(context.ntchd!=0) {
 			// if there is no combination remaining set to 0
@@ -561,55 +579,24 @@ public class BBPosition implements Position {
 					this.setMove(move.getRookMove(),context);
 				}
 				// update fields
-				this.untouched.AND_NOT(moveMask);
+				long not_moveMask =~moveMask;
+				this.untouched.AND(not_moveMask);
+				context.ntchd&=not_moveMask;
 			}
-					
-			long newCastleMovesKQ=0;
-			long newCastleMoveskq=0;
-			
-			//@TODO WTF: Combine E1 and combine with nonPawn stuff
-			
-			//remove rochade protagonists in occ if touched
-			long ntchdOcc= context.occ & MASK_NOT_ALL_ROOKS_KINGS |context.ntchd;
-		
-			//ntchdOcc and MASK_E1_H1 should be identical in the range of MASK_CASTLE_ALL_K
-			if (((ntchdOcc^MASK_E1_H1)& MASK_CASTLE_ALL_K)==0L) {
-				newCastleMovesKQ|= MASK_CASTLE_KING_K;
-			}
-			if (((ntchdOcc^MASK_E1_A1)& MASK_CASTLE_ALL_Q)==0L) {
-				newCastleMovesKQ|= MASK_CASTLE_KING_Q;
-			}
-			if (((ntchdOcc^MASK_E8_H8)& MASK_CASTLE_ALL_k)==0L) {
-				newCastleMoveskq|= MASK_CASTLE_KING_k;
-			}
-			if (((ntchdOcc^MASK_E8_A8)& MASK_CASTLE_ALL_q)==0L) {
-				newCastleMoveskq|= MASK_CASTLE_KING_q;
-			}
-			//boolean change=false;
-			if( context.oldCastleMovesKQ !=newCastleMovesKQ) {
-				this.moveMasks[_E1].OR(newCastleMovesKQ);
-				//change=true;
-			}
-			if( context.oldCastleMoveskq !=newCastleMoveskq) {
-				this.moveMasks[_E8].OR(newCastleMoveskq);
-				//change=true;
-			}
-			//if(change|kingsCalled!=0) {
-				int delta =Long.bitCount(newCastleMovesKQ |newCastleMoveskq)-context.oldCastleMoves;
-				if(delta!=0) {
-					this.moveCount[color].addition(delta);
-				}
-			//}WTF@TODO
-		}			
+		}
+		long cbs = cbsNewPosEmptyBefore|cbsNewPosReplace |cbsOldPos|cbsEnpPawnRemoved;
+		cbs &= (context.occ)&~(moveMask)&~(context.pawns[COLOR_WHITE]|context.pawns[COLOR_BLACK]);//@todo occ var
+		long bits = cbs;
+		int retVal = Long.bitCount(bits);
+		for(int i=0;i<retVal;i++) {
+			int cbPos = Long.numberOfTrailingZeros(bits);
+			bits &= bits - 1;				
+			int cbTypeColor = fields[cbPos].get();
+			cbscounter++;
+			this.updateNonPawnPseudoMoves(cbTypeColor, cbPos,false);
+		}
 	
-		
-		
-		
-		
-		/*
-		checkMoves() ;
-		*/
-		
+				
 	}
 	
 	@Override
@@ -647,26 +634,15 @@ public class BBPosition implements Position {
 			// once for all moves of this level
 			this.calcNewMoves(this.colorAtTurn);
 			ContextLevel context = this.contextLevels.get(getLevel());
-			
-			context.enpMask= this.enPassantePos.getAndSet(0L);
-			context.enpPos = Long.numberOfTrailingZeros(context.enpMask);
+			//@TODO WTF
+			//context.enpMask= this.enPassantePos.getAndSet(0L);
 			for(int i=0;i<2;i++) {
 				context.mLeftOld[i]= mLeft[i].get();
 				context.mRightOld[i]= mRight[i].get();
 				context.mOneUpOld[i]= mOneUp[i].get();
 				context.mTwoUpOld[i]= mTwoUp[i].get();
 			}
-			context.ntchd = untouched.get();
-			if(context.ntchd!=0) {
-				if(((context.ntchd & MASK_NOT_ALL_ROOKS) ==0 || (context.ntchd & MASK_ALL_ROOKS)==0)) {
-					context.ntchd = 0L;
-					untouched.set(0L);
-				}else {
-					context.oldCastleMovesKQ = moveMasks[_E1].get() & MASK_CASTLE_KING_KQkq;
-					context.oldCastleMoveskq = moveMasks[_E8].get() & MASK_CASTLE_KING_KQkq;
-					context.oldCastleMoves =Long.bitCount(context.oldCastleMovesKQ|context.oldCastleMoveskq);
-				}
-			}
+			
 			/*
 			context.pawnMovesOld= Long.bitCount(context.mOneUpOld|context.mTwoUpOld)
 	  				+Long.bitCount(context.mLeftOld)
@@ -706,14 +682,14 @@ public class BBPosition implements Position {
 
 	@Override
 	public void setEnPassantePos(int enpassantePos) {
-		this.enPassantePos.set(enpassantePos);
+		this.enPassanteMask.set(enpassantePos);
 	}
 	@Override
 	public int getHash() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
-
+	
 	@Override
 	public String getNotation(int index) {
 		return this.getMove(index).getNotation();
@@ -729,56 +705,87 @@ public class BBPosition implements Position {
 		return attacks;
 	}
 	
-	private void handleRochade() {
-		/*
-		long scan =0L;
-		if ((context.ntchd & MASK_E1_H1) ==MASK_E1_H1) {
-			if ((context.occ & MASK_CASTLE_OCC_K) == 0) {
-				moves |= MASK_CASTLE_KING_K;
+	private void checkRochade(ContextLevel context, Move move) {
+		
+		long oldE1Mask=this.moveMasks[_E1].get();
+		long oldCastleMovesKQ=oldE1Mask&MASK_CASTLE_KING_KQkq;
+		int oldCastleMovesKQCount= Long.bitCount(oldCastleMovesKQ);
+		
+		//out(this.allOfOneColor[0].get());
+		long oldE8Mask=this.moveMasks[_E8].get();
+		long oldCastleMoveskq=oldE8Mask&MASK_CASTLE_KING_KQkq;;
+		int oldCastleMoveskqCount= Long.bitCount(oldCastleMoveskq);
+		
+		
+		long newCastleMovesKQ=0;
+		long newCastleMoveskq=0;
+		
+		//@TODO WTF: Combine E1 and combine with nonPawn stuff
+		
+		//remove rochade protagonists in occ if touched
+		long ntchdOcc= context.occ & MASK_NOT_ALL_ROOKS_KINGS |context.ntchd;
+		//out(ntchdOcc);
+		//out(context.occ );
+		//out(context.ntchd);
+		if((context.ntchd & MASK_E1)!=0L) {
+			//ntchdOcc and MASK_E1_H1 should be identical in the range of MASK_CASTLE_ALL_K
+			if (((ntchdOcc^MASK_E1_H1)& MASK_CASTLE_ALL_K)==0L) {
+				newCastleMovesKQ|= MASK_CASTLE_KING_K;
 			}
-			scan = MASK_CASTLE_ALL_K;
-		}
-		if ((context.ntchd & MASK_E1_A1) ==MASK_E1_A1) {
-			if ((context.occ & MASK_CASTLE_OCC_Q) == 0) {
-				moves |= MASK_CASTLE_KING_Q;
+			if (((ntchdOcc^MASK_E1_A1)& MASK_CASTLE_ALL_Q)==0L) {
+				newCastleMovesKQ|= MASK_CASTLE_KING_Q;
 			}
-			scan |= MASK_CASTLE_ALL_Q;
-		}
-		if(scan!=0) {
-			callbacks[1] |= scan;
-		}
-
-		long delta = (context.correction & MASK_NOT_1_RANK)^scan;
-		if(delta!=0) {
-			this.correctors[color].XOR(delta);
-		}
-		*/
-
-		/*
-		long scan =0;
-		if ((context.ntchd & MASK_E8_H8) ==MASK_E8_H8) {
-			if ((context.occ & MASK_CASTLE_OCC_k) == 0L) {
-				moves |= MASK_CASTLE_KING_k;
+			long mask = (oldE1Mask&MASK_NOT_CASTLE_KING_KQkq)|newCastleMovesKQ;
+			//out(mask);
+			//this.conistency();
+			//out(this.moveMasks[_E1].get());
+			//out(mask);	
+			this.moveMasks[_E1].set(mask);//we sometimes need to repair this w. king was updated
+			
+				//out(newCastleMovesKQ);
+				//out(this.moveMasks[_E1].get());
+			if(oldCastleMovesKQ !=newCastleMovesKQ) {
+				int delta = Long.bitCount(newCastleMovesKQ)-oldCastleMovesKQCount;
+				if(delta!=0) {
+					this.moveCount[COLOR_WHITE].addition(delta);
+				}
 			}
-			scan = MASK_CASTLE_ALL_k;
+			//this.conistency();
 		}
-		if ((context.ntchd & MASK_E8_A8) ==MASK_E8_A8) {
-			if ((context.occ & MASK_CASTLE_OCC_q) == 0L) {
-				moves |= MASK_CASTLE_KING_q;
+		
+		
+		if((context.ntchd & MASK_E8)!=0L) {
+			if (((ntchdOcc^MASK_E8_H8)& MASK_CASTLE_ALL_k)==0L) {
+				newCastleMoveskq|= MASK_CASTLE_KING_k;
+				//out(newCastleMoveskq);
+				//out(ntchdOcc^MASK_E8_H8);
+				
 			}
-			scan |= MASK_CASTLE_ALL_q;
-		}
-		if(scan!=0) {
-			callbacks[1] |= scan;
-		}
-
-		long delta = (context.correction & MASK_NOT_1_RANK)^scan;
-		if(delta!=0) {
-			this.correctors[color].XOR(delta);
-		}
-		*/
-
+			if (((ntchdOcc^MASK_E8_A8)& MASK_CASTLE_ALL_q)==0L) {
+				newCastleMoveskq|= MASK_CASTLE_KING_q;
+			}
+			//boolean change=false;
+			//out(newCastleMovesKQ);
+			//out(MASK_NOT_CASTLE_KING_KQkq);
+			//out(this.moveMasks[_E1].get());
+			
+			//out(oldE8Mask);
+			//out(newCastleMoveskq);
+			//out(MASK_NOT_CASTLE_KING_KQkq);
+			long mask = (oldE8Mask&MASK_NOT_CASTLE_KING_KQkq)|newCastleMoveskq;
+			//out(mask);
+			this.moveMasks[_E8].set(mask);//we sometimes need to repair this w. king was updated
+			if(oldCastleMoveskq !=newCastleMoveskq) {
+				int delta = Long.bitCount(newCastleMoveskq)-oldCastleMoveskqCount;
+				if(delta!=0) {
+					this.moveCount[COLOR_BLACK].addition(delta);
+				}
+			}
+		}	
+		//this.conistency();
 	}
+	
+	
 	@Override
 	public void checkLegalMoves (){
 	/*	
@@ -837,8 +844,30 @@ public class BBPosition implements Position {
 	static int cbscounter=0;
 	
 	public static void cbsCount(){
-		System.out.println("CBS COutner!"+cbscounter);
+		System.out.println("CBS Coutner!"+cbscounter);
 	}
 	
 	
+	
+	private void conistencyX() {
+	
+		for(int color=0;color<2;color++) {
+			int ref = moveCount[color].get();
+			long bits = allOfOneColor[color].get();
+	  		int retVal = Long.bitCount(bits);
+	  		int total = 0;
+	  		for(int i=0;i<retVal;i++) {
+	  			int pos = Long.numberOfTrailingZeros(bits);
+				bits &= bits - 1;
+				long moveMask = moveMasks[pos].get();
+				int retVal2 = Long.bitCount(moveMask);
+		  		total +=retVal2 ;		  		
+			}
+	  		if(ref!=total) {
+	  			throw new RuntimeException(total+"!="+ref);
+	  		}
+		}
+
+	}
+		
 }

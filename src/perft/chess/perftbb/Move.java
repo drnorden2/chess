@@ -65,12 +65,6 @@ public class Move implements IndexedElement  {
 		this.rookPos =rookPos;
 		this.dirOfRochade = dirOfRochade ;
 		this.callbackType = callbackType;
-		this.isRochadeDisabler = (typeColor == PIECE_TYPE_WHITE_ROOK&&(oldPos==_A1 ||oldPos==_H1))||
-								(typeColor == PIECE_TYPE_BLACK_ROOK&&(oldPos==_A8 ||oldPos==_H8))||
-								(typeColor == PIECE_TYPE_WHITE_KING&&(oldPos==_E1))||
-								(typeColor == PIECE_TYPE_BLACK_KING&&(oldPos==_E8))||
-								(color==COLOR_WHITE&&(newPos==_A1 ||newPos==_H1))||
-								(color==COLOR_BLACK&&(newPos==_A8 ||newPos==_H8));
 		this.dirX=dirX;
 		this.dirY=dirY;
 		if(rookPos==-1) {
@@ -125,6 +119,13 @@ public class Move implements IndexedElement  {
 		this.isKingSensing = (moveType==MOVE_TYPE_KING_SENSING);
 		this.isRochade = this.dirOfRochade!=0;
 		this.notation = generateNotation();
+		this.isRochadeDisabler = (typeColor == PIECE_TYPE_WHITE_ROOK&&(oldPos==_A1 ||oldPos==_H1))||
+				(typeColor == PIECE_TYPE_BLACK_ROOK&&(oldPos==_A8 ||oldPos==_H8))||
+				(typeColor == PIECE_TYPE_WHITE_KING&&(oldPos==_E1))||
+				(typeColor == PIECE_TYPE_BLACK_KING&&(oldPos==_E8))||
+				(color==COLOR_BLACK&&(newPos==_A1 ||newPos==_H1||newPos==_E1 ))||
+				(color==COLOR_WHITE&&(newPos==_A8 ||newPos==_H8||newPos==_E8 ));
+
 		if(type == PIECE_TYPE_PAWN) {
 			int[] attacks;
 			long mask = 0L;

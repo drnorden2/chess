@@ -89,6 +89,10 @@ public class BLArrayStackLong {
 		return addAndTouched(val);
 	}
 
+	public boolean andAndTouched(long value) {
+		long val = stack[head]&value;
+		return addAndTouched(val);
+	}
 	public boolean andNotTouched(long value) {
 		long val = stack[head]&~value;
 		return addAndTouched(val);

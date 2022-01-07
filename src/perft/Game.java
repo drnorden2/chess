@@ -192,7 +192,7 @@ final public class Game {
 		int[] bW = ref.getAttacks(0);
 		int[] bB = ref.getAttacks(1);
 		
-		
+		 
 		if(moves!=other || !equal(aW,bW)||!equal(aB,bB)) {
 			System.out.println(last);
 			
@@ -210,6 +210,7 @@ final public class Game {
 		for(int i=0;i<moves;i++) {
 			String moveStr = board.getMoveStr(i);
 			board.doMove(i);
+			
 			String cur ="";
 			cur+= "***********************************************\n";
 			cur+=""+(i+1)+"/"+moves+":"+ moveStr +"("+deep+")" +this.toString()+"\n";
@@ -223,6 +224,48 @@ final public class Game {
 		return moveCount;
 	}
 
+	final public  long stackTracePerft(Board ref, int deep,String last) {
+		long moveCount=0;
+		int moves = board.getMoves();
+		int other = ref.getMoves();
+		int[] aW = board.getAttacks(0);
+		int[] aB = board.getAttacks(1);
+		int[] bW = ref.getAttacks(0);
+		int[] bB = ref.getAttacks(1);
+		
+		 
+		if(moves!=other || !equal(aW,bW)||!equal(aB,bB)) {
+			System.out.println(last);
+			
+			System.out.println("unexpeceded Move amount: "+moves+" (ref:"+other );
+			System.out.println(this.toString());
+			System.out.println(ref.toString());
+			System.out.println(BBAnalyzer.diffPositions(this.toString(),ref.toString()));
+			
+			System.exit(-1);
+		}
+		
+		if ( deep ==0) {
+			return 1;
+		}
+		for(int i=0;i<moves;i++) {
+			String moveStr = board.getMoveStr(i);
+			board.doMove(i);
+			
+			String cur ="";
+			cur+= "***********************************************\n";
+			cur+=""+(i+1)+"/"+moves+":"+ moveStr +"("+deep+")" +this.toString()+"\n";
+			ref.setMoveByMoveStr(moveStr);
+			cur+= ref.toString()+"+\n";
+			moveCount +=stackTracePerft(ref, deep-1,last+cur);
+			cur+=moveStr+"Movecount("+deep+"):"+moveCount+"\n";  
+			board.undoMove();
+			ref.undoMove();
+		}
+		return moveCount;
+	}
+
+	
 	
 	@Override
 	public String toString() {
