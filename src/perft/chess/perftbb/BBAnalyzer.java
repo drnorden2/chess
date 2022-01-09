@@ -8,16 +8,18 @@ import perft.chess.core.datastruct.ArrayStack;
 
 public class BBAnalyzer {
 	private BBPosition position;
-
+	private static boolean isAlarm = false;
 	public BBAnalyzer (BBPosition position) {
 		this.position = position;
 	}
-
+	public boolean checkAlarm() {
+		return isAlarm;
+	}
 	
 	private String[] getCallBackOfPosToString(int pos) {
 		char[] snapshot = new char[64];
 		for (int j = 0; j < 64; j++) {
-			long cb = position.tCallBacks[j].get();
+			long cb = position.tCallBacks[j];
 			if(((cb >> pos) & 1L)==1L) {
 				snapshot[j]=(char)('1');
 			}
@@ -27,7 +29,7 @@ public class BBAnalyzer {
 
 	private String[] getMovesOfPosToString(int pos) {
 		char[] snapshot = new char[64];
-		long moves = 0L;///position.allMoves[pos].get();
+		long moves = 0L;///position.allMoves[pos];
 
 		for (int j = 0; j < 64; j++) {
 			if(((moves>> j) & 1L)==1L) {
@@ -39,10 +41,10 @@ public class BBAnalyzer {
 
 	
 	private String[] getAttackToString(int color) {
-		long own = position.allOfOneColor[color].get();
+		long own = position.allOfOneColor[color];
 		char[] snapshot = new char[64];
 		for (int j = 0; j < 64; j++) {
-			int attack = (int)(Long.bitCount(position.tCallBacks[j].get()&own));
+			int attack = (int)(Long.bitCount(position.tCallBacks[j]&own));
 			if(attack<0) {
 				System.out.println("WTF at pos ("+j+")!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 			
@@ -56,10 +58,10 @@ public class BBAnalyzer {
 	}
 
 	private String[] getRawAttackToString(int color) {
-		long own = position.allOfOneColor[color].get();
+		long own = position.allOfOneColor[color];
 		char[] snapshot = new char[64];
 		for (int j = 0; j < 64; j++) {
-			int attack = (int)(Long.bitCount(position.tCallBacks[j].get()&own));
+			int attack = (int)(Long.bitCount(position.tCallBacks[j]&own));
 			if(attack!=0) {
 				snapshot[j]=(char)('0'+attack);
 			}
@@ -70,7 +72,7 @@ public class BBAnalyzer {
 	
 	private String[] getEnPassanteToString() {
 		char[] snapshot = new char[64];
-		long enpMask = position.enPassanteMask.get();
+		long enpMask = position.enPassanteMask;
 		int enpassante =-1;
 		if(enpMask!=0) {
 			enpassante = Long.numberOfTrailingZeros(enpMask);
@@ -88,7 +90,7 @@ public class BBAnalyzer {
 	
 	private String[] getMovesToString() {
 		char[] snapshot = new char[64];
-		int count=position.getMoves();
+		int count=position.getMoveCount();
 		
 		for(int i=0;i<count;i++){
 			Move move = position.getMove(i);
@@ -106,13 +108,13 @@ public class BBAnalyzer {
 	private String[] getPseudoMovesToString(int color) {
 		char[] snapshot = new char[64];
 		
-  		long bits = position.allOfOneColor[color].get();
+  		long bits = position.allOfOneColor[color];
   		int retVal = Long.bitCount(bits);
   		int total = 0;
   		for(int i=0;i<retVal;i++) {
   			int pos = Long.numberOfTrailingZeros(bits);
 			bits &= bits - 1;
-			long moveMask = position.moveMasks[pos].get();
+			long moveMask = position.moveMasks[pos];
 			int retVal2 = Long.bitCount(moveMask);
 	  		total +=retVal2 ;
 	  		snapshot[pos]=(char)retVal2;
@@ -130,7 +132,7 @@ public class BBAnalyzer {
 
 	private String[] getUntouchedToString() {
 		char[] snapshot = new char[64];
-		long untouched = position.untouched.get();
+		long untouched = position.untouched;
 		
 		char[] charBoard = new char[64];
 		getCharBoard(charBoard );
@@ -243,10 +245,13 @@ public class BBAnalyzer {
 		int[] indices = new int[64];
 		
 		for(int color=0;color<2;color++) {
-			int count1 = updateIndices(indices, position.allOfOneColor[color].get());
+			int count1 = updateIndices(indices, position.allOfOneColor[color]);
+			if(count1==0) {
+				this.isAlarm=true;
+			}
 			for (int i = 0; i < count1; i++) {
 				int pos = indices[i];
-				int typeColor = position.fields[pos].get();
+				int typeColor = position.fields[pos];
 				String typeStr = "";
 				switch (typeColor) {
 				case PIECE_TYPE_WHITE_PAWN:
@@ -287,6 +292,10 @@ public class BBAnalyzer {
 					break;
 				default:
 					typeStr = "X";
+					System.out.println("Alarm, illegal typeColor: "+typeColor);
+					System.out.println("position.allOfOneColor["+color+"]="+position.allOfOneColor[color]); 
+					out(position.allOfOneColor[color]);
+					isAlarm =true;
 					break;
 				}
 				charBoard[pos] = typeStr.charAt(0);
@@ -306,11 +315,8 @@ public class BBAnalyzer {
 		String out = "";
 		for(int i=0;i<a.length();i++) {
 			if (a.charAt(i)==b.charAt(i)) {
-				if(a.charAt(i) >= '0'&&a.charAt(i) <= '9') {
-					out+="·";
-				}else {
-					out+=a.charAt(i);
-				}
+				out+=a.charAt(i);
+				
 			}else {
 				out+="█";
 			}

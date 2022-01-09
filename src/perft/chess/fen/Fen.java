@@ -131,9 +131,9 @@ public class Fen {
 		fen = fen.substring(end + 1, fen.length()).trim();
 		//System.out.println(turn);
 		if("w".equalsIgnoreCase(turn)) {
-			position.setInitialTurn(COLOR_WHITE);
+			position.initialTurn(COLOR_WHITE);
 		}else {
-			position.setInitialTurn(COLOR_BLACK);
+			position.initialTurn(COLOR_BLACK);
 		}
 		
 		
@@ -147,20 +147,20 @@ public class Fen {
 			char c = rochade.charAt(j);
 			switch(c) {
 				case 'K':
-					position.setUntouched(_1, _H);
-					position.setUntouched(_1, _E);
+					position.initialUntouched(_1, _H);
+					position.initialUntouched(_1, _E);
 					break;
 				case 'Q':
-					position.setUntouched(_1, _A);
-					position.setUntouched(_1, _E);
+					position.initialUntouched(_1, _A);
+					position.initialUntouched(_1, _E);
 					break;
 				case 'k':
-					position.setUntouched(_8, _H);
-					position.setUntouched(_8, _E);
+					position.initialUntouched(_8, _H);
+					position.initialUntouched(_8, _E);
 					break;
 				case 'q':
-					position.setUntouched(_8, _A);
-					position.setUntouched(_8, _E);
+					position.initialUntouched(_8, _A);
+					position.initialUntouched(_8, _E);
 					break;
 			}
 		}
@@ -181,7 +181,7 @@ public class Fen {
 			int file = enpassant.charAt(0)-'a';
 			int rank = 7 - (enpassant.charAt(1)-'1'); 
 			enpassantePos = getPosForFileRank(file,rank) ;
-			position.setEnPassantePos(enpassantePos);
+			position.initialEnPassantePos(enpassantePos);
 		}
 		
 		position.initialEval();

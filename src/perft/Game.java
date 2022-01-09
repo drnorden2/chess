@@ -214,9 +214,10 @@ final public class Game {
 		for(int i=0;i<moves;i++) {
 			String moveStr = board.getMoveStr(i);
 			// Patch:
+			/*
 			if(base && !"d5d6".equals(moveStr)) {
 				continue;
-			}
+			}*/
 			board.doMove(i);
 			ref.setMoveByMoveStr(moveStr);
 			moveList.add(moveStr);

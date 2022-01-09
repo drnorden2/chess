@@ -6,11 +6,11 @@ import perft.chess.perftmb.Field;
 
 public class Main {
 	public static void main(String[] args) {
-		System.out.println("1L<<3:"+(32L<<3));
-		System.out.println("1L>>-3:"+(32L>>-3));
-		System.out.println("1L>>>-3:"+(32L>>>-3));
-		
-		
+		long[] a= new long[64];
+		long[] b= new long[64];
+		for(int i=0;i<a.length;i++)a[i]=i;
+		System.arraycopy(a, 0, b, 0, 64);
+		for(int i=0;i<b.length;i++)System.out.println(b[i]);
 	}
 }
 

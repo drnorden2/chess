@@ -105,7 +105,7 @@ public class MBAnalyzer {
 
 	private String[] getUntouchedToString() {
 		char[] snapshot = new char[64];
-		int count=position.getMoves();
+		int count=position.getMoveCount();
 		char[] charBoard = new char[64];
 		String offBoardList = getCharBoard(charBoard);
 		for(int i=0;i<count;i++){

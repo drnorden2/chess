@@ -155,10 +155,10 @@ public class MBPosition implements Position{
 		color = (color+1)%2;
 	}
 	
-	public void setInitialTurn(int color) {
+	public void initialTurn(int color) {
 		this.color = color;
 	}
-	public void setUntouched(int rank, int file) {
+	public void initialUntouched(int rank, int file) {
 		fields[getPosForFileRank(file,rank)].getPiece().isUntouched();
 	}
 		
@@ -373,7 +373,7 @@ public class MBPosition implements Position{
 		}
 	}
 		
-	public int getMoves() {
+	public int getMoveCount() {
 		return allMovesLists.get(getLevel()).size();
 	}
 	
@@ -417,7 +417,7 @@ public class MBPosition implements Position{
 
 
 	@Override
-	public void setEnPassantePos(int enpassantePos) {
+	public void initialEnPassantePos(int enpassantePos) {
 		this.enPassantePos.set(enpassantePos);
 	}
 

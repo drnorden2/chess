@@ -43,7 +43,7 @@ public class ChessBoard extends Board{
 	
 	@Override
 	public int getMoves() {
-		return position.getMoves();
+		return position.getMoveCount();
 	}
 	@Override
 	public boolean isWon() {

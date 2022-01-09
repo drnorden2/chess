@@ -298,6 +298,9 @@ public class Definitions {
 	public static void out(long bits) {
 		System.out.println(BitBoard.toString(bits));
 	}
+	public static String toStr(long bits) {
+		return(BitBoard.toString(bits));
+	}
 	
 	/*
 	public static int updateIndices(int[] indices, long bits) {
@@ -361,7 +364,7 @@ public class Definitions {
 	public static final int[] PIECE_TYPE_X_QUEEN = new int[] {PIECE_TYPE_BLACK_QUEEN,PIECE_TYPE_WHITE_QUEEN};
 	public static final int[] PIECE_TYPE_X_KING = new int[] {PIECE_TYPE_BLACK_KING,PIECE_TYPE_WHITE_KING};
 	
-	
+	public static final long[] SHIFT = getShifts();
 	
 	public static final String CHESS_MAN_CHARS = "pknbrqPKNBRQ";
 	public static char getPieceCharForTypeColor(int typeColor) {
@@ -387,5 +390,12 @@ public class Definitions {
 			}
 		}
 		return all;
+	}
+	private static long[] getShifts() {
+		long[] shifts = new long[64];
+		for(int i=0;i<64;i++) {
+			shifts[i]=1L<<i;
+		}
+		return shifts;
 	}
 }

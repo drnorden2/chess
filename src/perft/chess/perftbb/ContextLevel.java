@@ -3,47 +3,123 @@ package perft.chess.perftbb;
 
 import static perft.chess.Definitions.*;
 
+import java.util.Arrays;
+
 public class ContextLevel {
+	
 	private Move lastMove =null;;
 
+	private final int[] fields = new int[64];
+	private final long[] callBacks = new long[64];
+	private final long[] moveMasks = new long[64];
+	private final long[] tCallBacks = new long[64];
+	
+	private final long[] allOfOneColor = new long[2];//@todo WTF -stack
+	private final long[] kings = new long[2];
+	private final long[] pawns = new long[2];
+	private final int moveCount [] = new int[2];
+	private long untouched=0;
+	private long enPassanteMask=0;//@todo WTF -stack
+
+	private long fcmTouched=0;
+
+	public long[] _mLeft=new long[2];
+	public long[] _mRight=new long[2];
+	public long[] _mOneUp=new long[2];
+	public long[] _mTwoUp=new long[2];
+	
+	public int castleMovesKQCount;
+	public int castleMoveskqCount;
+	public long castleMovesKQ;
+	public long castleMoveskq;
+	private int level;
+	private final BBPosition position;
+	
+	
+	
+
+//Post move 	
+	
+	//Move management
 	private Move[][] allMoves = new Move[64][64];
 	private int[] fieldList = new int[64];  
+	public int limit;
 
+	
 	private long[] idsMask = new long[64];
 	private int[] idsTypeColor= new int[64];
 	private int lastIndex=-1;
 	private int fieldCounter=0;
-	
 	private int cursorFieldList=0;
 	private int cursorMoves=0;
-	public long[] pawns = new long[2];
-	public long enpMask;
-	public long prevOcc;
-	public long[] allOfOneColor=new long[2]; 
-	public long notOcc; 
-	public long occ;
-	public long ntchd; 
-	public int enpPos; 
-	public long[] mLeftOld=new long[2];
-	public long[] mRightOld=new long[2];
-	public long[] mOneUpOld=new long[2];
-	public long[] mTwoUpOld=new long[2];
-	public int oldCastleMovesKQCount;
-	public int oldCastleMoveskqCount;
-	public long oldCastleMovesKQ;
-	public long oldCastleMoveskq;
-	public Move move;
 	
-	public int pawnMovesOld=0;
-	public int limit;
-
-	
-	public ContextLevel() {
+	public ContextLevel(BBPosition position,int level) {
+		this.position = position;
+		this.level = level;
 		for(int i=0;i<64;i++) {
 			fieldList[i]=-1;
 		}
 	}
+
 	
+	public void init () {
+//		System.out.println("Init for level:"+level);
+//		System.out.println(Arrays.toString(Thread.currentThread().getStackTrace()));
+		this.lastIndex =-1;
+		this.cursorFieldList=0;
+		this.cursorMoves=0;
+		this.limit =0;
+		this.fieldCounter=0;
+		
+	}
+	public void snapshot() {
+		for(int i=0;i<2;i++) {
+			this.allOfOneColor[i]=position.allOfOneColor[i];
+			this.kings[i]=position.kings[i];
+			this.pawns[i]=position.pawns[i];
+			this.moveCount[i]=position.moveCount[i];
+		}		
+		System.arraycopy(position.tCallBacks, 0, this.tCallBacks, 0, 64);
+		
+		this.untouched=position.untouched;
+		this.enPassanteMask=position.enPassanteMask;
+		
+		/*
+		System.arraycopy(position.fields, 0, this.fields, 0, 64);
+		System.arraycopy(position.callBacks, 0, this.callBacks, 0, 64);
+		System.arraycopy(position.moveMasks, 0, this.moveMasks, 0, 64);
+		*/
+	}
+	
+	public void revertToSnapshot() {
+//		System.out.println("+++++++++++++++++++++++++++++++++Reverting to Snapshot on level "+level);
+		
+		System.arraycopy(this.tCallBacks, 0, position.tCallBacks, 0, 64);
+		
+		int count2 = Long.bitCount(fcmTouched);
+		for(int i=0;i<count2;i++) {
+			int pos = Long.numberOfTrailingZeros(fcmTouched);
+			fcmTouched&=fcmTouched-1;
+			position.fields[pos]=this.fields[pos];
+			position.callBacks[pos]=this.callBacks[pos];
+			position.moveMasks[pos]=this.moveMasks[pos];		
+		}
+		
+		for(int i=0;i<2;i++) {
+			position.allOfOneColor[i]=this.allOfOneColor[i];
+			position.kings[i]=this.kings[i];
+			position.pawns[i]=this.pawns[i];
+			position.moveCount[i]=this.moveCount[i];
+		}
+		position.untouched=this.untouched;
+		position.enPassanteMask=this.enPassanteMask;//@todo WTF -stack		
+		/*
+		System.arraycopy(this.fields, 0, this.fields, 0, 64);
+		System.arraycopy(this.callBacks, 0, this.callBacks, 0, 64);
+		System.arraycopy(this.moveMasks, 0, position.moveMasks, 0, 64);
+		*/
+
+	}
 	
 	public void extractFromRawMoves(int pos, long idMask,int idTypeColor, Move[] rawMoves) {
 		idsMask[pos]=idMask;
@@ -57,20 +133,38 @@ public class ContextLevel {
 		}
 		moves[retVal]=null;//stopMove
 	}
-	public long getMoveMask(Move[] moves) {
-		long mask =0;
-		for(int i=0;i<moves.length;i++) {
-			if(moves[i]!=null) {
-				mask|=1<<i;
-			}
-		}
-		return mask;
-	}
-	
 	
 	public void addMoves(int pos, long idMask,int idTypeColor, Move[] moves) {
 		idsMask[pos]=idMask;
 		idsTypeColor[pos]=idTypeColor;
+		
+		// test
+//		long bits =idMask;
+//		for(;moves[i]!=null;i++) {
+//			int cur = moves[i].getNewPos();
+//			bits&=~SHIFT[cur];
+//		}
+//			if((bits&SHIFT[cur])==0) {
+//				System.out.println("Bug @"+pos+"for TypeColor"+idTypeColor);
+//				out(bits);
+//				System.out.println("on i=="+i+" there is no move!");
+//				System.out.println(position);
+//				throw new RuntimeException("there you go");
+//			}else {
+//				bits&=~SHIFT[cur];
+//			}
+//		}
+//		if(bits!=0) {
+//			System.out.println("Bug @"+pos+"for TypeColor"+idTypeColor +"("+idMask+")");
+//			out(bits);
+//			System.out.println("There are moves remaining! deleted:"+i);
+//			out(position.allOfOneColor[0]);
+//			out(position.allOfOneColor[1]);
+//			
+//			throw new RuntimeException("there you go");
+//		
+//		}
+		
 		
 		Move[]newMoves = allMoves[pos];
 		int i=0;
@@ -84,6 +178,7 @@ public class ContextLevel {
 			fieldList[fieldCounter++]=pos;
 		}
 	}
+	
 	public boolean checkForReuseMoves(int pos, long idMask,int idTypeColor) {
 		if(idsMask[pos]==idMask && idsTypeColor[pos]==idTypeColor) {
 			if(idMask!=0L) {
@@ -105,26 +200,42 @@ public class ContextLevel {
 		this.cursorFieldList=0;
 		this.cursorMoves=0;		
 	}
+	
 	public void setLimit(int limit) {
 		this.limit = limit;
+		
 		resetIterator();
+		
+//		for(int i=0;i<=limit;i++) {
+//			if(allMoves[fieldList[cursorFieldList]][cursorMoves]==null) {
+//				cursorMoves=0;
+//				cursorFieldList++;
+//			}
+//			if( i==limit) {//last i is just a check and only a cursor move in case of null
+//				System.out.println("Counter"+i+"/"+limit);
+//				break;
+//			}
+//			if(fieldList[cursorFieldList]==-1 || allMoves[fieldList[cursorFieldList]][cursorMoves]==null) {
+//				throw new RuntimeException("Limit Exception (fieldList["+cursorFieldList+"]=="+fieldList[cursorFieldList]+")at level:"+level+": Counter"+i+"/"+limit);
+//			}
+//			cursorMoves++;
+//			
+//		}
+//		resetIterator();
+	
 	}
 	
-	public void reInit() {
-		this.lastIndex =-1;
-		this.cursorFieldList=0;
-		this.cursorMoves=0;
-		this.limit =0;
-		this.fieldCounter=0;
-	}
+	
+
 
 	public Move getMove(int index) {
+		//System.out.println("getting Move "+index+" in level "+level);
 		if(index ==lastIndex) {
 			return lastMove;
 		}
 		if(index>=limit) {
 			//@todo WTF
-			throw new RuntimeException("Index("+index+")Off Limit:"+limit);
+			throw new RuntimeException("Index("+index+")Off Limit:"+limit +"in level:"+level);
 		}
 		lastMove = allMoves[fieldList[cursorFieldList]][cursorMoves++];
 		if(index-1==lastIndex) {
@@ -133,24 +244,160 @@ public class ContextLevel {
 				cursorFieldList++;
 				int fieldCursor = fieldList[cursorFieldList];
 				if(fieldCursor==-1) {
-					System.out.println("WTF FieldCursor -1");
+					System.out.println("WTF FieldCursor -1 for index:"+index);
 				}
 				lastMove = allMoves[fieldCursor][cursorMoves++];
 			}
 			lastIndex = index;
-			return lastMove;
 		}else {
-			System.out.println("Whooza Run!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-			for(int i=0;i<index;i++) {
+			System.out.println("Whooza Run on Level ("+level+")!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+			this.resetIterator();
+			for(int i=0;i<=index;i++) {
 				if(allMoves[fieldList[cursorFieldList]][cursorMoves]==null) {
 					cursorMoves=0;
 					cursorFieldList++;
+				}
+				if(i==index) {//last i is just a check and only a cursor move in case of null
+					break;
 				}
 				cursorMoves++;
 			}
 			lastIndex = index;
 			lastMove = allMoves[fieldList[cursorFieldList]][cursorMoves++];
-			return lastMove;
+		}
+		if(lastMove==null) {
+			throw new RuntimeException("Null move for index"+index+" out of "+limit);
+		}
+		return lastMove;
+	}
+	/*
+	public void setBitTCallBacks(int pos,int index) {
+		if((this.tCallBackTouched&SHIFT[pos])==0) {
+			this.tCallBacks[pos]=position.tCallBacks[pos];
+			this.tCallBackTouched|=SHIFT[pos];
+		}
+		position.tCallBacks[pos]|=SHIFT[index];
+	}
+	//this.tCallBacks[Long.numberOfTrailingZeros(oldCBs)].toggleBit(pos);
+	public void toggleBitTCallBacks(int pos,int index) {
+		if((this.tCallBackTouched&SHIFT[pos])==0) {
+			this.tCallBacks[pos]=position.tCallBacks[pos];
+			this.tCallBackTouched|=SHIFT[pos];
+		}
+		position.tCallBacks[pos]^=SHIFT[index];
+	}
+	*/
+	/*
+	public void setCallBacks(int pos,long mask) {
+		if((this.fcmTouched&SHIFT[pos])==0) {
+			this.fields[pos]= position.fields[pos];
+			this.callBacks[pos]=position.callBacks[pos];
+			this.moveMasks[pos]=position.moveMasks[pos];
+//			if(level==3) {
+//				System.out.println("SNAPSHOTTED1 in level "+level+" to callBacks["+pos+"]"+position.callBacks[pos]);
+//				out(this.fcmTouched);
+//			}
+			this.fcmTouched|=SHIFT[pos];
+		}
+		position.callBacks[pos]=mask;
+	}
+	
+	public long getAndSetCallBacks(int pos,long mask) {
+		if((this.fcmTouched&SHIFT[pos])==0) {
+			this.fields[pos]= position.fields[pos];
+			this.callBacks[pos]=position.callBacks[pos];
+			this.moveMasks[pos]=position.moveMasks[pos];
+			this.fcmTouched|=SHIFT[pos];
+			
+//			if(level==3) {
+//				System.out.println("SNAPSHOTTED2 in level "+level+" to callBacks["+pos+"]"+position.callBacks[pos]);
+//				out(this.fcmTouched);
+//			}
+
+		}
+		long old = position.callBacks[pos];
+		position.callBacks[pos]=mask;
+		return old;
+	
+	}
+	
+	
+	
+	//moveMasks[pos].getAndSet(0L)));;
+	public long getAndSetMoveMasks(int pos,long mask) {
+		if((this.fcmTouched&SHIFT[pos])==0) {
+			this.fields[pos]= position.fields[pos];
+			this.callBacks[pos]=position.callBacks[pos];
+			this.moveMasks[pos]=position.moveMasks[pos];
+			this.fcmTouched|=SHIFT[pos];
+//			if(level==3) {
+//				System.out.println("SNAPSHOTTED1 in level "+level+" to MoveMasks["+pos+"]"+position.moveMasks[pos]);
+//				out(this.fcmTouched);
+//			}
+		}
+		long old = position.moveMasks[pos];
+		position.moveMasks[pos]=mask;
+		return old;
+	}
+	//moveMasks[pos].getAndSet(0L)));;
+	public void setMoveMasks(int pos,long mask) {
+		
+		if((this.fcmTouched&SHIFT[pos])==0) {
+			this.fields[pos]= position.fields[pos];
+			this.callBacks[pos]=position.callBacks[pos];
+			this.moveMasks[pos]=position.moveMasks[pos];
+			this.fcmTouched|=SHIFT[pos];
+//			if(level==3) {
+//				
+//				System.out.println("SNAPSHOTTED2 in level "+level+" to MoveMasks["+pos+"]"+position.moveMasks[pos]);
+//				out(this.fcmTouched);
+//			}
+		}
+	
+		position.moveMasks[pos]=mask;
+	}
+	
+	//fields[oldPos].getAndSet(-1);
+	public int getAndSetFields(int pos,int typeColor) {
+		if((this.fcmTouched&SHIFT[pos])==0) {
+			this.fcmTouched|=SHIFT[pos];
+			this.fields[pos]= position.fields[pos];
+			this.callBacks[pos]=position.callBacks[pos];
+			this.moveMasks[pos]=position.moveMasks[pos];
+		
+//			if(level==3) {
+//				System.out.println("SNAPSHOTTED1 in level "+level+" to fields["+pos+"]"+position.fields[pos]);
+//				out(this.fcmTouched);
+//			}
+//			
+		}
+		int old = position.fields[pos];
+		position.fields[pos]=typeColor;
+//		System.out.println("updated1 ["+pos+"]"+typeColor+" in level:"+level);
+		return old;
+	}
+	//fields[oldPos].getAndSet(-1);
+	public void setFields(int pos,int typeColor) {
+		if((this.fcmTouched&SHIFT[pos])==0) {
+			this.fcmTouched|=SHIFT[pos];
+			this.fields[pos]= position.fields[pos];
+			this.callBacks[pos]=position.callBacks[pos];
+			this.moveMasks[pos]=position.moveMasks[pos];
+//			if(level==3) {
+//				System.out.println("SNAPSHOTTED2 in level "+level+" to fields["+pos+"]"+position.fields[pos]);
+//				out(this.fcmTouched);
+//			}
+		}
+		position.fields[pos]=typeColor;
+//		System.out.println("updated2 ["+pos+"]"+typeColor+" in level:"+level);		
+	}
+	*/
+	public void trigger(int pos) {
+		if((this.fcmTouched&SHIFT[pos])==0) {
+			this.fcmTouched|=SHIFT[pos];
+			this.fields[pos]= position.fields[pos];
+			this.callBacks[pos]=position.callBacks[pos];
+			this.moveMasks[pos]=position.moveMasks[pos];
 		}
 	}
 }

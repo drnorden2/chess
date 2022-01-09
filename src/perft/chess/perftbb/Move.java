@@ -70,7 +70,7 @@ public class Move implements IndexedElement  {
 		if(rookPos==-1) {
 			rookMove = null;
 		}else {
-			rookMove = new Move(PIECE_TYPE_ROOK,(PIECE_TYPE_ROOK * 2 + color) << 6, color, CALLBACK_TYPE_OTHER, rookPos, oldPos+(dirOfRochade),MOVE_TYPE_PUSH_BEAT,dirX*-1,dirY);
+			rookMove = new Move(PIECE_TYPE_ROOK,((PIECE_TYPE_ROOK <<1) + color) << 6, color, CALLBACK_TYPE_OTHER, rookPos, oldPos+(dirOfRochade),MOVE_TYPE_PUSH_BEAT,dirX*-1,dirY);
 		}
 		if(moveType ==MOVE_TYPE_PAWN_PUSH) {
 			if(getRankForPos(oldPos)==_2 &&  getRankForPos(newPos)==_4) {
