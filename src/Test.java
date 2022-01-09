@@ -246,10 +246,6 @@ public class Test {
 		}
 	}
 	private static void test(int depth, long nodes, String fen) {
-		Test.test(new String[0], null, depth, nodes, fen);
-	}
-	
-	private static void test(String [] debugMoves, HashMap<String,Long>refMap,int depth, long nodes, String fen) {
 		//O.N=false;
 		Game game = new Game(factory,fen);
 		
@@ -268,7 +264,7 @@ public class Test {
 		}else {
 			headLine +="Real Counting";
 		}
-		games = game.perft(depth,debugMoves,refMap,useBulk);
+		games = game.perft(depth,useBulk);
 		//games = game.bulkPerft(depth);
 		
 		double time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
@@ -342,125 +338,5 @@ public class Test {
 		
 		System.out.println("Run 2 in "  + time +"s");
 	}		
-	private static void compare() {
-		String all1 = 
-				"d5e6:203255185:"+ 
-				"d5d6:151133066:"+ 
-				"e5g4:144264874:"+ 
-				"e5g6:165477768:"+ 
-				"e5c4:145182844:"+ 
-				"e5c6:169836097:"+ 
-				"e5f7:176070755:"+ 
-				"e5d3:140737072:"+ 
-				"e5d7:193856446:"+ 
-				"c3a4:191260040:"+ 
-				"c3d1:165415976:"+ 
-				"c3b1:165673862:"+ 
-				"c3b5:166970874:"+ 
-				"f3e3:189120807:"+ 
-				"f3d3:164583144:"+ 
-				"f3g3:198078522:"+ 
-				"f3h3:210100865:"+ 
-				"f3g4:189789456:"+ 
-				"f3h5:197839051:"+ 
-				"f3f4:181938761:"+ 
-				"f3f5:226135507:"+ 
-				"f3f6:146338070:"+ 
-				"a2a3:197413067:"+ 
-				"a2a4:183872225:"+ 
-				"b2b3:153953689:"+ 
-				"d2c1:158801466:"+ 
-				"d2e3:184114087:"+ 
-				"d2f4:165805784:"+ 
-				"d2g5:177883051:"+ 
-				"d2h6:161319567:"+ 
-				"e2d3:167737155:"+ 
-				"e2c4:170094798:"+ 
-				"e2b5:158033152:"+ 
-				"e2a6:130642863:"+ 
-				"e2d1:131348645:"+ 
-				"e2f1:174218453:"+ 
-				"g2h3:158328615:"+ 
-				"g2g3:141076301:"+ 
-				"g2g4:135208177:"+ 
-				"a1b1:160413321:"+ 
-				"a1c1:159720218:"+ 
-				"a1d1:149265033:"+ 
-				"e1f1:139601450:"+ 
-				"e1g1:172063416:"+ 
-				"e1d1:148612404:"+ 
-				"e1c1:148701308:"+ 
-				"h1g1:166086672:"+ 
-				"h1f1:154273720:";
 
-		String all2="a2a3:197413067:"+
-				"b2b3:153953689:"+
-				"g2g3:141076301:"+
-				"d5d6:151133066:"+
-				"a2a4:183872225:"+
-				"g2g4:135208177:"+
-				"g2h3:158328615:"+
-				"d5e6:203255191:"+
-				"c3b1:165673862:"+
-				"c3d1:165415976:"+
-				"c3a4:191260040:"+
-				"c3b5:166970874:"+
-				"e5d3:140737072:"+
-				"e5c4:145182844:"+
-				"e5g4:144264874:"+
-				"e5c6:169836097:"+
-				"e5g6:165477768:"+
-				"e5d7:193856446:"+
-				"e5f7:176070755:"+
-				"d2c1:158801466:"+
-				"d2e3:184114087:"+
-				"d2f4:165805784:"+
-				"d2g5:177883051:"+
-				"d2h6:161319567:"+
-				"e2d1:131348645:"+
-				"e2f1:174218453:"+
-				"e2d3:167737155:"+
-				"e2c4:170094798:"+
-				"e2b5:158033152:"+
-				"e2a6:130642863:"+
-				"a1b1:160413321:"+
-				"a1c1:159720218:"+
-				"a1d1:149265033:"+
-				"h1f1:154273720:"+
-				"h1g1:166086672:"+
-				"f3d3:164583144:"+
-				"f3e3:189120807:"+
-				"f3g3:198078522:"+
-				"f3h3:210100865:"+
-				"f3f4:181938761:"+
-				"f3g4:189789456:"+
-				"f3f5:226135507:"+
-				"f3h5:197839051:"+
-				"f3f6:146338070:"+
-				"e1d1:148612404:"+
-				"e1f1:139601450:"+
-				"e1g1:172063416:"+
-				"e1c1:148701308:";
-		HashMap <String,Long>map1 = getMap(all1);
-		HashMap <String,Long>map2 = getMap(all2);
-		for(String move:map1.keySet()) {
-			Long val1 = map1.get(move);
-			Long val2 = map2.get(move);
-			if(!val1.equals(val2)) {
-				System.out.println("move:"+move+": "+val1+"!="+val2);
-			}
-		}
-		
-	}
-	private static HashMap <String,Long> getMap(String all){
-
-		String[] strs = all.split(":");
-		HashMap <String,Long> map = new HashMap <String,Long> ();
-		
-		for(int i=0;i<strs.length/2;i++) {
-			map.put(strs[i*2],(Long)(long)Integer.parseInt(strs[i*2+1].trim()));
-			
-		}
-		return map;
-	}	
 }

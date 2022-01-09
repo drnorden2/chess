@@ -59,21 +59,13 @@ final public class Game {
 		return moveCounter;
 	}
 	
-	final public long perft(int deep, String [] debugMoves, HashMap<String,Long>refMap,boolean bulk) {
-		
-		hashMap = new HashMap[deep+1];
-		for(int i=0;i<hashMap.length;i++) {
-			hashMap[i]= new HashMap<Integer,Long>();
-		}
-		if(isHashed ) {
-			hashMap =null;
-		}
-		return hashedPerft(deep,deep,debugMoves,refMap, bulk) ;
+	final public long perft(int deep,boolean bulk) {
+		return hashedPerft(deep,deep,bulk) ;
 	}
 	int cacheHits=0;
 	boolean debugIgnore=false;
 
-	final private  long hashedPerft(int deep,int depth, String [] debugMoves, HashMap<String,Long>refMap,boolean bulk) {
+	final private  long hashedPerft(int deep,int depth, boolean bulk) {
 		if(deep==0) {
 			return 1;
 		}
@@ -86,34 +78,16 @@ final public class Game {
 		int level = depth - deep;
 		
 		for(int i=0;i<moves;i++) {
-			boolean printMove=false;
 			try {
-				if(!debugIgnore && level<debugMoves.length) {
-					String moveStr = board.getMoveStr(i);
-					if(debugMoves[level].equals(moveStr)) {
-						System.out.println("Move:" + moveStr+" ");
-						printMove=true;
-					}else {
-						if(debugMoves[level].startsWith(moveStr)){
-							System.out.println("Restarting w.Move:" + moveStr+" ");
-							printMove=true;
-							debugIgnore=true;
-						}else {
-							continue;
-						}
-					}
-				}
-				
+				String moveStr ="";
 				moveCounter++;
-				
-				board.doMove(i);
-				if(printMove) {
-					System.out.println(board);
-				}
+				if(level==0) {
+					moveStr = board.getMoveStr(i);
+				}				
 
-				int hash = this.board.getHash();
-					
+				board.doMove(i);
 			
+				int hash = this.board.getHash();
 				Long curMoveCount  = 0L;
 				if(!board.isGameOver()&& ((bulk && deep>2) || (!bulk && deep>1))){
 					if(isHashed) {
@@ -121,7 +95,13 @@ final public class Game {
 					}
 					if(curMoveCount==null ||!isHashed) {
 						curMoveCount=0L;
-						curMoveCount = hashedPerft(deep-1,depth,debugMoves, refMap,bulk);
+						curMoveCount = hashedPerft(deep-1,depth,bulk);
+
+						if(level==0) {
+							System.out.println(moveStr+" "+curMoveCount);
+						}				
+	
+						
 						if(isHashed) {	
 							hashMap[deep].put(hash, curMoveCount);
 						}
@@ -136,18 +116,6 @@ final public class Game {
 			
 				board.undoMove();
 				
-				if(debugMoves.length==level) {
-					String moveStr = board.getMoveStr(i);
-					if(refMap!=null) {
-						Long val = refMap.get(moveStr);
-						val= (val==null?0:val);
-						if(((long)val)!=curMoveCount) {
-							System.out.println("Mismatch for Move:"+moveStr+": (ref:"+val+")!=(cur:"+curMoveCount+")");
-							throw new RuntimeException("Mismatch for Move:"+moveStr+": (ref:"+val+")!=(cur:"+curMoveCount+")");
-						}
-					}
-					System.out.println(" "+moveStr+":"+ curMoveCount + "("+cacheHits+")");
-				}
 				moveCount +=curMoveCount;	
 			}catch(Exception e){
 				System.out.println("Error in Move:"+e);
