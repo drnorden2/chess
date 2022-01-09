@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 public class ContextLevel {
 	
+	private boolean lastLevel;
 	private Move lastMove =null;;
 
 	private final int[] fields = new int[64];
@@ -53,12 +54,14 @@ public class ContextLevel {
 	private int cursorFieldList=0;
 	private int cursorMoves=0;
 	
-	public ContextLevel(BBPosition position,int level) {
+	public ContextLevel(BBPosition position,int level, boolean lastLevel) {
 		this.position = position;
 		this.level = level;
+		this.lastLevel = lastLevel;
 		for(int i=0;i<64;i++) {
 			fieldList[i]=-1;
 		}
+		
 	}
 
 	

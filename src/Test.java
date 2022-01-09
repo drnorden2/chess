@@ -303,40 +303,6 @@ public class Test {
 	}
 	
 
-	private static void speedTest() {
-		long timeStamp =0;
-		double time =0;
-		int size = 10000;
-		
-		int [] array1  = new int[size];
-		Integer [] array2  = new Integer[size];
-		
-		timeStamp = System.currentTimeMillis();
-		for(int i=0;i<size;i++) {
-			for(int j=0;j<size;j++) {
-				array1[i]=i+j;
-				array1[i]=array1[i]*array1[i];
-			}
-		}
-		
-		time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
-		System.out.println("Run 1 in "  + time +"s");
-		
-		
-		
-		
-		timeStamp = System.currentTimeMillis();
-		for(int i=0;i<size;i++) {
-			for(int j=0;j<size;j++) {
-				array2[i]=i+j;
-				array2[i]=array2[i]*array2[i];
-			}
-		}
-		
-		time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
-		
-		
-		System.out.println("Run 2 in "  + time +"s");
-	}		
+	
 
 }
