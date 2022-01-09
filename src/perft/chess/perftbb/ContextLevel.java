@@ -137,41 +137,40 @@ public class ContextLevel {
 	public void addMoves(int pos, long idMask,int idTypeColor, Move[] moves) {
 		idsMask[pos]=idMask;
 		idsTypeColor[pos]=idTypeColor;
-		
+		/*
 		// test
-//		long bits =idMask;
-//		for(;moves[i]!=null;i++) {
-//			int cur = moves[i].getNewPos();
-//			bits&=~SHIFT[cur];
-//		}
-//			if((bits&SHIFT[cur])==0) {
-//				System.out.println("Bug @"+pos+"for TypeColor"+idTypeColor);
-//				out(bits);
-//				System.out.println("on i=="+i+" there is no move!");
-//				System.out.println(position);
-//				throw new RuntimeException("there you go");
-//			}else {
-//				bits&=~SHIFT[cur];
-//			}
-//		}
-//		if(bits!=0) {
-//			System.out.println("Bug @"+pos+"for TypeColor"+idTypeColor +"("+idMask+")");
-//			out(bits);
-//			System.out.println("There are moves remaining! deleted:"+i);
-//			out(position.allOfOneColor[0]);
-//			out(position.allOfOneColor[1]);
-//			
-//			throw new RuntimeException("there you go");
-//		
-//		}
+		int i=0;
+		long bits =idMask;
+		for(;moves[i]!=null;i++) {
+			int cur = moves[i].getNewPos();
+			if((bits&SHIFT[cur])==0) {
+				System.out.println("Bug @"+pos+"for TypeColor"+idTypeColor);
+				out(bits);
+				System.out.println("on i=="+i+" there is no move!");
+				System.out.println(position);
+				throw new RuntimeException("there you go");
+			}else {
+				bits&=~SHIFT[cur];
+			}
+		}
+		if(bits!=0) {
+			System.out.println("Bug @"+pos+"for TypeColor"+idTypeColor +"("+idMask+")");
+			out(bits);
+			System.out.println("There are moves remaining! deleted:"+i);
+			out(position.allOfOneColor[0]);
+			out(position.allOfOneColor[1]);
+			
+			throw new RuntimeException("there you go");
 		
+		}
+		*/
 		
 		Move[]newMoves = allMoves[pos];
-		int i=0;
-		for(;moves[i]!=null;i++) {
-			newMoves[i]=moves[i];
+		int ii=0;
+		for(;moves[ii]!=null;ii++) {
+			newMoves[ii]=moves[ii];
 		}
-		newMoves[i]=null;
+		newMoves[ii]=null;
 
 		
 		if(idMask!=0L) {
@@ -205,24 +204,24 @@ public class ContextLevel {
 		this.limit = limit;
 		
 		resetIterator();
-		
-//		for(int i=0;i<=limit;i++) {
-//			if(allMoves[fieldList[cursorFieldList]][cursorMoves]==null) {
-//				cursorMoves=0;
-//				cursorFieldList++;
-//			}
-//			if( i==limit) {//last i is just a check and only a cursor move in case of null
-//				System.out.println("Counter"+i+"/"+limit);
-//				break;
-//			}
-//			if(fieldList[cursorFieldList]==-1 || allMoves[fieldList[cursorFieldList]][cursorMoves]==null) {
-//				throw new RuntimeException("Limit Exception (fieldList["+cursorFieldList+"]=="+fieldList[cursorFieldList]+")at level:"+level+": Counter"+i+"/"+limit);
-//			}
-//			cursorMoves++;
-//			
-//		}
-//		resetIterator();
-	
+		/*
+		for(int i=0;i<=limit;i++) {
+			if(allMoves[fieldList[cursorFieldList]][cursorMoves]==null) {
+				cursorMoves=0;
+				cursorFieldList++;
+			}
+			if( i==limit) {//last i is just a check and only a cursor move in case of null
+				System.out.println("Counter"+i+"/"+limit);
+				break;
+			}
+			if(fieldList[cursorFieldList]==-1 || allMoves[fieldList[cursorFieldList]][cursorMoves]==null) {
+				throw new RuntimeException("Limit Exception (fieldList["+cursorFieldList+"]=="+fieldList[cursorFieldList]+")at level:"+level+": Counter"+i+"/"+limit);
+			}
+			cursorMoves++;
+			
+		}
+		resetIterator();
+		*/
 	}
 	
 	

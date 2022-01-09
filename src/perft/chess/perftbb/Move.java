@@ -119,6 +119,7 @@ public class Move implements IndexedElement  {
 		this.isKingSensing = (moveType==MOVE_TYPE_KING_SENSING);
 		this.isRochade = this.dirOfRochade!=0;
 		this.notation = generateNotation();
+		
 		this.isRochadeDisabler = (typeColor == PIECE_TYPE_WHITE_ROOK&&(oldPos==_A1 ||oldPos==_H1))||
 				(typeColor == PIECE_TYPE_BLACK_ROOK&&(oldPos==_A8 ||oldPos==_H8))||
 				(typeColor == PIECE_TYPE_WHITE_KING&&(oldPos==_E1))||

@@ -107,7 +107,7 @@ public class BBMoveManager {
 										int oldPos = getPosForFileRank(file,rank);
 										int newPos = getPosForFileRank(file+2*dir,rank);
 										int rookPos = getPosForFileRank(file+((i==0)?3:-4),rank);
-										curMoves[i][1] = new Move(pieceType,((pieceType <<2) + color) << 6,color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
+										curMoves[i][1] = new Move(pieceType,((pieceType <<1) + color) << 6,color,CALLBACK_TYPE_ROCHADE_TEST , oldPos,newPos, MOVE_TYPE_ROCHADE, 0,0,-1,rookPos, dir);
 									}
 								}
 								break;
@@ -158,7 +158,7 @@ public class BBMoveManager {
 						if(cb == CALLBACK_TYPE_BEAT_RAY && last) {
 							cb = CALLBACK_TYPE_BEAT_ONE;
 						}
-						Move curMove = new Move(pieceType,(pieceType * 2 + color) << 6,color,cb ,oldPos, newPos, moveType,dirX,dirY); ;				
+						Move curMove = new Move(pieceType,((pieceType << 1) + color) << 6,color,cb ,oldPos, newPos, moveType,dirX,dirY); ;				
 						curMoves[ray+rayOffset][cursor++] = curMove;
 					} else {
 						break;

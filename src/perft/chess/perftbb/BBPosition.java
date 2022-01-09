@@ -24,12 +24,12 @@ public class BBPosition implements Position {
 	public final long[] moveMasks = new long[64];
 	public final long[] tCallBacks = new long[64];
 	
-	public final long[] allOfOneColor = new long[2];//@todo WTF -stack
+	public final long[] allOfOneColor = new long[2];
 	public final long[] kings = new long[2];
 	public final long[] pawns = new long[2];
 	public final int moveCount [] = new int[2];
 	public long untouched=0;
-	public long enPassanteMask=0;//@todo WTF -stack
+	public long enPassanteMask=0;
 
 		
 	public BBAnalyzer analyzer = new BBAnalyzer(this);
@@ -411,11 +411,7 @@ public class BBPosition implements Position {
 			}
 		}
 	}
-	int counter=0;
 	private void updatePawnPseudoMoves(int color) {
-		if(counter==99) {
-			//System.out.println("WTF");
-		}
 		//System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1counter"+counter++);
 		ContextLevel context = this.contextLevels[level];
 		ContextLevel oldContext = this.contextLevels[level-1];
@@ -566,10 +562,6 @@ public class BBPosition implements Position {
 
 
 	private void checkRochade(ContextLevel context, Move move) {
-		if(((untouched & MASK_NOT_ALL_ROOKS) ==0 || (untouched & MASK_ALL_ROOKS)==0)) {
-			untouched = 0L;
-			return;
-		}
 		
 		long oldE1Mask=this.moveMasks[_E1];
 		long oldCastleMovesKQ=oldE1Mask&MASK_CASTLE_KING_KQkq;
@@ -643,7 +635,12 @@ public class BBPosition implements Position {
 					this.moveCount[COLOR_BLACK]+=delta;
 				}
 			}
-		}	
+		}
+		if(((untouched & MASK_NOT_ALL_ROOKS) ==0 || (untouched & MASK_ALL_ROOKS)==0)) {
+			untouched = 0L;
+			return;
+		}
+		
 	}
 	
 	
@@ -713,8 +710,6 @@ public class BBPosition implements Position {
   			int pos = Long.numberOfTrailingZeros(bits);
 			bits &= bits - 1;
 			long moveMask = this.moveMasks[pos];
-			counter+=Long.bitCount(moveMask);
-			////System.out.println(i+": At pos:"+pos+":"+Long.bitCount(moveMask));
 			if(moveMask==0) {
 				continue;
 			}
@@ -731,7 +726,6 @@ public class BBPosition implements Position {
 			}
 		}
   		context.setLimit(moveCount[colorAtTurn]);
-  						
   	}
 
 

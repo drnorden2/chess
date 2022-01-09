@@ -31,14 +31,19 @@ public class Test {
 
 	public static void main(String[] args) {
 		ChessGameFactory.bitBoard=true;
+		//debug (6,1,"r3k2r/8/8/8/8/8/8/R3K2R w KQkq -");
+		
+		
+		//test (5,167815740,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - -");
 		//test (5,202355867,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		//test(4, 120921506,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+		
+		test(6, 120921506,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
 		//debug(1, 16,"3qk3/8/8/8/8/8/8/3QK4 b - - 0 1");
 		//test(6, 120921506,"r7/pp6/8/8/8/8/PP6/R7 b - - 0 1");
 					
 		//test(2, 1890,"q7/8/8/8/8/8/8/7Q w - - 0 1");
 	
-		test(6, 120921506,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+		//test(6, 120921506,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
 		
 		//test(5, 1890,"k7/8/8/8/8/8/8/7K b - - 0 1");
 		
