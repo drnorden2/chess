@@ -17,6 +17,7 @@ public class ContextLevel {
 	
 	private final long[] allOfOneColor = new long[2];//@todo WTF -stack
 	private final long[] kings = new long[2];
+	private final long[] knights = new long[2];
 	private final long[] pawns = new long[2];
 	private final int moveCount [] = new int[2];
 	private long untouched=0;
@@ -79,6 +80,8 @@ public class ContextLevel {
 		for(int i=0;i<2;i++) {
 			this.allOfOneColor[i]=position.allOfOneColor[i];
 			this.kings[i]=position.kings[i];
+			this.knights[i]=position.knights[i];
+			
 			this.pawns[i]=position.pawns[i];
 			this.moveCount[i]=position.moveCount[i];
 		}		
@@ -99,6 +102,7 @@ public class ContextLevel {
 		
 		System.arraycopy(this.tCallBacks, 0, position.tCallBacks, 0, 64);
 		
+		
 		int count2 = Long.bitCount(fcmTouched);
 		for(int i=0;i<count2;i++) {
 			int pos = Long.numberOfTrailingZeros(fcmTouched);
@@ -111,6 +115,8 @@ public class ContextLevel {
 		for(int i=0;i<2;i++) {
 			position.allOfOneColor[i]=this.allOfOneColor[i];
 			position.kings[i]=this.kings[i];
+			position.knights[i]=this.knights[i];
+			
 			position.pawns[i]=this.pawns[i];
 			position.moveCount[i]=this.moveCount[i];
 		}
@@ -131,13 +137,18 @@ public class ContextLevel {
 		fieldList[fieldCounter++]=pos;
 		int retVal = Long.bitCount(idMask);
 		for(int i=0;i<retVal;i++) {
-			moves[i]=rawMoves[Long.numberOfTrailingZeros(idMask)];
+			int mPos = Long.numberOfTrailingZeros(idMask);
+			moves[i]=rawMoves[mPos];
+			if(moves[i]==null) {
+				throw new RuntimeException("There was no move at pos("+mPos+") for mask:\n"+toStr(idsMask[pos]));
+			}
 			idMask&= idMask- 1;			
 		}
 		moves[retVal]=null;//stopMove
 	}
-	
+	int counter =0;
 	public void addMoves(int pos, long idMask,int idTypeColor, Move[] moves) {
+		//System.out.println("Counter:"+(++counter));
 		idsMask[pos]=idMask;
 		idsTypeColor[pos]=idTypeColor;
 		/*
@@ -149,9 +160,9 @@ public class ContextLevel {
 			if((bits&SHIFT[cur])==0) {
 				System.out.println("Bug @"+pos+"for TypeColor"+idTypeColor);
 				out(bits);
-				System.out.println("on i=="+i+" there is no move!");
-				System.out.println(position);
-				throw new RuntimeException("there you go");
+				out(position._occ);
+				System.out.println("on i=="+cur+" there is no move!");
+			//	throw new RuntimeException("there you go");
 			}else {
 				bits&=~SHIFT[cur];
 			}
@@ -163,7 +174,7 @@ public class ContextLevel {
 			out(position.allOfOneColor[0]);
 			out(position.allOfOneColor[1]);
 			
-			throw new RuntimeException("there you go");
+			//throw new RuntimeException("there you go");
 		
 		}
 		*/
@@ -214,7 +225,7 @@ public class ContextLevel {
 				cursorFieldList++;
 			}
 			if( i==limit) {//last i is just a check and only a cursor move in case of null
-				System.out.println("Counter"+i+"/"+limit);
+				//System.out.println("Counter"+i+"/"+limit);
 				break;
 			}
 			if(fieldList[cursorFieldList]==-1 || allMoves[fieldList[cursorFieldList]][cursorMoves]==null) {
@@ -235,6 +246,7 @@ public class ContextLevel {
 		if(index ==lastIndex) {
 			return lastMove;
 		}
+		
 		if(index>=limit) {
 			//@todo WTF
 			throw new RuntimeException("Index("+index+")Off Limit:"+limit +"in level:"+level);
@@ -245,6 +257,7 @@ public class ContextLevel {
 				cursorMoves=0;
 				cursorFieldList++;
 				int fieldCursor = fieldList[cursorFieldList];
+				
 				if(fieldCursor==-1) {
 					System.out.println("WTF FieldCursor -1 for index:"+index);
 				}

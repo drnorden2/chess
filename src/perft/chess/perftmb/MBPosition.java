@@ -16,8 +16,8 @@ import perft.chess.core.datastruct.ArrayStack;
 
 
 public class MBPosition implements Position{
+	private int totalCount;
 	private MBAnalyzer analyzer;
-	public static int wtfIteration  =0;	
 	public static MBPosition position;
 	public LegalMoveTester legalMoveTest;
 	
@@ -131,7 +131,7 @@ public class MBPosition implements Position{
 		//O.EXIT("initialEval");
 		int level = getLevel();
 		this.allMovesLists.get(level).reset();
-		
+		this.checkLegalMoves();
 		
 	}
 	
@@ -175,13 +175,14 @@ public class MBPosition implements Position{
 	boolean experimental = false;
 
 	public void setMove(int index) {
-		wtfIteration++;
+		totalCount++;
 		Move move= getMove(index);
 		/*
 				
 		//String start =this.toString();
 		if(this.wtfIteration==3 ) {
-			System.out.println("WTF - Move("+ this.wtfIteration+ "):"+move);
+			System.out.println("
+ - Move("+ this.wtfIteration+ "):"+move);
 			String cur  = this.toString();
 			System.out.println(cur);
 		}
@@ -424,7 +425,7 @@ public class MBPosition implements Position{
 	
 	@Override
 	public void checkLegalMoves() {
-		this.legalMoveTest.checkLegalMovesAll();
+		this.legalMoveTest.checkLegalMovesOpt();
 	}
 	public int[] getAttacks (int color){
 		int[] attacks = new int[64];
@@ -432,5 +433,9 @@ public class MBPosition implements Position{
 			attacks[j] = this.attackTable[color].get(j);
 		}
 		return attacks;
+	}
+	@Override
+	public int getTotalCount() {
+		return totalCount;
 	}
 }

@@ -31,13 +31,19 @@ public class Test {
 
 	public static void main(String[] args) {
 		ChessGameFactory.bitBoard=true;
+		//test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+		
+		
 		//debug (6,1,"r3k2r/8/8/8/8/8/8/R3K2R w KQkq -");
 		
+		//debug(4,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R4K1R b kq - 0 1");
 		
 		//test (5,167815740,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - -");
 		//test (5,202355867,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		
-		test(6, 120921506,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
+		//debug(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		//debug(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q2/PPPBBPKP/R6R w kq - 0 1");
+		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
 		//debug(1, 16,"3qk3/8/8/8/8/8/8/3QK4 b - - 0 1");
 		//test(6, 120921506,"r7/pp6/8/8/8/8/PP6/R7 b - - 0 1");
 					
@@ -49,10 +55,6 @@ public class Test {
 		
 		
 		
-		if(true)return;
-		debug(1, 4732,"k7/pppppppp/8/8/8/8/PPPPPPPP/7K b - - 0 1");
-		test(3, 8902,"c");
-		test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		
 		
 		
@@ -69,20 +71,20 @@ public class Test {
 		//test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		//test(6, 1134888, "3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1");
 		//test(4, 10276, "8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1");
-		if(true)return;
+		//if(true)return;
 		
 		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-	//	test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		//	test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		
 		//test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		
-		test(2, 3, "4PKR1/4PPP1/8/8/8/r7/8/7k w - -");
+		//test(2, 3, "4PKR1/4PPP1/8/8/8/r7/8/7k w - -");
 		
 		test(1, 2, "7K/7N/8/8/8/8/8/k6r w - -");
 		
 		test(1, 2, "7K/8/8/8/8/8/8/k6r w - -");
 		
-		test(2, 2, "4PKR1/4PPP1/8/8/8/8/8/7k w - - ");		
+		//test(2, 2, "4PKR1/4PPP1/8/8/8/8/8/7k w - - ");		
 
 		test(4, 2, "k7/Pp6/1P6/8/1p6/6p1/2P3Pp/7K w - - 0 1");
 
@@ -92,7 +94,9 @@ public class Test {
 		
 		test(2, 4, "k7/Pp6/1P6/8/1p6/6p1/2P3Pp/7K w - - 0 1");
 
+		
 		test(1, 9, "2r5/3pk3/8/2P5/8/2K5/8/8 w - - 5 4");
+		
 		
 		test(1, 8, "8/8/8/2k5/2pP4/8/B7/4K3 b - d3 0 3");
 
@@ -114,9 +118,9 @@ public class Test {
 
 		test(2, 27, "8/P1k5/K7/8/8/8/8/8 w - - 0 1");
 		
-		test(3, 24,"4PKR1/4PPP1/8/8/8/8/7n/7k w - -");
+		//test(3, 24,"4PKR1/4PPP1/8/8/8/8/7n/7k w - -");
 		
-		test(3, 33,"4PKR1/4PPP1/8/8/8/7n/8/7k w - -");
+		//test(3, 33,"4PKR1/4PPP1/8/8/8/7n/8/7k w - -");
 		
 		test(1, 39, "rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w KQ - 3 9");
 		
@@ -150,7 +154,8 @@ public class Test {
 
 		test(5, 18135, "8/P1k5/K7/8/8/8/8/8 w - - 0 1");
 
-		test(4, 23527, "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1");
+
+		debug(4, 23527, "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1");
 
 		test(6, 92683, "8/P1k5/K7/8/8/8/8/8 w - - 0 1");
 		
@@ -164,11 +169,13 @@ public class Test {
 				
 		test(6, 803711, "3k4/8/8/8/8/8/8/R3K3 w Q - 0 1");
 		
-		test(5, 1004658, "8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1");
+		debug(5, 1004658, "8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1");
 		
 		test(4, 1720476, "r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1");
 		
 		test(6, 1440467, "8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1");
+		
+		
 			
 		test(6, 1134888, "3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1");
 	
@@ -189,10 +196,10 @@ public class Test {
 	private static void debug(String [] debugMoves, HashMap<String,Long>refMap,int depth, long nodes, String fen) {
 		//O.N=false;
 		ChessGameFactory.bitBoard=false;
-		Game reference = new Game(factory,fen);
+		Game reference = new Game(factory,fen,depth);
 		
 		ChessGameFactory.bitBoard=true;
-		Game game = new Game(factory,fen);
+		Game game = new Game(factory,fen,depth);
 		
 		System.out.println("After loading:\n"+game);
 		int hash1 = game.getBoard().getHash();
@@ -221,10 +228,12 @@ public class Test {
 		int hash2= game.getBoard().getHash();
 		System.out.println("  Hashes:"+hash1+"/"+hash2);
 		System.out.println("");
+		/*
 		System.out.println("  Callbacks:");
 		System.out.println("  Reg:   "+MBPosition.registerCount+":  ("+(int)(MBPosition.registerCount/game.getMoveCounter())+"/move)  ("+((int)((MBPosition.registerCount/(time*10))/10))+"/s)");
 		System.out.println("  UnReg: " +MBPosition.unRegisterCount+":  ("+(int)(MBPosition.unRegisterCount/game.getMoveCounter())+"/move)  ("+((int)((MBPosition.unRegisterCount/(time*10))/10))+"/s)");
 		System.out.println("");
+		*/
 		System.out.println("  Nodes (bulk: "+useBulk+"):");
 		System.out.println("  Real Nodes: "+game.getMoveCounter()+":  "+(int)(game.getMoveCounter()/time)+"/s");
 		System.out.println("  Bulk Nodes: "+games +":  "+(int)(games/time)+"/s");
@@ -247,11 +256,13 @@ public class Test {
 	}
 	private static void test(int depth, long nodes, String fen) {
 		//O.N=false;
-		Game game = new Game(factory,fen);
-		
-		System.out.println("After loading:\n"+game);
+		System.out.println("Loading:"+fen+":");
+		Game game = new Game(factory,fen,depth);
+		System.out.println(game);
 		int hash1 = game.getBoard().getHash();
+		
 		System.out.println("DIE SPIELE SIND ERÖFFNET!");
+		
 		MBPosition.registerCount =0;
 		MBPosition.unRegisterCount =0;
 		
@@ -264,23 +275,29 @@ public class Test {
 		}else {
 			headLine +="Real Counting";
 		}
+		String boardStr = game.toString();
+		
 		games = game.perft(depth,useBulk);
+		
+		System.out.println(headLine);
+		System.out.print(boardStr);
+		
 		//games = game.bulkPerft(depth);
 		
 		double time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
 		boolean correct = games == nodes;
 
-		System.out.println(headLine);
-		System.out.print("game\n"+game.toString());
 		System.out.println("");
 		System.out.println("  Delta:"+MBPosition.counter);
 		int hash2= game.getBoard().getHash();
 		System.out.println("  Hashes:"+hash1+"/"+hash2);
 		System.out.println("");
+		/*
 		System.out.println("  Callbacks:");
 		System.out.println("  Reg:   "+MBPosition.registerCount+":  ("+(int)(MBPosition.registerCount/game.getMoveCounter())+"/move)  ("+((int)((MBPosition.registerCount/(time*10))/10))+"/s)");
 		System.out.println("  UnReg: " +MBPosition.unRegisterCount+":  ("+(int)(MBPosition.unRegisterCount/game.getMoveCounter())+"/move)  ("+((int)((MBPosition.unRegisterCount/(time*10))/10))+"/s)");
 		System.out.println("");
+		*/
 		System.out.println("  Nodes (bulk: "+useBulk+"):");
 		System.out.println("  Real Nodes: "+game.getMoveCounter()+":  "+(int)(game.getMoveCounter()/time)+"/s");
 		System.out.println("  Bulk Nodes: "+games +":  "+(int)(games/time)+"/s");
@@ -301,8 +318,4 @@ public class Test {
 			System.exit(-1);
 		}
 	}
-	
-
-	
-
 }

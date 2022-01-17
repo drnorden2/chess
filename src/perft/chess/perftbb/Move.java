@@ -261,7 +261,7 @@ public class Move implements IndexedElement  {
 		int f2 = getFileForPos(newPos);
 		String promotion = "";
 		if(this.getPromotePieceType()!=-1) {
-			promotion += getPieceCharForTypeColor(this.getPromotePieceType());
+			promotion += (""+getPieceCharForTypeColor(this.getPromotePieceType())).toLowerCase();
 		}
 		return ""+((char)('a'+f1))  +""+ (1+r1)+""
 				+((char)('a'+f2))  +""+ (1+r2)+promotion+"";

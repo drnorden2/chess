@@ -3,6 +3,8 @@ package perft.chess;
 public interface Position {
 
 	public int getMoveCount();
+	
+	public int getTotalCount();
 
 	public void unSetMove(int move);
 

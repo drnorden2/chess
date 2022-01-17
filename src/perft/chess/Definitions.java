@@ -1,13 +1,5 @@
 package perft.chess;
 
-import static perft.chess.Definitions.MASK_1_RANK;
-import static perft.chess.Definitions.MASK_8_RANK;
-import static perft.chess.Definitions.PIECE_TYPE_BISHOP;
-import static perft.chess.Definitions.PIECE_TYPE_KING;
-import static perft.chess.Definitions.PIECE_TYPE_KNIGHT;
-import static perft.chess.Definitions.PIECE_TYPE_PAWN;
-import static perft.chess.Definitions.PIECE_TYPE_QUEEN;
-import static perft.chess.Definitions.PIECE_TYPE_ROOK;
 
 import perft.chess.core.datastruct.BitBoard;
 
@@ -169,6 +161,9 @@ public class Definitions {
 	
 	
 	
+	public final static long[] MASK_KING_X= new long[]{
+			MASK_E1,
+			MASK_E8};
 	
 	public final static long[] MASK_X_RANK = new long[]{
 			MASK_1_RANK,
@@ -365,8 +360,22 @@ public class Definitions {
 	public static final int[] PIECE_TYPE_X_KING = new int[] {PIECE_TYPE_BLACK_KING,PIECE_TYPE_WHITE_KING};
 	
 	public static final long[] SHIFT = getShifts();
+	public static final long[] NOT_SHIFT = not(SHIFT);
+	public static final long EMPTY_MASK =0L;
+	public static final long FULL_MASK =~EMPTY_MASK;
+	
+			
+	
+	public static final long[] KING_MASKS = getKingMasks();
+	public static final long[] QUEEN_MASKS = getQueenMasks();
+	public static final long[] KNIGHT_MASKS = getKnightMasks();
+	public static final long[][] LINE_FOR_2_POINTS=getLineMasksFor2Points();
+	public static final long[][] NOT_LINE_FOR_2_POINTS=not(LINE_FOR_2_POINTS);
+	public static final long[][] CHECK_MASKS=getCheckMask();
+	public static final long[] ENP_PAWN_MASK_FOR_X = getEnpassantePawnPos();
 	
 	public static final String CHESS_MAN_CHARS = "pknbrqPKNBRQ";
+	
 	public static char getPieceCharForTypeColor(int typeColor) {
 		//PIECE * 2 + COLOR) * 64
 		int color = typeColor >> 6 & 1;
@@ -376,6 +385,24 @@ public class Definitions {
 	public static char getPieceCharForPieceType(int type) {
 		return CHESS_MAN_CHARS.charAt(type);
 	}
+	
+	private static long[][] not(long[][] input){
+		long[][]output = new long[64][64];
+		for (int i=0;i<64;i++) {
+			for(int j=0;j<64;j++) {
+				output[i][j]=~input[i][j];
+			}
+		}
+		return output;
+	}
+	private static long[] not(long[] input){
+		long[]output = new long[64];
+		for (int i=0;i<64;i++) {
+			output[i]=~input[i];
+		}
+		return output;
+	}
+	
 	private static long[] getAllOneUPandDown() {
 		long[] all = new long[64];
 		for(int i=0;i<8;i++) {
@@ -398,4 +425,160 @@ public class Definitions {
 		}
 		return shifts;
 	}
+	
+	private static long[] getQueenMasks() {
+		long[] all = new long[64];
+		for(int i=0;i<64;i++) {
+			long result = 0L;
+			int rk = i / 8, fl = i % 8, r, f;
+			for (r = rk + 1; r <= 7; r++)
+				result |= SHIFT[fl + r * 8];
+			for (r = rk - 1; r >= 0; r--)
+				result |= SHIFT[fl + r * 8];
+			for (f = fl + 1; f <= 7; f++)
+				result |= SHIFT[f + rk * 8];
+			for (f = fl - 1; f >= 0; f--)
+				result |= SHIFT[f + rk * 8];
+			
+			for (r = rk + 1, f = fl + 1; r <= 7 && f <= 7; r++, f++)
+				result |= SHIFT[f + r * 8];
+			for (r = rk + 1, f = fl - 1; r <= 7 && f >= 0; r++, f--)
+				result |= SHIFT[f + r * 8];
+			for (r = rk - 1, f = fl + 1; r >= 0 && f <= 7; r--, f++)
+				result |= SHIFT[f + r * 8];
+			for (r = rk - 1, f = fl - 1; r >= 0 && f >= 0; r--, f--)
+				result |= SHIFT[f + r * 8];
+			all[i]=result;
+		}			
+		
+		return all;
+		
+	}	
+	
+	
+	
+	
+	private static long[][] getLineMasksFor2Points(){
+		long[][] masks = new long[64][64];
+		for(int i=0;i<64;i++) {
+			for(int j=0;j<64;j++) {
+				if(i==j)continue;
+				long mask =0;
+				int ri = i / 8, fi = i % 8;
+				int rj = j / 8, fj = j % 8;
+				int rD = ri-rj;
+				int fD = fi-fj,f,r;
+				if((rD!=0 && fD!=0) && (rD*rD!=fD*fD))continue;
+				rD=(int)Math.signum(rD);
+				fD=(int)Math.signum(fD);
+				for (r = ri ,  f =fi;r >=0 && r <= 7 && f >=0 && f <= 7 ; r+=rD, f+=fD) {
+					mask|= SHIFT[f + r * 8];
+				}
+				rD *= -1;
+				fD *= -1;
+				for (r = ri ,  f =fi;r >=0 && r <= 7 && f >=0 && f <= 7 ; r+=rD, f+=fD) {
+					mask|= SHIFT[f + r * 8];
+				}
+				masks[i][j]=mask;//&~SHIFT[i]&~SHIFT[j];
+			}
+		
+		}
+		return masks;
+	}
+
+	private static long[] getKnightMasks() {
+		long[] all = new long[64];
+		int[][] moves =new int[][]{{2,1},{2,-1},{-2,1},{-2,-1},{1,2},{1,-2},{-1,2},{-1,-2}};
+		
+		for(int i=0;i<64;i++) {
+			int ri = i / 8, fi = i % 8;
+			long result=0;
+			for(int m=0;m<moves.length;m++) {
+				int r= ri+moves[m][0];
+				int f= fi+moves[m][1];
+				if(r <= 7 && r >= 0 && f <= 7 && f >= 0) {
+					result|=SHIFT[r*8+f];
+				}
+			}
+			all[i]=result;
+		}			
+		return all;
+		
+	}	
+	
+	
+	private static long[][] getCheckMask() {
+		long[][] checkMasks = new long[64][64];
+		
+		for(int i=0;i<64;i++) {
+			for(int j=0;j<64;j++) {
+				long result =SHIFT[j];
+				if(i!=j && (QUEEN_MASKS[i]&result)!=EMPTY_MASK) {
+					
+					int cur = j;
+					int ri = i / 8, fi = i % 8;
+					int rj = j / 8, fj = j % 8;
+					int rD = ri-rj;
+					int fD = fi-fj;
+					if((rD!=0 && fD!=0) && (rD*rD!=fD*fD))continue;
+					rD=(int)Math.signum(rD);
+					fD=(int)Math.signum(fD);
+
+					for (int r = rj, f =fj;r >=0 && r <= 7 && f >=0 && f <= 7 ; r+=rD, f+=fD) {
+						cur = f + r * 8;
+						if(cur==i) {
+							break;
+						}else {
+							result|= SHIFT[cur];
+						}
+						
+					}
+				}
+				checkMasks[i][j]=result;
+			}
+		}
+		return checkMasks;
+	}
+	
+	private static long[] getEnpassantePawnPos() {
+		long[] notEnpPawnMask = new long[64];
+		for(int i=0;i<64;i++) {
+			int file = getFileForPos(i);
+			int rank = getRankForPos(i);
+			if(rank==_3||rank==_6) {
+				if(rank==_3) {
+					rank =_4;
+				}
+				if(rank ==_6) {
+					rank =_5;
+				}
+				notEnpPawnMask[i]=SHIFT[getPosForFileRank(file,rank)];
+			}else {
+				notEnpPawnMask[i]= EMPTY_MASK;
+			}
+			
+		}
+		return notEnpPawnMask;
+	}
+		
+	private static long[] getKingMasks() {
+		long[] kingMasks = new long[64];
+		for(int i=0;i<64;i++) {
+			long mask = 0;
+			int fi = getFileForPos(i);
+			int ri = getRankForPos(i);
+			int[][] dirs = {{0,1},{0,-1},{1,0},{-1,0},{1,1},{1,-1},{-1,1},{-1,-1}};
+			for(int j=0;j<dirs.length;j++) {
+				int f = fi+dirs[j][0];
+				int r = ri+dirs[j][1];
+				if(f>=0&&f<=7&&r>=0&&r<=7) {
+					mask|=SHIFT[getPosForFileRank(f,r)];
+				}
+			}
+			kingMasks[i]=mask;
+			//out(kingMasks[i]);
+		}
+		return kingMasks;
+	}
+
 }

@@ -179,15 +179,13 @@ public class Fen {
 		
 		if(!"-".equals(enpassant) ){
 			int file = enpassant.charAt(0)-'a';
-			int rank = 7 - (enpassant.charAt(1)-'1'); 
+			int rank = enpassant.charAt(1)-'1'; 
 			enpassantePos = getPosForFileRank(file,rank) ;
 			position.initialEnPassantePos(enpassantePos);
 		}
 		
 		position.initialEval();
-		position.checkGameState(position.getColorAtTurn());
-		position.checkLegalMoves();
-
+		
 	}
 
 	

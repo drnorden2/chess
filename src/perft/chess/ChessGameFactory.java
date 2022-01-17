@@ -9,11 +9,11 @@ import perft.chess.perftmb.MBPosition;
 public class ChessGameFactory implements GameFactory {
 	public static boolean bitBoard = true;
 	@Override
-	public Board getInitialBoard() {
-		return new ChessBoard(bitBoard?new BBPosition():new MBPosition());
+	public Board getInitialBoard(int depth) {
+		return new ChessBoard(bitBoard?new BBPosition(depth):new MBPosition());
 	}
-	public Board getSpecificBoard(String FEN) {
-		return new ChessBoard(bitBoard?new BBPosition():new MBPosition(), FEN);
+	public Board getSpecificBoard(String FEN,int depth) {
+		return new ChessBoard(bitBoard?new BBPosition(depth):new MBPosition(), FEN);
 	}
 	@Override
 	public BoardUI getBoardUI() {

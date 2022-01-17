@@ -18,9 +18,9 @@ final public class Game {
 	private static long moveCounter=0;
 	private  HashMap<Integer,Long>[]  hashMap;
 	
-	public Game(GameFactory chessFactory,String fen) {
+	public Game(GameFactory chessFactory,String fen,int depth) {
 		this(
-				chessFactory.getSpecificBoard(fen),
+				chessFactory.getSpecificBoard(fen,depth),
 				chessFactory.getPlayer(PlayerType.RANDOM),
 				chessFactory.getPlayer(PlayerType.RANDOM),
 				chessFactory.getBoardUI()
@@ -31,9 +31,9 @@ final public class Game {
 		return board;
 	}
 	
-	public Game(GameFactory chessFactory) {
+	public Game(GameFactory chessFactory,int depth) {
 		this(
-				chessFactory.getInitialBoard(),
+				chessFactory.getInitialBoard(depth),
 				chessFactory.getPlayer(PlayerType.RANDOM),
 				chessFactory.getPlayer(PlayerType.RANDOM),
 				chessFactory.getBoardUI()
@@ -153,6 +153,11 @@ final public class Game {
 	}
 	
 	final public  long debugPerft(Board ref, int deep,ArrayStack<String> moveList) {
+		if ( deep ==0) {
+			return 1;
+		}
+		
+		
 		boolean base =false;
 		if(moveList==null) {
 			moveList = new ArrayStack<String>(new String[50]);
@@ -160,10 +165,12 @@ final public class Game {
 		}
 		long moveCount=0;
 		int moves = board.getMoves();
+		
 		int other = ref.getMoves();
 		
 		 
 		if(moves!=other /*|| !equal(aW,bW)||!equal(aB,bB)*/) {
+			System.out.println("Move mismatch:"+moves+" vs"+other +" in iteration:"+board.getTotalCount());
 			for(int i=0;i<moveList.size();i++) {
 				System.out.println((i+1)+":"+moveList.get(i));
 			}
@@ -176,9 +183,6 @@ final public class Game {
 			System.exit(-1);
 		}
 		
-		if ( deep ==0) {
-			return 1;
-		}
 		for(int i=0;i<moves;i++) {
 			String moveStr = board.getMoveStr(i);
 			// Patch:

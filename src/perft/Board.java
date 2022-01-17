@@ -17,7 +17,6 @@ abstract public class Board {
 	}
 	
 	
-	
 	public final int getMovesPlayed() {
 		return movesPlayed;
 	}
@@ -61,6 +60,8 @@ abstract public class Board {
 	abstract public int getHash();
 	abstract public boolean isWon();
 	abstract public void setMove(int move);
+	abstract public int getTotalCount();
+
 	public void setMoveByMoveStr(String notation) {
 		int count = this.getMoves();
 		for(int i=0;i<count;i++) {

@@ -59,4 +59,8 @@ public class ChessBoard extends Board{
 	public int getHash() {
 		return position.getHash();
 	}
+	@Override
+	public int getTotalCount() {
+		return position.getTotalCount();
+	}
 }
