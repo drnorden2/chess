@@ -30,7 +30,10 @@ public class Test {
 	private static boolean useBulk = true;
 
 	public static void main(String[] args) {
-		ChessGameFactory.bitBoard=false;
+		ChessGameFactory.bitBoard=true;
+		//test(6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		debug(2, 1797,"r4knr/p1ppqPb1/bn4p1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQ - 0 1");
+
 		test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 		if(true) return;
 				

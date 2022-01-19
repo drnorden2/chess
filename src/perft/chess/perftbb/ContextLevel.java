@@ -20,10 +20,10 @@ public class ContextLevel {
 	private final long[] knights = new long[2];
 	private final long[] pawns = new long[2];
 	private final int moveCount [] = new int[2];
-	private long untouched=0;
-	private long enPassanteMask=0;//@todo WTF -stack
+	private long untouched=EMPTY_MASK;
+	private long enPassanteMask=EMPTY_MASK;//@todo WTF -stack
 
-	private long fcmTouched=0;
+	private long fcmTouched=EMPTY_MASK;
 
 	public long[] _mLeft=new long[2];
 	public long[] _mRight=new long[2];
@@ -187,14 +187,14 @@ public class ContextLevel {
 		newMoves[ii]=null;
 
 		
-		if(idMask!=0L) {
+		if(idMask!=EMPTY_MASK) {
 			fieldList[fieldCounter++]=pos;
 		}
 	}
 	
 	public boolean checkForReuseMoves(int pos, long idMask,int idTypeColor) {
 		if(idsMask[pos]==idMask && idsTypeColor[pos]==idTypeColor) {
-			if(idMask!=0L) {
+			if(idMask!=EMPTY_MASK) {
 				fieldList[fieldCounter++]=pos;
 			}
 			return true;
@@ -216,7 +216,6 @@ public class ContextLevel {
 	
 	public void setLimit(int limit) {
 		this.limit = limit;
-		
 		resetIterator();
 		/*
 		for(int i=0;i<=limit;i++) {
@@ -285,128 +284,7 @@ public class ContextLevel {
 		}
 		return lastMove;
 	}
-	/*
-	public void setBitTCallBacks(int pos,int index) {
-		if((this.tCallBackTouched&SHIFT[pos])==0) {
-			this.tCallBacks[pos]=position.tCallBacks[pos];
-			this.tCallBackTouched|=SHIFT[pos];
-		}
-		position.tCallBacks[pos]|=SHIFT[index];
-	}
-	//this.tCallBacks[Long.numberOfTrailingZeros(oldCBs)].toggleBit(pos);
-	public void toggleBitTCallBacks(int pos,int index) {
-		if((this.tCallBackTouched&SHIFT[pos])==0) {
-			this.tCallBacks[pos]=position.tCallBacks[pos];
-			this.tCallBackTouched|=SHIFT[pos];
-		}
-		position.tCallBacks[pos]^=SHIFT[index];
-	}
-	*/
-	/*
-	public void setCallBacks(int pos,long mask) {
-		if((this.fcmTouched&SHIFT[pos])==0) {
-			this.fields[pos]= position.fields[pos];
-			this.callBacks[pos]=position.callBacks[pos];
-			this.moveMasks[pos]=position.moveMasks[pos];
-//			if(level==3) {
-//				System.out.println("SNAPSHOTTED1 in level "+level+" to callBacks["+pos+"]"+position.callBacks[pos]);
-//				out(this.fcmTouched);
-//			}
-			this.fcmTouched|=SHIFT[pos];
-		}
-		position.callBacks[pos]=mask;
-	}
 	
-	public long getAndSetCallBacks(int pos,long mask) {
-		if((this.fcmTouched&SHIFT[pos])==0) {
-			this.fields[pos]= position.fields[pos];
-			this.callBacks[pos]=position.callBacks[pos];
-			this.moveMasks[pos]=position.moveMasks[pos];
-			this.fcmTouched|=SHIFT[pos];
-			
-//			if(level==3) {
-//				System.out.println("SNAPSHOTTED2 in level "+level+" to callBacks["+pos+"]"+position.callBacks[pos]);
-//				out(this.fcmTouched);
-//			}
-
-		}
-		long old = position.callBacks[pos];
-		position.callBacks[pos]=mask;
-		return old;
-	
-	}
-	
-	
-	
-	//moveMasks[pos].getAndSet(0L)));;
-	public long getAndSetMoveMasks(int pos,long mask) {
-		if((this.fcmTouched&SHIFT[pos])==0) {
-			this.fields[pos]= position.fields[pos];
-			this.callBacks[pos]=position.callBacks[pos];
-			this.moveMasks[pos]=position.moveMasks[pos];
-			this.fcmTouched|=SHIFT[pos];
-//			if(level==3) {
-//				System.out.println("SNAPSHOTTED1 in level "+level+" to MoveMasks["+pos+"]"+position.moveMasks[pos]);
-//				out(this.fcmTouched);
-//			}
-		}
-		long old = position.moveMasks[pos];
-		position.moveMasks[pos]=mask;
-		return old;
-	}
-	//moveMasks[pos].getAndSet(0L)));;
-	public void setMoveMasks(int pos,long mask) {
-		
-		if((this.fcmTouched&SHIFT[pos])==0) {
-			this.fields[pos]= position.fields[pos];
-			this.callBacks[pos]=position.callBacks[pos];
-			this.moveMasks[pos]=position.moveMasks[pos];
-			this.fcmTouched|=SHIFT[pos];
-//			if(level==3) {
-//				
-//				System.out.println("SNAPSHOTTED2 in level "+level+" to MoveMasks["+pos+"]"+position.moveMasks[pos]);
-//				out(this.fcmTouched);
-//			}
-		}
-	
-		position.moveMasks[pos]=mask;
-	}
-	
-	//fields[oldPos].getAndSet(-1);
-	public int getAndSetFields(int pos,int typeColor) {
-		if((this.fcmTouched&SHIFT[pos])==0) {
-			this.fcmTouched|=SHIFT[pos];
-			this.fields[pos]= position.fields[pos];
-			this.callBacks[pos]=position.callBacks[pos];
-			this.moveMasks[pos]=position.moveMasks[pos];
-		
-//			if(level==3) {
-//				System.out.println("SNAPSHOTTED1 in level "+level+" to fields["+pos+"]"+position.fields[pos]);
-//				out(this.fcmTouched);
-//			}
-//			
-		}
-		int old = position.fields[pos];
-		position.fields[pos]=typeColor;
-//		System.out.println("updated1 ["+pos+"]"+typeColor+" in level:"+level);
-		return old;
-	}
-	//fields[oldPos].getAndSet(-1);
-	public void setFields(int pos,int typeColor) {
-		if((this.fcmTouched&SHIFT[pos])==0) {
-			this.fcmTouched|=SHIFT[pos];
-			this.fields[pos]= position.fields[pos];
-			this.callBacks[pos]=position.callBacks[pos];
-			this.moveMasks[pos]=position.moveMasks[pos];
-//			if(level==3) {
-//				System.out.println("SNAPSHOTTED2 in level "+level+" to fields["+pos+"]"+position.fields[pos]);
-//				out(this.fcmTouched);
-//			}
-		}
-		position.fields[pos]=typeColor;
-//		System.out.println("updated2 ["+pos+"]"+typeColor+" in level:"+level);		
-	}
-	*/
 	public void trigger(int pos) {
 		if((this.fcmTouched&SHIFT[pos])==0) {
 			this.fcmTouched|=SHIFT[pos];

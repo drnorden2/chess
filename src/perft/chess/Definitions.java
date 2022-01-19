@@ -4,6 +4,9 @@ package perft.chess;
 import perft.chess.core.datastruct.BitBoard;
 
 public class Definitions {
+	public static final long EMPTY_MASK =0L;
+	public static final long FULL_MASK =~EMPTY_MASK;
+
 	public static final int PIECE_TYPE_PAWN = 0;
 	public static final int PIECE_TYPE_KING= 1;
 	public static final int PIECE_TYPE_KNIGHT = 2;
@@ -87,7 +90,7 @@ public class Definitions {
 	public final static long MASK_F_FILE = fileMask(_F);
 	public final static long MASK_G_FILE = fileMask(_G);
 	public final static long MASK_H_FILE = fileMask(_H);
-	public final static long MASK_NONE = 0L;
+	public final static long MASK_NONE = EMPTY_MASK;
 	public final static long MASK_ALL = ~MASK_NONE;
 	
 	public static final int _A1=0;
@@ -269,7 +272,7 @@ public class Definitions {
 	
 	
 	private static long fileMask(int file) {
-		BitBoard bb= new BitBoard(0L);
+		BitBoard bb= new BitBoard(EMPTY_MASK);
 		for(int i=0;i<8;i++) {
 			bb.set(getPosForFileRank(file,i));
 		}
@@ -277,7 +280,7 @@ public class Definitions {
 	}
 	
 	private static long rankMask(int rank) {
-		BitBoard bb= new BitBoard(0L);
+		BitBoard bb= new BitBoard(EMPTY_MASK);
 		for(int i=0;i<8;i++) {
 			bb.set(getPosForFileRank(i,rank));
 		}
@@ -361,8 +364,6 @@ public class Definitions {
 	
 	public static final long[] SHIFT = getShifts();
 	public static final long[] NOT_SHIFT = not(SHIFT);
-	public static final long EMPTY_MASK =0L;
-	public static final long FULL_MASK =~EMPTY_MASK;
 	
 			
 	
@@ -429,7 +430,7 @@ public class Definitions {
 	private static long[] getQueenMasks() {
 		long[] all = new long[64];
 		for(int i=0;i<64;i++) {
-			long result = 0L;
+			long result = EMPTY_MASK;
 			int rk = i / 8, fl = i % 8, r, f;
 			for (r = rk + 1; r <= 7; r++)
 				result |= SHIFT[fl + r * 8];
@@ -471,14 +472,9 @@ public class Definitions {
 				if((rD!=0 && fD!=0) && (rD*rD!=fD*fD))continue;
 				rD=(int)Math.signum(rD);
 				fD=(int)Math.signum(fD);
-				for (r = ri ,  f =fi;r >=0 && r <= 7 && f >=0 && f <= 7 ; r+=rD, f+=fD) {
+				for (r = ri ,  f =fi;r >=0 && r <= 7 && f >=0 && f <= 7 ; r-=rD, f-=fD) {
 					mask|= SHIFT[f + r * 8];
-				}
-				rD *= -1;
-				fD *= -1;
-				for (r = ri ,  f =fi;r >=0 && r <= 7 && f >=0 && f <= 7 ; r+=rD, f+=fD) {
-					mask|= SHIFT[f + r * 8];
-				}
+				} 
 				masks[i][j]=mask;//&~SHIFT[i]&~SHIFT[j];
 			}
 		
