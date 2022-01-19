@@ -152,31 +152,19 @@ public class Move implements IndexedElement  {
 		
 	}
 	
-	/*
-	public Move (Move move, int ii, int jj, int moveIndex ) {
-		this.ii =-1;
-		this.jj =-1;
-		this.notation = move.notation;
-		this.elementIndex=moveIndex;
-		this.oldPos = move.oldPos;
-		this.newPos = move.newPos;
-		this.moveType = move.moveType;
-		this.promotePieceType = move.promotePieceType;
-		this.rookPos = move.rookPos;
-		this.dirOfRochade = move.dirOfRochade;
-		this.rookMove = move.rookMove;
-		this.isTwoSquarePush = move.isTwoSquarePush;
-		this.enPassanteSquare = move.enPassanteSquare;
-		this.enPassantePawnPos = move.enPassantePawnPos;
-		this.isAttackerMove = move.isAttackerMove;
-		this.isKingSensing = move.isKingSensing;
-		this.isRochade = move.isRochade;
-		this.callbackType = move.callbackType;
-		this.dirX = move.dirX;
-		this.dirY = move.dirY;
-		this.color = move.color;
-	}
-*/
+	private  String generateNotation () {
+		int r1 = getRankForPos(oldPos);
+		int f1 = getFileForPos(oldPos);
+		int r2 = getRankForPos(newPos);
+		int f2 = getFileForPos(newPos);
+		String promotion = "";
+		if(this.getPromotePieceType()!=-1) {
+			promotion += (""+getPieceCharForTypeColor(this.getPromotePieceType())).toLowerCase();
+		}
+		return ""+((char)('a'+f1))  +""+ (1+r1)+""
+				+((char)('a'+f2))  +""+ (1+r2)+promotion+"";
+	}	
+
 	public int getElementIndex() {
 		return this.elementIndex;
 	}
@@ -198,9 +186,8 @@ public class Move implements IndexedElement  {
 		return this.rookPos;
 	}
 	
-	
 	public String toString () {
-		String val ="["+elementIndex+"] "+getPieceCharForTypeColor(typeColor) + " : "+generateNotation()+  "   From "+oldPos+" to "+newPos+" : Promotion:"+this.getPromotePieceType();	
+		String val ="["+elementIndex+"] "+getPieceCharForTypeColor(typeColor) + " : "+getNotation()+  "   From "+oldPos+" to "+newPos+" : Promotion:"+this.getPromotePieceType();	
 		return val;
 	}
 	public Move getRookMove() {
@@ -253,19 +240,6 @@ public class Move implements IndexedElement  {
 	public String getNotation() {
      	return this.notation;
 	}
-	
-	private  String generateNotation () {
-		int r1 = getRankForPos(oldPos);
-		int f1 = getFileForPos(oldPos);
-		int r2 = getRankForPos(newPos);
-		int f2 = getFileForPos(newPos);
-		String promotion = "";
-		if(this.getPromotePieceType()!=-1) {
-			promotion += (""+getPieceCharForTypeColor(this.getPromotePieceType())).toLowerCase();
-		}
-		return ""+((char)('a'+f1))  +""+ (1+r1)+""
-				+((char)('a'+f2))  +""+ (1+r2)+promotion+"";
-	}	
 	
 	public int getColor() {
 		return this.color;

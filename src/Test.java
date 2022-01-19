@@ -30,54 +30,10 @@ public class Test {
 	private static boolean useBulk = true;
 
 	public static void main(String[] args) {
-		ChessGameFactory.bitBoard=true;
-		//test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
-		
-		
-		//debug (6,1,"r3k2r/8/8/8/8/8/8/R3K2R w KQkq -");
-		
-		//debug(4,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R4K1R b kq - 0 1");
-		
-		//test (5,167815740,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - -");
-		//test (5,202355867,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		//debug(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		//debug(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q2/PPPBBPKP/R6R w kq - 0 1");
-		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
-		//debug(1, 16,"3qk3/8/8/8/8/8/8/3QK4 b - - 0 1");
-		//test(6, 120921506,"r7/pp6/8/8/8/8/PP6/R7 b - - 0 1");
-					
-		//test(2, 1890,"q7/8/8/8/8/8/8/7Q w - - 0 1");
-	
-		//test(6, 120921506,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
-		
-		//test(5, 1890,"k7/8/8/8/8/8/8/7K b - - 0 1");
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		//test(4, 2, "k7/Pp6/1P6/8/1p6/6p1/2P3Pp/7K w - - 0 1");
-
-		//		test(4, 7,"k1K5/8/8/8/8/8/8/8 w - - 0 1");
-		//test(4, 197281,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-		//test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		//test(6, 1134888, "3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1");
-		//test(4, 10276, "8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1");
-		//if(true)return;
-		
-		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-		//	test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		
-		//test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		
+		ChessGameFactory.bitBoard=false;
+		test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		if(true) return;
+				
 		//test(2, 3, "4PKR1/4PPP1/8/8/8/r7/8/7k w - -");
 		
 		test(1, 2, "7K/7N/8/8/8/8/8/k6r w - -");
