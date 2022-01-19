@@ -143,14 +143,7 @@ final public class Game {
 		return moveCount;
 	}
 	
-	private boolean equal (int[] a, int b[]) {
-		for(int i=0;i<a.length;i++) {
-			if(a[i]!=b[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
+
 	
 	final public  long debugPerft(Board ref, int deep,ArrayStack<String> moveList) {
 		if ( deep ==0) {

@@ -32,11 +32,10 @@ public class Test {
 	public static void main(String[] args) {
 		ChessGameFactory.bitBoard=true;
 		//test(6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		debug(2, 1797,"r4knr/p1ppqPb1/bn4p1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQ - 0 1");
-
+		
 		test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-		if(true) return;
-				
+		
+		if(true)return;
 		//test(2, 3, "4PKR1/4PPP1/8/8/8/r7/8/7k w - -");
 		
 		test(1, 2, "7K/7N/8/8/8/8/8/k6r w - -");
@@ -220,13 +219,11 @@ public class Test {
 		System.out.println(game);
 		int hash1 = game.getBoard().getHash();
 		
-		System.out.println("DIE SPIELE SIND ERÖFFNET!");
 		
 		MBPosition.registerCount =0;
 		MBPosition.unRegisterCount =0;
 		
 		//O.N=true;
-		long timeStamp = System.currentTimeMillis();
 		long games = 0;
 		String headLine="";
 		if(useBulk) {
@@ -235,15 +232,16 @@ public class Test {
 			headLine +="Real Counting";
 		}
 		String boardStr = game.toString();
-		
+		System.out.println("DIE SPIELE SIND ERÖFFNET!");
+		long timeStamp = System.currentTimeMillis();
 		games = game.perft(depth,useBulk);
+		double time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
 		
 		System.out.println(headLine);
 		System.out.print(boardStr);
 		
 		//games = game.bulkPerft(depth);
 		
-		double time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
 		boolean correct = games == nodes;
 
 		System.out.println("");

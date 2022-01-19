@@ -17,7 +17,6 @@ public class BBPosition implements Position {
 	private int totalCount =0;
 	
 	private int level =4;
-	private boolean isNotLastRound=true;
 	
 	public final int depth;
 	private int colorAtTurn = COLOR_WHITE;
@@ -49,9 +48,9 @@ public class BBPosition implements Position {
 	private int _enpPos=0;
 	private long _enpPawnMask=0;
 	private int _moveDelta;
-	private boolean _noCalc = true;
+	private boolean _calcDone = false;
 	private boolean _isLastRound=true;
-
+	private final long[] fullMaskArray = new long[64];
 	
 	
 	public BBPosition(int depth) {
@@ -63,6 +62,7 @@ public class BBPosition implements Position {
 		}
 		for(int i=0;i<64;i++) {
 			fields[i]=-1;
+			fullMaskArray[i]=FULL_MASK;
 		}
 	}
 
@@ -152,7 +152,7 @@ public class BBPosition implements Position {
 
 		checkRochade(context,null,colorAtTurn==COLOR_WHITE); 
 		this.colorAtTurn=OTHER_COLOR[this.colorAtTurn];
-		_noCalc = true;
+		_calcDone = false;
 	}
 	
 	public int getMoveCount() {	
@@ -175,16 +175,17 @@ public class BBPosition implements Position {
 	}
 
 	
+	int counter=0;
 	@Override
+	
 	public void unSetMove(int move) {
 		ContextLevel context = this.contextLevels[level];
 		context.revertToSnapshot();
 		level--;
 		this.colorAtTurn = OTHER_COLOR[colorAtTurn];
-		if(_noCalc) {// eighter last level or no continuation (checkmat or pat
-			for(int i=0;i<64;i++) {
-				this._pinMasks[i]=FULL_MASK;
-			}	
+		if(!_calcDone) {// eighter last level or no continuation (checkmat or pat
+			System.arraycopy(fullMaskArray, 0, _pinMasks, 0, 64);	
+			_calcDone=true;
 		}
 	}
 
@@ -194,8 +195,7 @@ public class BBPosition implements Position {
 		totalCount++;
 		Move move = getMove(index);
 		level++;
-		this.isNotLastRound =  true;//level!=depth+1;
-		this._isLastRound = (level>=depth+3);
+		this._isLastRound = (level==depth+3);
 		ContextLevel context = this.contextLevels[level];
 
 		setMove(move,context);
@@ -214,7 +214,7 @@ public class BBPosition implements Position {
 		}			
 		
 		this.colorAtTurn = OTHER_COLOR[colorAtTurn];
-		_noCalc=true;
+		_calcDone=false;
 		
 	}
 	
@@ -360,21 +360,18 @@ public class BBPosition implements Position {
 		int color = typeColor >> 6 & 1;
 		boolean ownPiece = color==colorAtTurn ;
 		//remove moves
-		if(!ownPiece || isNotLastRound) {
-			this.moveCount[color]-=Long.bitCount(moveMasks[pos]);
-			moveMasks[pos]=EMPTY_MASK;
+		this.moveCount[color]-=Long.bitCount(moveMasks[pos]);
+		moveMasks[pos]=EMPTY_MASK;
+		//remove attacks
+		long oldCBs = callBacks[pos];
+		callBacks[pos]= EMPTY_MASK;
+		
+		int retVal = Long.bitCount(oldCBs);
+		for(int i=0;i<retVal;i++) {
+			tCallBacks[Long.numberOfTrailingZeros(oldCBs)]^=SHIFT[pos];
+			oldCBs &= oldCBs - 1;			
 		}
-		if(ownPiece|| isNotLastRound) {
-			//remove attacks
-			long oldCBs = callBacks[pos];
-			callBacks[pos]= EMPTY_MASK;
-			
-			int retVal = Long.bitCount(oldCBs);
-			for(int i=0;i<retVal;i++) {
-				tCallBacks[Long.numberOfTrailingZeros(oldCBs)]^=SHIFT[pos];
-				oldCBs &= oldCBs - 1;			
-			}
-		}
+	
 	}
 
 	
@@ -412,33 +409,31 @@ public class BBPosition implements Position {
 			}
 		}
 		
-		if(colorAtTurn==color || isNotLastRound) {
-			if(needsCBUpdate) {
-				long toggleCallbacks = this.callBacks[pos] ^ callbacks;
-				int retVal = Long.bitCount(toggleCallbacks);
-				if(retVal>0) {
-					context.trigger(pos);
-					for(int i=0;i<retVal;i++) {
-						tCallBacks[Long.numberOfTrailingZeros(toggleCallbacks)]^=SHIFT[pos];
-						toggleCallbacks &= toggleCallbacks - 1;								
-					}
-					callBacks[pos]= callbacks;
-					
-				}
-			}
-		}
-		if(colorAtTurn!=color || isNotLastRound) {
-			moves = (callbacks) & ~own;
-			long oldMoves = this.moveMasks[pos] ;
-			if(oldMoves!=moves) {
+		if(needsCBUpdate) {
+			long toggleCallbacks = this.callBacks[pos] ^ callbacks;
+			int retVal = Long.bitCount(toggleCallbacks);
+			if(retVal>0) {
 				context.trigger(pos);
-				moveMasks[pos] = moves;
-				int delta = Long.bitCount(moves) - Long.bitCount(oldMoves);
-				if(delta!=0) {
-					this.moveCount[color]+=delta;
+				for(int i=0;i<retVal;i++) {
+					tCallBacks[Long.numberOfTrailingZeros(toggleCallbacks)]^=SHIFT[pos];
+					toggleCallbacks &= toggleCallbacks - 1;								
 				}
+				callBacks[pos]= callbacks;
+				
 			}
 		}
+	
+		moves = (callbacks) & ~own;
+		long oldMoves = this.moveMasks[pos] ;
+		if(oldMoves!=moves) {
+			context.trigger(pos);
+			moveMasks[pos] = moves;
+			int delta = Long.bitCount(moves) - Long.bitCount(oldMoves);
+			if(delta!=0) {
+				this.moveCount[color]+=delta;
+			}
+		}
+	
 	}
 	private void updatePawnPseudoMoves(int color) {
 		ContextLevel context = this.contextLevels[level];
@@ -673,6 +668,7 @@ public class BBPosition implements Position {
 				
 				if(oldCastleMoveskq !=newCastleMoveskq) {
 					int delta = Long.bitCount(newCastleMoveskq)-oldCastleMoveskqCount;
+					
 					if(delta!=0) {
 						this.moveCount[COLOR_BLACK]+=delta;
 					}
@@ -688,9 +684,10 @@ public class BBPosition implements Position {
 	
 	@Override
 	public void checkLegalMoves (){
-		if(totalCount== 45341863) {
+		/*
+		if(totalCount== 3090386) {
 			System.out.println("WTF");
-		}
+		}*/
 		int otherColor = getColorAtTurn();
 		int color = OTHER_COLOR[otherColor];
 		
@@ -698,190 +695,197 @@ public class BBPosition implements Position {
 		
 		long kingMask = this.kings[color];
 		
-		if(kingMask!=EMPTY_MASK) {
-			int kingPos = Long.numberOfTrailingZeros(kingMask);
-			long otherXRayers = this.allOfOneColor[otherColor]&~pawns[otherColor]&~kings[otherColor]&~knights[otherColor];
- 			long own = this.allOfOneColor[color];// @todo WTF too expensive
-			long other = this.allOfOneColor[otherColor];
-		
-			long kingCbs = this.tCallBacks[kingPos]&other;
-			int kingAttacks = Long.bitCount(kingCbs);
-			long checkMask=FULL_MASK;
-
-			_kingOnly=false;
-			if(kingAttacks>0) {
-				//one or two attacks
-				int kingAttackerPos = -1;
-				//What is under Attack by whom? ENP CASE: If attacked by!
-				for(int i=0;i<kingAttacks;i++) {
-					kingAttackerPos = Long.numberOfTrailingZeros(kingCbs);
-					kingCbs&=kingCbs-1;
-					if((otherXRayers&SHIFT[kingAttackerPos])!=0) {
-						long pinLine= NOT_LINE_FOR_2_POINTS[kingAttackerPos][kingPos]|SHIFT[kingAttackerPos];
-						_pinMasks[kingPos]&=pinLine;	
+		int kingPos = Long.numberOfTrailingZeros(kingMask);
+		long otherXRayers = this.allOfOneColor[otherColor]&~pawns[otherColor]&~kings[otherColor]&~knights[otherColor];
+		long own = this.allOfOneColor[color];// @todo WTF too expensive
+		long other = this.allOfOneColor[otherColor];
 	
-					}
-				}
-				
-				if(kingAttacks==1){
-					//one attack
-					checkMask = CHECK_MASKS[kingPos][kingAttackerPos];
-				}else {
-					//two attacks
-					checkMask = EMPTY_MASK;
-					_kingOnly=true;
-				}	
-			}
-			//where can the king still move? //ENP OK
-			long kingMovesRemaining = this.moveMasks[kingPos]&_pinMasks[kingPos]&KING_MASKS[kingPos];
-			int count = Long.bitCount(kingMovesRemaining );
-			for(int i=0;i<count;i++) {
-				int pos = Long.numberOfTrailingZeros(kingMovesRemaining);
-				kingMovesRemaining &=kingMovesRemaining -1;
-				if((tCallBacks[pos]&allOfOneColor[otherColor])!=EMPTY_MASK) {
-					_pinMasks[kingPos]&=NOT_SHIFT[pos];
-				}
-			}
-			
-			// KingPos finally;
-			_moveDelta =Long.bitCount(moveMasks[kingPos]&~_pinMasks[kingPos]);
-			
-			
-			
-			boolean attackedByEnpPawn =kingAttacks!=0&&(this._enpPawnMask&checkMask)!=EMPTY_MASK;
-			if(kingAttacks<2) {
-				//not more than one attack
-				//check pins
-				//this requires an ENP case
-				long all = EMPTY_MASK;
-				if(checkMask!=FULL_MASK) {
-					all = allOfOneColor[color]&~kingMask;
-				}
-				
-				long inSightOfKing0 = (mnf.getBishopAttacks(kingPos, _occ)|mnf.getRookAttacks(kingPos, _occ));
-				long potPins = inSightOfKing0 &own;
-				
-				
-								
-				{
-					long _occ1= _occ&~inSightOfKing0;
-					long inSightOfKing1 = (mnf.getBishopAttacks(kingPos, _occ1)|mnf.getRookAttacks(kingPos, _occ1));
-					
-					long potPinners = inSightOfKing1 & otherXRayers;
-				
-					long bits = potPinners;
-					
-					int counter = Long.bitCount(bits);
-					//idea: invert the filter = by pinner instead by  pinned
-					for(int i=0;i<counter;i++) {
-						int pinnerPos = Long.numberOfTrailingZeros(bits);
-						bits&=bits-1;
-						long pinLine = LINE_FOR_2_POINTS[kingPos][pinnerPos];
-						long pinned = pinLine&potPins;
-						if(pinned!=EMPTY_MASK){
-							int pinnedPos = Long.numberOfTrailingZeros(pinned);
-							if((tCallBacks[pinnedPos]&SHIFT[pinnerPos])!=0) {
-								_pinMasks[pinnedPos] =pinLine ;
-								all|=SHIFT[pinnedPos];
-							}
-						}
-					}
-				}
-				
-				
-				
-				if(this._enpBeaterPos[0]!=-1) {
-					//remove enpBeaters from moveMask if check remains after sim move
-					for(int i=0;i<2;i++) {
-						int pos =_enpBeaterPos[i];
-						if(pos ==-1)break;
-						long simOcc = _occ^(SHIFT[pos]|this.enPassanteMask|this._enpPawnMask);
-						// is King in check?
-						long attackAfterENP = mnf.getBishopAttacks(kingPos, simOcc)&otherXRayers;
-						int counter= Long.bitCount(attackAfterENP);
-						boolean found =false;
-						for(int j=0;j<counter;j++) {
-							int attacker = Long.numberOfTrailingZeros(attackAfterENP);
-							attackAfterENP&=attackAfterENP-1;
-							if((this.fields[attacker]>>7)!=PIECE_TYPE_ROOK) {
-								//hit
-								_pinMasks[pos]&=~this.enPassanteMask ;
-								all|=SHIFT[pos];
-								found=true;
-								break;
-							}
-						}
-						if(found) {
-							continue;
-						}
-						attackAfterENP = mnf.getRookAttacks(kingPos, simOcc)&otherXRayers;
-						counter= Long.bitCount(attackAfterENP);
-						for(int j=0;j<counter;j++) {
-							int attacker = Long.numberOfTrailingZeros(attackAfterENP);
-							attackAfterENP&=attackAfterENP-1;
-							if(this.fields[attacker]>>7!=PIECE_TYPE_BISHOP) {
-								_pinMasks[pos]&=~this.enPassanteMask ;
-								all|=SHIFT[pos];
-								found=true;
-								break;
-							}
-						}
-						if(found) {
-							continue;
-						}
-						// we found that there is no check after the enp by the beater
-						// if enpPawn is an attacker => 
-						if(attackedByEnpPawn) {
-							_pinMasks[pos] &=checkMask;
-							_pinMasks[pos] |=this.enPassanteMask;
-							
-					
-							all&=NOT_SHIFT[pos];//remove from post processsing! WTF ENSURE PROPPER COUNTING
-							_moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
-						}
-					}			
-				}
+		long kingCbs = this.tCallBacks[kingPos]&other;
+		int kingAttacks = Long.bitCount(kingCbs);
+		long checkMask=FULL_MASK;
 
-				int cnt = Long.bitCount(all);
-				for(int i=0;i<cnt;i++) {
-					int pos = Long.numberOfTrailingZeros(all);
-					all&=all-1;
-					_pinMasks[pos]&=checkMask;
-					if(fields[pos]==PIECE_TYPE_WHITE_PAWN && getRankForPos(pos)==_7){
-						_pinMasks[pos]&=MASK_8_RANK;
-						long last =moveMasks[pos]&_pinMasks[pos] ;
-						if((last)!=EMPTY_MASK)  {
-							last|= last>>DIR_UP;
-							last|= last>>DIR_UP;
-							last|= last>>DIR_UP;
-							_pinMasks[pos]|=last;
-						}
-					}
-					
-					if(fields[pos]==PIECE_TYPE_BLACK_PAWN && getRankForPos(pos)==_2) {
-						_pinMasks[pos]&=MASK_8_RANK;
-						long last =moveMasks[pos]&_pinMasks[pos] ;
-						if((last)!=EMPTY_MASK)  {
-							last|= last<<DIR_UP;
-							last|= last<<DIR_UP;
-							last|= last<<DIR_UP;
-							_pinMasks[pos]|=last;
-						}
-					}
-					_moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
+		_kingOnly=false;
+		if(kingAttacks>0) {
+			//one or two attacks
+			int kingAttackerPos = -1;
+			//What is under Attack by whom? ENP CASE: If attacked by!
+			for(int i=0;i<kingAttacks;i++) {
+				kingAttackerPos = Long.numberOfTrailingZeros(kingCbs);
+				kingCbs&=kingCbs-1;
+				if((otherXRayers&SHIFT[kingAttackerPos])!=0) {
+					long pinLine= NOT_LINE_FOR_2_POINTS[kingAttackerPos][kingPos]|SHIFT[kingAttackerPos];
+					_pinMasks[kingPos]&=pinLine;	
 
 				}
 			}
+			
+			if(kingAttacks==1){
+				//one attack
+				checkMask = CHECK_MASKS[kingPos][kingAttackerPos];
+			}else {
+				//two attacks
+				checkMask = EMPTY_MASK;
+				_kingOnly=true;
+			}	
+		}
+		//where can the king still move? //ENP OK
+		long kingMovesRemaining = this.moveMasks[kingPos]&_pinMasks[kingPos]&KING_MASKS[kingPos];
+		int count = Long.bitCount(kingMovesRemaining );
+		for(int i=0;i<count;i++) {
+			int pos = Long.numberOfTrailingZeros(kingMovesRemaining);
+			kingMovesRemaining &=kingMovesRemaining -1;
+			if((tCallBacks[pos]&allOfOneColor[otherColor])!=EMPTY_MASK) {
+				_pinMasks[kingPos]&=NOT_SHIFT[pos];
+			}
+		}
 		
-		} 		
+		// KingPos finally;
+		if(_kingOnly) {
+			//calculate the final amount 
+			_moveDelta =Long.bitCount(moveMasks[kingPos]&_pinMasks[kingPos]);
+		}else {
+			//calculate the delta but neglect the rochades!
+			_moveDelta =Long.bitCount(KING_MASKS[kingPos]&moveMasks[kingPos]&~_pinMasks[kingPos]);
+		}
+		
+		
+		boolean attackedByEnpPawn =kingAttacks!=0&&(this._enpPawnMask&checkMask)!=EMPTY_MASK;
+		if(kingAttacks<2) {
+			//not more than one attack
+			//check pins
+			//this requires an ENP case
+			long all = EMPTY_MASK;
+			if(checkMask!=FULL_MASK) {
+				all = allOfOneColor[color]&~kingMask;
+			}
+			
+			long inSightOfKing0 = (mnf.getBishopAttacks(kingPos, _occ)|mnf.getRookAttacks(kingPos, _occ));
+			long potPins = inSightOfKing0 &own;
+			
+			
+							
+			{
+				long _occ1= _occ&~inSightOfKing0;
+				long inSightOfKing1 = (mnf.getBishopAttacks(kingPos, _occ1)|mnf.getRookAttacks(kingPos, _occ1));
+				
+				long potPinners = inSightOfKing1 & otherXRayers;
+			
+				long bits = potPinners;
+				
+				int counter = Long.bitCount(bits);
+				//idea: invert the filter = by pinner instead by  pinned
+				for(int i=0;i<counter;i++) {
+					int pinnerPos = Long.numberOfTrailingZeros(bits);
+					bits&=bits-1;
+					long pinLine = LINE_FOR_2_POINTS[kingPos][pinnerPos];
+					long pinned = pinLine&potPins;
+					if(pinned!=EMPTY_MASK){
+						int pinnedPos = Long.numberOfTrailingZeros(pinned);
+						if((tCallBacks[pinnedPos]&SHIFT[pinnerPos])!=0) {
+							_pinMasks[pinnedPos] =pinLine ;
+							all|=SHIFT[pinnedPos];
+						}
+					}
+				}
+			}
+			
+			
+			
+			if(this._enpBeaterPos[0]!=-1) {
+				//remove enpBeaters from moveMask if check remains after sim move
+				for(int i=0;i<2;i++) {
+					int pos =_enpBeaterPos[i];
+					if(pos ==-1)break;
+					long simOcc = _occ^(SHIFT[pos]|this.enPassanteMask|this._enpPawnMask);
+					// is King in check?
+					long attackAfterENP = mnf.getBishopAttacks(kingPos, simOcc)&otherXRayers;
+					int counter= Long.bitCount(attackAfterENP);
+					boolean found =false;
+					for(int j=0;j<counter;j++) {
+						int attacker = Long.numberOfTrailingZeros(attackAfterENP);
+						attackAfterENP&=attackAfterENP-1;
+						if((this.fields[attacker]>>7)!=PIECE_TYPE_ROOK) {
+							//hit
+							_pinMasks[pos]&=~this.enPassanteMask ;
+							all|=SHIFT[pos];
+							found=true;
+							break;
+						}
+					}
+					if(found) {
+						continue;
+					}
+					attackAfterENP = mnf.getRookAttacks(kingPos, simOcc)&otherXRayers;
+					counter= Long.bitCount(attackAfterENP);
+					for(int j=0;j<counter;j++) {
+						int attacker = Long.numberOfTrailingZeros(attackAfterENP);
+						attackAfterENP&=attackAfterENP-1;
+						if(this.fields[attacker]>>7!=PIECE_TYPE_BISHOP) {
+							_pinMasks[pos]&=~this.enPassanteMask ;
+							all|=SHIFT[pos];
+							found=true;
+							break;
+						}
+					}
+					if(found) {
+						continue;
+					}
+					// we found that there is no check after the enp by the beater
+					// if enpPawn is an attacker => 
+					if(attackedByEnpPawn) {
+						_pinMasks[pos] &=checkMask;
+						_pinMasks[pos] |=this.enPassanteMask;
+						
+				
+						all&=NOT_SHIFT[pos];//remove from post processsing! WTF ENSURE PROPPER COUNTING
+						_moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
+					}
+				}			
+			}
+
+			int cnt = Long.bitCount(all);
+			for(int i=0;i<cnt;i++) {
+				int pos = Long.numberOfTrailingZeros(all);
+				all&=all-1;
+				_pinMasks[pos]&=checkMask;
+				if(fields[pos]==PIECE_TYPE_WHITE_PAWN && getRankForPos(pos)==_7){
+					_pinMasks[pos]&=MASK_8_RANK;
+					long last =moveMasks[pos]&_pinMasks[pos] ;
+					if((last)!=EMPTY_MASK)  {
+						last|= last>>DIR_UP;
+						last|= last>>DIR_UP;
+						last|= last>>DIR_UP;
+						_pinMasks[pos]|=last;
+					}
+				}
+				
+				if(fields[pos]==PIECE_TYPE_BLACK_PAWN && getRankForPos(pos)==_2) {
+					_pinMasks[pos]&=MASK_8_RANK;
+					long last =moveMasks[pos]&_pinMasks[pos] ;
+					if((last)!=EMPTY_MASK)  {
+						last|= last<<DIR_UP;
+						last|= last<<DIR_UP;
+						last|= last<<DIR_UP;
+						_pinMasks[pos]|=last;
+					}
+				}
+				_moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
+
+			}
+		}
+		
 		
 	}
   	
 	
 	public void calcNewMoves(int color) {
-		if(!_noCalc) return;
+		if(_calcDone) return;
   		//System.out.print("Calculating MoveCount in step:"+this.wtfcount);
-  		_noCalc = false;
+		_calcDone = true;
+		
+		if(this._isLastRound) {
+			System.out.println("WE CALC!");
+		}
   		ContextLevel oldestContext = this.contextLevels[level-4];
   		ContextLevel oldContext = this.contextLevels[level-2];
   		ContextLevel context = this.contextLevels[level];
