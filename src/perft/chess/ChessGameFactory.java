@@ -5,7 +5,7 @@ import perft.Player.PlayerType;
 import perft.chess.perftbb.BBPosition;
 import perft.chess.perftmb.MBPosition;
 
-
+ 
 public class ChessGameFactory implements GameFactory {
 	public static boolean bitBoard = true;
 	@Override

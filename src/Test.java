@@ -33,6 +33,8 @@ public class Test {
 		ChessGameFactory.bitBoard=true;
 		//test(6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		
+		//test(4,4085603L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		//test(5,193690690L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 		
 		if(true)return;
@@ -153,7 +155,7 @@ public class Test {
 	}
 	private static void debug(String [] debugMoves, HashMap<String,Long>refMap,int depth, long nodes, String fen) {
 		//O.N=false;
-		ChessGameFactory.bitBoard=false;
+		ChessGameFactory.bitBoard=true;
 		Game reference = new Game(factory,fen,depth);
 		
 		ChessGameFactory.bitBoard=true;
