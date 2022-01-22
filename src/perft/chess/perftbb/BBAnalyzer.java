@@ -191,7 +191,21 @@ public class BBAnalyzer {
 		
 		return str+"\n";
 	}
+	public String toStringDebug() {
+		System.out.println("EXPENSIVE");
+		Long.numberOfTrailingZeros(0L);
+		String[] board = this.getBoardToString();
+	
+		
+		String str="\n";
+		for(int i=0;i<board.length;i++) {
+			str +=board[i]+"\n";
+		}
+		
+		return str+"\n";
+	}
 
+	
 	private String[] snapshotToString(char[] snapshot,String headLine,String statusLine) {
 		char[][] charBoard = new char[8][8];
 		

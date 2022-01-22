@@ -55,6 +55,8 @@ public class ContextLevel {
 	private int cursorFieldList=0;
 	private int cursorMoves=0;
 	private boolean rochades=true;
+	private int moveDelta=0;
+	
 	public ContextLevel(BBPosition position,int level, boolean lastLevel) {
 		this.position = position;
 		this.level = level;
@@ -91,6 +93,7 @@ public class ContextLevel {
 		this.enPassanteMask=position.enPassanteMask;
 		this.zobristHash=position.zobristHash;
 		this.rochades = position.rochades;
+		//this.moveDelta = position.moveDelta;
 		
 		/*
 		System.arraycopy(position.fields, 0, this.fields, 0, 64);
@@ -126,6 +129,8 @@ public class ContextLevel {
 		position.enPassanteMask=this.enPassanteMask;//@todo WTF -stack		
 		position.zobristHash = this.zobristHash;
 		position.rochades = this.rochades;
+		//position.moveDelta = this.moveDelta;
+
 		/*
 		System.arraycopy(this.fields, 0, this.fields, 0, 64);
 		System.arraycopy(this.callBacks, 0, this.callBacks, 0, 64);
@@ -262,7 +267,7 @@ public class ContextLevel {
 				int fieldCursor = fieldList[cursorFieldList];
 				
 				if(fieldCursor==-1) {
-					System.out.println("WTF FieldCursor -1 for index:"+index);
+					System.out.println("WTF FieldCursor -1 for index:"+index+" Limit is:"+limit);
 				}
 				lastMove = allMoves[fieldCursor][cursorMoves++];
 			}

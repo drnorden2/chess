@@ -1,5 +1,6 @@
 package perft.chess.perftbb;
 
+import java.util.ArrayList;
 import java.util.Random;
 import static perft.chess.Definitions.*;
 
@@ -10,6 +11,8 @@ import perft.chess.perftbb.gen.MagicNumberFinder;
 
 
 public class BBPosition implements Position {
+	ArrayList<String> list = new ArrayList<String>();
+	
 	private final static int[] ROCHADE = new int[] 
 			{32*64+0,32*64+1,32*64+2,32*64+3};
 	
@@ -52,7 +55,7 @@ public class BBPosition implements Position {
 	private final int _enpBeaterPos[]=new int[2];
 	private int _enpPos=0;
 	private long _enpPawnMask=0;
-	private int _moveDelta;
+	public  int moveDelta;
 	private boolean _calcDone = false;
 	private final long[] fullMaskArray = new long[64];
 	
@@ -126,7 +129,9 @@ public class BBPosition implements Position {
   		this.colorAtTurn=OTHER_COLOR[this.colorAtTurn];
   		int color = this.colorAtTurn;
   		ContextLevel context = this.contextLevels[level];
-  		touch(EMPTY_MASK);
+  		long tmp = this.untouched;
+  		touch(FULL_MASK);
+  		this.untouched =tmp;
   		rochades = this.untouched!=EMPTY_MASK;
 		_occ = allOfOneColor[COLOR_WHITE]| allOfOneColor[COLOR_BLACK];
 		_notOcc = ~(_occ);
@@ -175,9 +180,9 @@ public class BBPosition implements Position {
 	
 	public int getMoveCount() {	
 		if(this._kingOnly) {
-			return this._moveDelta;
+			return this.moveDelta;
 		}else {
-			return this.moveCount[this.colorAtTurn]-this._moveDelta;
+			return this.moveCount[this.colorAtTurn]-this.moveDelta;
 		}		
 	}
 	
@@ -205,18 +210,23 @@ public class BBPosition implements Position {
 			System.arraycopy(fullMaskArray, 0, _pinMasks, 0, 64);	
 			_calcDone=true;
 		}
+		//list.remove(list.size()-1);
 	}
 
-	
 	@Override
 	public void setMove(int index) {
+		
 		totalCount++;
 		Move move = getMove(index);
+		//list.add(move.toString()+this.toStringDebug());
+		//if("b3a2".equals(move.getNotation())) {
+		//	System.out.println("Help");
+		//	System.out.println(list);
+		//}
 		
-		if(totalCount==121) {
-			System.out.println(this);
-		}
-		System.out.println("Move("+move+"):"+(totalCount++));
+		//System.out.println(this);
+		
+		//System.out.println("Move:"+index+"/"+this.getMoveCount()+"  ("+move+") - "+(totalCount)+" moveDelta:"+this.moveDelta);
 		
 	
 		
@@ -233,7 +243,7 @@ public class BBPosition implements Position {
 			this.updatePawnPseudoMoves(otherColor); 
 			
 			this.checkLegalMoves();
-	
+			
 			if(rochades) {
 				checkRochade(context,move); 
 			}
@@ -248,7 +258,7 @@ public class BBPosition implements Position {
 			this.last_updatePawnPseudoMoves(otherColor); 
 			
 			this.last_checkLegalMoves();
-	
+			
 			if(rochades) {
 				last_checkRochade(context,move,color==COLOR_WHITE); 
 			}			
@@ -260,7 +270,6 @@ public class BBPosition implements Position {
 	}
 	
 	
-	int movecount =0;
 	private void setMove(Move move,ContextLevel context ) {	
 	
 		//@todo use masks for move
@@ -650,9 +659,9 @@ public class BBPosition implements Position {
 					
 			
 		//@TODO WTF: Combine E1 and combine with nonPawn stuff
+		long oldE1Mask=this.moveMasks[_E1];
 		
-		if((untouched & MASK_E1)!=EMPTY_MASK) {
-			long oldE1Mask=this.moveMasks[_E1];
+		if((untouched & MASK_E1)!=EMPTY_MASK||(oldE1Mask&MASK_CASTLE_KING_KQkq)!=EMPTY_MASK) {
 			long oldCastleMovesKQ=oldE1Mask&MASK_CASTLE_KING_KQkq;
 			int oldCastleMovesKQCount= Long.bitCount(oldCastleMovesKQ);
 			long newCastleMovesKQ=EMPTY_MASK;
@@ -675,9 +684,8 @@ public class BBPosition implements Position {
 				this.moveCount[COLOR_WHITE]+=Long.bitCount(newCastleMovesKQ)-oldCastleMovesKQCount;
 			}
 		}
-		
-		if((untouched & MASK_E8)!=EMPTY_MASK) {
-			long oldE8Mask=this.moveMasks[_E8];
+		long oldE8Mask=this.moveMasks[_E8];		
+		if((untouched & MASK_E8)!=EMPTY_MASK ||(oldE8Mask&MASK_CASTLE_KING_KQkq)!=EMPTY_MASK) {
 			long oldCastleMoveskq=oldE8Mask&MASK_CASTLE_KING_KQkq;;
 			int oldCastleMoveskqCount= Long.bitCount(oldCastleMoveskq);
 			long newCastleMoveskq=EMPTY_MASK;
@@ -767,10 +775,10 @@ public class BBPosition implements Position {
 		// KingPos finally;
 		if(_kingOnly) {
 			//calculate the final amount 
-			_moveDelta =Long.bitCount(moveMasks[kingPos]&_pinMasks[kingPos]);
+			moveDelta =Long.bitCount(moveMasks[kingPos]&_pinMasks[kingPos]);
 		}else {
 			//calculate the delta but neglect the rochades!
-			_moveDelta =Long.bitCount(KING_MASKS[kingPos]&moveMasks[kingPos]&~_pinMasks[kingPos]);
+			moveDelta =Long.bitCount(KING_MASKS[kingPos]&moveMasks[kingPos]&~_pinMasks[kingPos]);
 		}
 		
 		
@@ -863,7 +871,7 @@ public class BBPosition implements Position {
 						
 				
 						all&=NOT_SHIFT[pos];//remove from post processsing! WTF ENSURE PROPPER COUNTING
-						_moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
+						moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
 					}
 				}			
 			}
@@ -894,7 +902,7 @@ public class BBPosition implements Position {
 						_pinMasks[pos]|=last;
 					}
 				}
-				_moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
+				moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
 
 			}
 		}
@@ -970,9 +978,13 @@ public class BBPosition implements Position {
 			System.out.println(str);
 			throw new RuntimeException("Alarm");
 		}
-		return analyzer.toString();
+		return str;
+	}
+	public String toStringDebug() {
+		return analyzer.toStringDebug();
 	}
 
+	
 	@Override
 	public int getHash() {
 		return this.zobristHash;
@@ -1015,7 +1027,7 @@ public class BBPosition implements Position {
 	
 	
 	private void last_setMove(Move move,ContextLevel context ) {	
-			
+		
 		int oldPos = move.getOldPos();
 		int newPos = move.getNewPos();
 		long oldPosMask = SHIFT[oldPos];
@@ -1130,7 +1142,7 @@ public class BBPosition implements Position {
 		if(untouched!=EMPTY_MASK) {
 			if(move.isRochadeDisabler()) { 
 				if(move.isRochade()) {
-					this.setMove(move.getRookMove(),context);
+					this.last_setMove(move.getRookMove(),context);
 				}
 				// update fields
 				long not_moveMask =~moveMask;
@@ -1494,11 +1506,11 @@ public class BBPosition implements Position {
 		// KingPos finally;
 		if(_kingOnly) {
 			//calculate the final amount 
-			_moveDelta =Long.bitCount(moveMasks[kingPos]&_pinMasks[kingPos]);
+			moveDelta =Long.bitCount(moveMasks[kingPos]&_pinMasks[kingPos]);
 			return;
 		}else {
 			//calculate the delta but neglect the rochades!
-			_moveDelta =Long.bitCount(KING_MASKS[kingPos]&moveMasks[kingPos]&~_pinMasks[kingPos]);
+			moveDelta =Long.bitCount(KING_MASKS[kingPos]&moveMasks[kingPos]&~_pinMasks[kingPos]);
 		}
 		
 		
@@ -1588,7 +1600,7 @@ public class BBPosition implements Position {
 						
 				
 						all&=NOT_SHIFT[pos];//remove from post processsing! WTF ENSURE PROPPER COUNTING
-						_moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
+						moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
 					}
 				}			
 			}
@@ -1619,7 +1631,7 @@ public class BBPosition implements Position {
 						_pinMasks[pos]|=last;
 					}
 				}
-				_moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
+				moveDelta +=Long.bitCount(moveMasks[pos]&~_pinMasks[pos]);
 
 			}
 		}
@@ -1633,9 +1645,9 @@ public class BBPosition implements Position {
 			
 			//@TODO WTF: Combine E1 and combine with nonPawn stuff
 			
-			if((untouched & MASK_E1)!=EMPTY_MASK) {
-				long oldE1Mask=this.moveMasks[_E1];
-				long oldCastleMovesKQ=oldE1Mask&MASK_CASTLE_KING_KQkq;
+			long oldE1Mask=this.moveMasks[_E1];
+			long oldCastleMovesKQ=oldE1Mask&MASK_CASTLE_KING_KQkq;
+			if((untouched & MASK_E1)!=EMPTY_MASK||oldCastleMovesKQ!=EMPTY_MASK) {
 				int oldCastleMovesKQCount= Long.bitCount(oldCastleMovesKQ);
 				long newCastleMovesKQ=EMPTY_MASK;
 				
@@ -1658,9 +1670,9 @@ public class BBPosition implements Position {
 		}else{
 			
 			
-			if((untouched & MASK_E8)!=EMPTY_MASK) {
-				long oldE8Mask=this.moveMasks[_E8];
-				long oldCastleMoveskq=oldE8Mask&MASK_CASTLE_KING_KQkq;;
+			long oldE8Mask=this.moveMasks[_E8];
+			long oldCastleMoveskq=oldE8Mask&MASK_CASTLE_KING_KQkq;;
+			if((untouched & MASK_E8)!=EMPTY_MASK||oldCastleMoveskq!=EMPTY_MASK) {
 				int oldCastleMoveskqCount= Long.bitCount(oldCastleMoveskq);
 				long newCastleMoveskq=EMPTY_MASK;
 				
@@ -1706,7 +1718,5 @@ public class BBPosition implements Position {
 				zobristHash^=randomBitStr[_H8][ROCHADE[3]];
 			}
 		}
-
 	}
-	
 }

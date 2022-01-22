@@ -1,11 +1,8 @@
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import perft.Game;
 import perft.chess.ChessGameFactory;
-import perft.chess.core.datastruct.ArrayStack;
-import perft.chess.core.o.O;
-import perft.chess.perftbb.BBPosition;
+
 import perft.chess.perftmb.MBPosition;
 
 public class Test {
@@ -31,18 +28,18 @@ public class Test {
 
 	public static void main(String[] args) {
 		ChessGameFactory.bitBoard=true;
-		//test(2, 2, "7K/8/8/8/8/8/8/7k w - -");
+		//test(10, 2, "8/P7/8/8/8/8/8/K1k5 b - - 0 1");
 		
-		debug(6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - -");
+		debug (6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		
 		//test(4,4085603L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		//test(5,193690690L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 		
-		if(true)return;
+		//if(true)return;
 		//test(2, 3, "4PKR1/4PPP1/8/8/8/r7/8/7k w - -");
 		
-		test(1, 2, "7K/7N/8/8/8/8/8/k6r w - -");
+		//test(1, 2, "7K/7N/8/8/8/8/8/k6r w - -");
 		
 		test(1, 2, "7K/8/8/8/8/8/8/k6r w - -");
 		

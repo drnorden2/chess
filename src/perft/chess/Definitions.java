@@ -244,7 +244,6 @@ public class Definitions {
 	public final static long MASK_CASTLE_KING_KQkq = MASK_C1|MASK_G1|MASK_C8|MASK_G8;
 	public final static long MASK_NOT_CASTLE_KING_KQkq = ~MASK_CASTLE_KING_KQkq ;
 	
-	
 
 	public final static int DIR_UP_RIGHT = 9;
 	public final static int DIR_UP_LEFT = 7;

@@ -215,4 +215,9 @@ public class Move {
 	public long getPawnNewAttackMask() {
 		return this.pawnNewAttackMask;
 	}
+	public String toString () {
+		String val =getPieceCharForTypeColor(type*64+color) + " : "+getNotation()+  "   From "+oldPos+" to "+newPos+" : Promotion:"+this.getPromotePieceType();	
+		return val;
+	}
+	
 }
