@@ -86,7 +86,7 @@ final public class Game {
 				}				
 
 				board.doMove(i);
-			
+			 
 				int hash = this.board.getHash();
 				Long curMoveCount  = 0L;
 				if(!board.isGameOver()&& ((bulk && deep>2) || (!bulk && deep>1))){
@@ -184,7 +184,21 @@ final public class Game {
 				continue;
 			}*/
 			board.doMove(i);
-			ref.setMoveByMoveStr(moveStr);
+			boolean worked = ref.setMoveByMoveStr(moveStr);
+			if(!worked) {
+				System.out.println("MoveStr not found!"+moves+" vs"+other +" in iteration:"+board.getTotalCount());
+				for(int j=0;i<moveList.size();j++) {
+					System.out.println((j+1)+":"+moveList.get(j));
+				}
+				String origTS = this.toString();
+				String refTS = ref.toString();
+				System.out.println(origTS);
+				System.out.println(refTS);
+				
+				System.out.println(BBAnalyzer.diffPositions(origTS,refTS));
+				System.exit(-1);
+
+			}
 			moveList.add(moveStr);
 			long count =debugPerft(ref, deep-1,moveList);
 			if(base) {

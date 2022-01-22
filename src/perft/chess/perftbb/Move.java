@@ -6,17 +6,14 @@ import static perft.chess.Definitions.*;
 import perft.chess.core.datastruct.IndexedElement;
 
 
-public class Move implements IndexedElement  {
+public class Move {
 
-	private static int moveIDCounter =0;
 	private final String notation;
 	private final int oldPos;
 	private final int newPos;
 	
 	private final int moveType;
-	private final int elementIndex;
 	private final int promotePieceType;
-	private final int rookPos;
 	private final int dirOfRochade;
 	private final Move rookMove;
 	private final boolean isTwoSquarePush;
@@ -28,22 +25,14 @@ public class Move implements IndexedElement  {
 	private final boolean isKingSensing;
 	private final boolean isRochade;
 	private final int callbackType;
-	private final int dirX;
-	private final int dirY;
 	private final int color;
 	private final int type;
-	private final int typeColor;
 	private final boolean isRochadeDisabler;
 	private int[] pawnNewAttacks;
 	private long pawnNewAttackMask;
 	
-	public static int getMaxMoveID() {
-		return moveIDCounter;
-	}
+
 	
-	public static void resetMoveIDs() {
-		moveIDCounter =0;
-	}
 	public Move(int type, int typeColor, int color, int callbackType,int oldPos, int newPos, int moveType,int dirX, int dirY) {
 		this(type, typeColor,color,callbackType, oldPos, newPos, moveType, dirX, dirY,-1);
 	}
@@ -54,19 +43,14 @@ public class Move implements IndexedElement  {
 	
 	
 	public Move(int type, int typeColor, int color, int callbackType, int oldPos, int newPos, int moveType,int dirX, int dirY,int promotePieceType, int rookPos, int dirOfRochade) {
-		this.elementIndex= Move.moveIDCounter++;
 		this.type = type;
-		this.typeColor = typeColor;
 		this.color = color;
 		this.oldPos= oldPos;
 		this.newPos = newPos;
 		this.moveType = moveType;
 		this.promotePieceType = promotePieceType==-1? promotePieceType:(promotePieceType*2+color)*64; 
-		this.rookPos =rookPos;
 		this.dirOfRochade = dirOfRochade ;
 		this.callbackType = callbackType;
-		this.dirX=dirX;
-		this.dirY=dirY;
 		if(rookPos==-1) {
 			rookMove = null;
 		}else {
@@ -165,9 +149,7 @@ public class Move implements IndexedElement  {
 				+((char)('a'+f2))  +""+ (1+r2)+promotion+"";
 	}	
 
-	public int getElementIndex() {
-		return this.elementIndex;
-	}
+	
 	public int getOldPos() {
 		return this.oldPos;
 	}
@@ -176,20 +158,7 @@ public class Move implements IndexedElement  {
 		return this.newPos;
 	}
 	
-	public int getMoveType() {
-		return this.moveType;
-	}
-	public int getDirOfRochade() {
-		return this.dirOfRochade;
-	}
-	public int getRookPos() {
-		return this.rookPos;
-	}
 	
-	public String toString () {
-		String val ="["+elementIndex+"] "+getPieceCharForTypeColor(typeColor) + " : "+getNotation()+  "   From "+oldPos+" to "+newPos+" : Promotion:"+this.getPromotePieceType();	
-		return val;
-	}
 	public Move getRookMove() {
 		return rookMove;
 	}
@@ -227,16 +196,6 @@ public class Move implements IndexedElement  {
 	public boolean isKingSensing() {
 		return this.isKingSensing;		
 	}
-	 
-	public int getDirX() {
-		return dirX;
-	}
-	public int getDirY() {
-		return dirY;
-	}
-	public boolean isEnpassanteMove() {
-		return this.moveType==MOVE_TYPE_PAWN_BEAT_OR_ENPASSANTE ;
-	}
 	public String getNotation() {
      	return this.notation;
 	}
@@ -249,9 +208,6 @@ public class Move implements IndexedElement  {
 	}
 	public int getPieceType() {
 		return this.type;
-	}
-	public int getTypeColor() {
-		return this.typeColor;
 	}
 	public int[] getPawnNewAttacks() {
 		return this.pawnNewAttacks;

@@ -4,13 +4,11 @@ import static perft.chess.Definitions.*;
 public class BBMoveManager {
 
 
-
 		public static final Move [][] moves= new Move[1280][64];
 		//private static final Move [][] pseudoMoveSets = new Move[1280][];
 		public static final long [] moveMasks = new long[1280];
 
 		public BBMoveManager() {
-			Move.resetMoveIDs();
 			setup();
 		}
 		
@@ -164,7 +162,6 @@ public class BBMoveManager {
 						break;
 					}
 				}
-				
 			}
 		}
 
@@ -187,7 +184,6 @@ public class BBMoveManager {
 							mask |= 1L << newPos;
 						}
 					}
-				
 				}
 			}
 			this.moveMasks[offset+index]=mask;
@@ -195,18 +191,10 @@ public class BBMoveManager {
 		
 		
 		private void addMoves(Move curMoves[][], int offset,int index, int pieceType) {
-			int rayCounter=0;
 			
-			for (int i = 0; i < curMoves.length; i++) {// MoveRays
-				if (curMoves[i][0] != null) {
-					rayCounter++;
-				}
-			}
 			
-			int validRayCursor =0;
 			Move[] moveMap = new Move[64];
 			
-			int moveIndex =0;
 			
 			for (int i = 0; i < curMoves.length; i++) {// MoveRays
 				if(curMoves[i][0]==null) {

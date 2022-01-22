@@ -22,7 +22,7 @@ public class ContextLevel {
 	private final int moveCount [] = new int[2];
 	private long untouched=EMPTY_MASK;
 	private long enPassanteMask=EMPTY_MASK;//@todo WTF -stack
-
+	private int zobristHash=0;
 	private long fcmTouched=EMPTY_MASK;
 
 	public long[] _mLeft=new long[2];
@@ -54,7 +54,7 @@ public class ContextLevel {
 	private int fieldCounter=0;
 	private int cursorFieldList=0;
 	private int cursorMoves=0;
-	
+	private boolean rochades=true;
 	public ContextLevel(BBPosition position,int level, boolean lastLevel) {
 		this.position = position;
 		this.level = level;
@@ -89,6 +89,8 @@ public class ContextLevel {
 		
 		this.untouched=position.untouched;
 		this.enPassanteMask=position.enPassanteMask;
+		this.zobristHash=position.zobristHash;
+		this.rochades = position.rochades;
 		
 		/*
 		System.arraycopy(position.fields, 0, this.fields, 0, 64);
@@ -104,7 +106,7 @@ public class ContextLevel {
 		
 		
 		int count2 = Long.bitCount(fcmTouched);
-		for(int i=0;i<count2;i++) {
+		for(int i=0;i<count2;i++) { 
 			int pos = Long.numberOfTrailingZeros(fcmTouched);
 			fcmTouched&=fcmTouched-1;
 			position.fields[pos]=this.fields[pos];
@@ -122,6 +124,8 @@ public class ContextLevel {
 		}
 		position.untouched=this.untouched;
 		position.enPassanteMask=this.enPassanteMask;//@todo WTF -stack		
+		position.zobristHash = this.zobristHash;
+		position.rochades = this.rochades;
 		/*
 		System.arraycopy(this.fields, 0, this.fields, 0, 64);
 		System.arraycopy(this.callBacks, 0, this.callBacks, 0, 64);

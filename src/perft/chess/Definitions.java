@@ -101,6 +101,7 @@ public class Definitions {
 	public static final int _F1=5;
 	public static final int _G1=6;
 	public static final int _H1=7;
+	
 
 	
 	public static final long MASK_A1=1L<<_A1;
@@ -111,7 +112,10 @@ public class Definitions {
 	public static final long MASK_F1=1L<<_F1;
 	public static final long MASK_G1=1L<<_G1;
 	public static final long MASK_H1=1L<<_H1;
+	public static final long MASK_A1_H1=MASK_A1|MASK_H1;
+	
 
+	
 	public static final int _A8=56;
 	public static final int _B8=57;
 	public static final int _C8=58;
@@ -130,6 +134,7 @@ public class Definitions {
 	public static final long MASK_F8=1L<<_F8;
 	public static final long MASK_G8=1L<<_G8;
 	public static final long MASK_H8=1L<<_H8;	
+	public static final long MASK_A8_H8=MASK_A8|MASK_H8;
 	
 	public static final long MASK_E8_A8=MASK_E8|MASK_A8;
 	public static final long MASK_E8_H8=MASK_E8|MASK_H8;

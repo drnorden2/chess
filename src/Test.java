@@ -31,11 +31,13 @@ public class Test {
 
 	public static void main(String[] args) {
 		ChessGameFactory.bitBoard=true;
-		//test(6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		//test(2, 2, "7K/8/8/8/8/8/8/7k w - -");
+		
+		debug(6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - -");
 		
 		//test(4,4085603L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		//test(5,193690690L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 		
 		if(true)return;
 		//test(2, 3, "4PKR1/4PPP1/8/8/8/r7/8/7k w - -");
@@ -233,13 +235,13 @@ public class Test {
 		}else {
 			headLine +="Real Counting";
 		}
-		String boardStr = game.toString();
 		System.out.println("DIE SPIELE SIND ERÖFFNET!");
 		long timeStamp = System.currentTimeMillis();
 		games = game.perft(depth,useBulk);
 		double time = ((double)(long)((System.currentTimeMillis()-timeStamp)/10)/100);
 		
 		System.out.println(headLine);
+		String boardStr = game.toString();
 		System.out.print(boardStr);
 		
 		//games = game.bulkPerft(depth);

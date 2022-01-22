@@ -1,19 +1,22 @@
 package perft.chess.perftbb;
 
+import java.util.Random;
 import static perft.chess.Definitions.*;
 
 
 import perft.chess.Position;
-import perft.chess.core.baseliner.BLVariableInt;
-import perft.chess.core.baseliner.BLVariableLong;
-import perft.chess.core.baseliner.BaseLiner;
-import perft.chess.core.datastruct.ArrayStack;
-import perft.chess.core.o.O;
 import perft.chess.perftbb.gen.MagicNumberFinder;
 
 
 
 public class BBPosition implements Position {
+	private final static int[] ROCHADE = new int[] 
+			{32*64+0,32*64+1,32*64+2,32*64+3};
+	
+	private final static int ENP_INDEX = 32*64+4;
+	
+	private final int[][] randomBitStr= new int[64][32*68+4+1];
+	
 	private int totalCount =0;
 	
 	private int level =4;
@@ -31,8 +34,10 @@ public class BBPosition implements Position {
 	public final long[] knights = new long[2];
 	public final long[] pawns = new long[2];
 	public final int moveCount [] = new int[2];
-	public long untouched=0;
-	public long enPassanteMask=0;
+	public long untouched=EMPTY_MASK;
+	public long enPassanteMask=EMPTY_MASK;
+	public int zobristHash=0;
+	public boolean rochades = false;
 
 	public BBAnalyzer analyzer = new BBAnalyzer(this);
 	public BBMoveManager moveManager = new BBMoveManager();
@@ -49,11 +54,19 @@ public class BBPosition implements Position {
 	private long _enpPawnMask=0;
 	private int _moveDelta;
 	private boolean _calcDone = false;
-	private boolean _isLastRound=true;
 	private final long[] fullMaskArray = new long[64];
 	
 	
 	public BBPosition(int depth) {
+		// generate an array of random bitStrings
+		Random random = new Random(1648119808);
+		
+		for (int i = 0; i < randomBitStr.length; i++) {
+	        for (int j = 0; j < randomBitStr[i].length; j++) {
+	        	randomBitStr[i][j] = (int) ((long) (Long.MAX_VALUE*random.nextLong()) & 0xFFFFFFFF);
+
+	        }
+		}
 		this.depth = depth;
 		System.out.println("Depth:"+depth);
 		contextLevels = new ContextLevel[depth+4+1];//WTF (-1)
@@ -69,8 +82,10 @@ public class BBPosition implements Position {
 	@Override
 	public void initialAddToBoard(int color, int type, int pos) {
 		int typeColor =((type <<1) + color) << 6;
-	
+		
+		zobristHash^=randomBitStr[pos][typeColor];
 		this.fields[pos]= typeColor;
+		
 		allOfOneColor[color]|=SHIFT[pos];
 		if(type==PIECE_TYPE_KING) {
 			this.kings[color]|=SHIFT[pos];
@@ -95,6 +110,9 @@ public class BBPosition implements Position {
 
 	@Override
 	public void initialEnPassantePos(int enpassantePos) {
+		if(enpassantePos!=EMPTY_MASK) {
+			zobristHash^=randomBitStr[Long.bitCount(enpassantePos)][ENP_INDEX];
+		}
 		this.enPassanteMask=SHIFT[enpassantePos];
 	}
 
@@ -108,9 +126,8 @@ public class BBPosition implements Position {
   		this.colorAtTurn=OTHER_COLOR[this.colorAtTurn];
   		int color = this.colorAtTurn;
   		ContextLevel context = this.contextLevels[level];
-		if(untouched!=EMPTY_MASK && ((untouched & MASK_NOT_ALL_ROOKS) ==EMPTY_MASK || (untouched & MASK_ALL_ROOKS)==EMPTY_MASK)) {
-			untouched=EMPTY_MASK;
-		}
+  		touch(EMPTY_MASK);
+  		rochades = this.untouched!=EMPTY_MASK;
 		_occ = allOfOneColor[COLOR_WHITE]| allOfOneColor[COLOR_BLACK];
 		_notOcc = ~(_occ);
 	
@@ -149,8 +166,9 @@ public class BBPosition implements Position {
 		}
 		
 		checkLegalMoves();
-
-		checkRochade(context,null); 
+		if(rochades) {
+			checkRochade(context,null); 
+		}
 		this.colorAtTurn=OTHER_COLOR[this.colorAtTurn];
 		_calcDone = false;
 	}
@@ -194,6 +212,15 @@ public class BBPosition implements Position {
 	public void setMove(int index) {
 		totalCount++;
 		Move move = getMove(index);
+		
+		if(totalCount==121) {
+			System.out.println(this);
+		}
+		System.out.println("Move("+move+"):"+(totalCount++));
+		
+	
+		
+		
 		level++;
 		ContextLevel context = this.contextLevels[level];
 		
@@ -207,9 +234,9 @@ public class BBPosition implements Position {
 			
 			this.checkLegalMoves();
 	
-			if(untouched!=EMPTY_MASK) {
+			if(rochades) {
 				checkRochade(context,move); 
-			}			
+			}
 			
 			this.colorAtTurn = OTHER_COLOR[colorAtTurn];
 			_calcDone=false;
@@ -222,7 +249,7 @@ public class BBPosition implements Position {
 			
 			this.last_checkLegalMoves();
 	
-			if(untouched!=EMPTY_MASK) {
+			if(rochades) {
 				last_checkRochade(context,move,color==COLOR_WHITE); 
 			}			
 			
@@ -235,13 +262,6 @@ public class BBPosition implements Position {
 	
 	int movecount =0;
 	private void setMove(Move move,ContextLevel context ) {	
-		/*
-		if(movecount==2152) {
-			//System.out.println("WTF");
-		}
-		
-		System.out.println("Move("+move+"):"+(movecount++));
-		*/
 	
 		//@todo use masks for move
 		
@@ -259,10 +279,11 @@ public class BBPosition implements Position {
 		context.trigger(oldPos);
 		
 		
-/*E*/	int otherTypeColor = fields[newPos];
 		cbs= this.tCallBacks[newPos];
+/*E*/	int otherTypeColor = fields[newPos];
 		if(otherTypeColor!=-1) {
-			
+			zobristHash^=randomBitStr[newPos][otherTypeColor];
+				
 			//alter moves(ok), moveCount(ok), allOfOneColor(ok), fields(later), callbacks(ok), tcallbacks(ok) and if neccessary pawns!(ok)
 /*!!!*/		removePseudoMoves(otherColor,newPos);
 			allOfOneColor[otherColor]^=newPosMask;
@@ -283,6 +304,8 @@ public class BBPosition implements Position {
 		
 		//int typeColor = context.getAndSetFields(oldPos,-1);
 		int typeColor = fields[oldPos];
+	
+		zobristHash^=randomBitStr[oldPos][typeColor];
 		fields[oldPos]=-1;
 
 /*!!!*/	removePseudoMoves(color,oldPos);
@@ -305,6 +328,8 @@ public class BBPosition implements Position {
 		}
 
 		fields[newPos]=typeColor;
+		zobristHash^=randomBitStr[newPos][typeColor];
+
 		this.allOfOneColor[color]^=moveMask;
 		
 		
@@ -315,20 +340,26 @@ public class BBPosition implements Position {
 		
 		
 		if(enPassanteMask!=EMPTY_MASK)	{
-			if(move.getEnPassanteSquare()==Long.numberOfTrailingZeros(enPassanteMask)) {
+			int enpPos = Long.numberOfTrailingZeros(enPassanteMask);
+			if(move.getEnPassanteSquare()==enpPos) {
 				int enpPawnPos = move.getEnPassantePawnPos();
 				context.trigger(enpPawnPos);
-				cbs|= this.tCallBacks[enpPawnPos]; 				
+				cbs|= this.tCallBacks[enpPawnPos]; 	
+				
+				zobristHash^=randomBitStr[enpPawnPos][fields[enpPawnPos]];
 				fields[enpPawnPos]=	-1;
-/*u*/			this.allOfOneColor[otherColor]&=~SHIFT[enpPawnPos];// might be empty anyways
+/*u*/			
+				this.allOfOneColor[otherColor]&=~SHIFT[enpPawnPos];// might be empty anyways
 				pawns[otherColor]&=~SHIFT[enpPawnPos];
 				removePseudoMoves(otherColor,enpPawnPos);
 			}
 			this.enPassanteMask=EMPTY_MASK;
+			zobristHash^=randomBitStr[enpPos][ENP_INDEX];
 		}
 
 			
 		if(move.isTwoSquarePush()) {
+			zobristHash^=randomBitStr[move.getEnPassanteSquare()][ENP_INDEX];
 			this.enPassanteMask=SHIFT[move.getEnPassanteSquare()];//@TBD always set (geht mit stack)
 		}
 
@@ -353,8 +384,7 @@ public class BBPosition implements Position {
 					this.setMove(move.getRookMove(),context);
 				}
 				// update fields
-				long not_moveMask =~moveMask;
-				this.untouched&=not_moveMask;
+				touch(moveMask);
 			}
 		}
 		cbs &= (_occ)&~(moveMask)&~(pawns[COLOR_WHITE]|pawns[COLOR_BLACK]);//@todo occ var
@@ -671,8 +701,8 @@ public class BBPosition implements Position {
 				this.moveCount[COLOR_BLACK]+=Long.bitCount(newCastleMoveskq)-oldCastleMoveskqCount;
 			}
 		}
-		if(((untouched & MASK_NOT_ALL_ROOKS) ==0 || (untouched & MASK_ALL_ROOKS)==0)) {
-			untouched = EMPTY_MASK;
+		if(untouched==EMPTY_MASK) {
+			rochades =false;
 		}
 	}
 	
@@ -945,8 +975,7 @@ public class BBPosition implements Position {
 
 	@Override
 	public int getHash() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.zobristHash;
 	}
 	
 	
@@ -1001,9 +1030,10 @@ public class BBPosition implements Position {
 		context.trigger(oldPos);
 		
 		
-/*E*/	int otherTypeColor = fields[newPos];
 		cbs= this.tCallBacks[newPos];
+		int otherTypeColor = fields[newPos];
 		if(otherTypeColor!=-1) {
+			zobristHash^=randomBitStr[newPos][otherTypeColor];
 			last_removeOtherPseudoMoves(otherColor,newPos);
 			//removePseudoMoves(otherColor,newPos);//!!!!!!!!!!!!!!!!!!!!!!!!!!11
 		
@@ -1022,6 +1052,9 @@ public class BBPosition implements Position {
 		
 		//int typeColor = context.getAndSetFields(oldPos,-1);
 		int typeColor = fields[oldPos];
+		
+		
+		zobristHash^=randomBitStr[oldPos][typeColor];
 		fields[oldPos]=-1;
 		
 		last_removeOwnPseudoMoves(color,oldPos);
@@ -1042,8 +1075,11 @@ public class BBPosition implements Position {
 				this.pawns[color]^=moveMask;
 			}
 		}
-
+		
+		zobristHash^=randomBitStr[newPos][typeColor];
 		fields[newPos]=typeColor;
+		
+		
 		this.allOfOneColor[color]^=moveMask;
 		
 		
@@ -1054,10 +1090,12 @@ public class BBPosition implements Position {
 		
 		
 		if(enPassanteMask!=EMPTY_MASK)	{
-			if(move.getEnPassanteSquare()==Long.numberOfTrailingZeros(enPassanteMask)) {
+			int enpPos = Long.numberOfTrailingZeros(enPassanteMask);
+			if(move.getEnPassanteSquare()==enpPos) {
 				int enpPawnPos = move.getEnPassantePawnPos();
 				context.trigger(enpPawnPos);
-				cbs|= this.tCallBacks[enpPawnPos]; 				
+				cbs|= this.tCallBacks[enpPawnPos]; 
+				zobristHash^=randomBitStr[enpPawnPos][fields[enpPawnPos]];
 				fields[enpPawnPos]=	-1;
 /*u*/			this.allOfOneColor[otherColor]&=~SHIFT[enpPawnPos];// might be empty anyways
 				pawns[otherColor]&=~SHIFT[enpPawnPos];
@@ -1065,10 +1103,12 @@ public class BBPosition implements Position {
 				last_removeOtherPseudoMoves(otherColor,enpPawnPos);
 			}
 			this.enPassanteMask=EMPTY_MASK;
+			zobristHash^=randomBitStr[enpPos][ENP_INDEX];
 		}
 
 			
 		if(move.isTwoSquarePush()) {
+			zobristHash^=randomBitStr[move.getEnPassanteSquare()][ENP_INDEX];
 			this.enPassanteMask=SHIFT[move.getEnPassanteSquare()];//@TBD always set (geht mit stack)
 		}
 
@@ -1450,7 +1490,7 @@ public class BBPosition implements Position {
 				_pinMasks[kingPos]&=NOT_SHIFT[pos];
 			}
 		}
-		
+		 
 		// KingPos finally;
 		if(_kingOnly) {
 			//calculate the final amount 
@@ -1636,13 +1676,37 @@ public class BBPosition implements Position {
 						newCastleMoveskq|= MASK_CASTLE_KING_q;
 					}
 				}
-				
 				if(oldCastleMoveskq !=newCastleMoveskq) {
 					this.moveCount[COLOR_BLACK]+=Long.bitCount(newCastleMoveskq)-oldCastleMoveskqCount;
 				}
 			}
 		}
 	}
-	
+	private void touch(long mask){
+		if((untouched&mask) != EMPTY_MASK) {
+			long before = untouched;
+			untouched&=~mask;
+			if((untouched & MASK_E1) ==EMPTY_MASK ||(untouched & MASK_A1_H1)==EMPTY_MASK){
+				untouched &=MASK_NOT_1_RANK;
+			}
+			if((untouched & MASK_E8) ==EMPTY_MASK ||(untouched & MASK_A8_H8)==EMPTY_MASK){
+				untouched &=MASK_NOT_8_RANK;
+			}
+			long delta = before^untouched;
+			if((MASK_A1&delta)!=EMPTY_MASK){
+				zobristHash^=randomBitStr[_A1][ROCHADE[0]];
+			}
+			if((MASK_H1&delta)!=EMPTY_MASK){
+				zobristHash^=randomBitStr[_H1][ROCHADE[1]];
+			}
+			if((MASK_A8&delta)!=EMPTY_MASK){
+				zobristHash^=randomBitStr[_A8][ROCHADE[2]];
+			}
+			if((MASK_H8&delta)!=EMPTY_MASK){
+				zobristHash^=randomBitStr[_H8][ROCHADE[3]];
+			}
+		}
+
+	}
 	
 }
