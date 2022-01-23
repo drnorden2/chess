@@ -6,17 +6,16 @@ import java.util.HashMap;
 
 import perft.Player.PlayerType;
 import perft.chess.core.datastruct.ArrayStack;
-import perft.chess.core.o.O;
 import perft.chess.perftbb.BBAnalyzer;
 
 
 final public class Game {
-	private boolean isHashed = false;
+	private boolean isHashed = true;
 	private Player[] players;
 	private Board board;
 	private BoardUI boardUI;
 	private static long moveCounter=0;
-	private  HashMap<Integer,Long>[]  hashMap;
+	private  HashMap<Long,Long>[]  hashMap;
 	
 	public Game(GameFactory chessFactory,String fen,int depth) {
 		this(
@@ -25,6 +24,10 @@ final public class Game {
 				chessFactory.getPlayer(PlayerType.RANDOM),
 				chessFactory.getBoardUI()
 			);		
+		hashMap= new HashMap[depth+1];	
+		for(int i=0;i<hashMap.length;i++) {
+			hashMap[i]= new HashMap<Long,Long>();	
+		} 
 
 	}
 	public final Board getBoard() {
@@ -87,21 +90,24 @@ final public class Game {
 
 				board.doMove(i);
 			 
-				int hash = this.board.getHash();
+				long hash = this.board.getHash();
 				Long curMoveCount  = 0L;
 				if(!board.isGameOver()&& ((bulk && deep>2) || (!bulk && deep>1))){
 					if(isHashed) {
 						curMoveCount  = hashMap[deep].get(hash);
 					}
 					if(curMoveCount==null ||!isHashed) {
-						curMoveCount=0L;
+						
+						
 						curMoveCount = hashedPerft(deep-1,depth,bulk);
-
+						
+						
+						
+						
 						if(level==0) {
 							System.out.println(moveStr+" "+curMoveCount);
 						}				
 	
-						
 						if(isHashed) {	
 							hashMap[deep].put(hash, curMoveCount);
 						}
@@ -177,13 +183,14 @@ final public class Game {
 		}
 		
 		for(int i=0;i<moves;i++) {
-			String moveStr = board.getMoveStr(i);
 			// Patch:
 			/*
 			if(base && !"d5d6".equals(moveStr)) {
 				continue;
 			}*/
 			board.doMove(i);
+			String moveStr = board.getMoveStr(i);
+			//String moveStr = BBPosition.moveNotation;
 			boolean worked = ref.setMoveByMoveStr(moveStr);
 			if(!worked) {
 				System.out.println("MoveStr not found!"+moves+" vs"+other +" in iteration:"+board.getTotalCount());

@@ -102,6 +102,8 @@ public class Definitions {
 	public static final int _G1=6;
 	public static final int _H1=7;
 	
+	public static final int _H6=47;
+	
 
 	
 	public static final long MASK_A1=1L<<_A1;

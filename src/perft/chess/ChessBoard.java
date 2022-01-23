@@ -56,7 +56,7 @@ public class ChessBoard extends Board{
 		return position.getNotation(index);
 	}
 	@Override
-	public int getHash() {
+	public long getHash() {
 		return position.getHash();
 	}
 	@Override

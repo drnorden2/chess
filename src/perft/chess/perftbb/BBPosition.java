@@ -13,12 +13,11 @@ import perft.chess.perftbb.gen.MagicNumberFinder;
 public class BBPosition implements Position {
 	ArrayList<String> list = new ArrayList<String>();
 	
-	private final static int[] ROCHADE = new int[] 
-			{32*64+0,32*64+1,32*64+2,32*64+3};
-	
+	private final static int[] ROCHADE = new int[] {32*64+0,32*64+1,32*64+2,32*64+3};
 	private final static int ENP_INDEX = 32*64+4;
 	
-	private final int[][] randomBitStr= new int[64][32*68+4+1];
+	
+	private final long[][] randomBitStr= new long[64][32*68+4+1];
 	
 	private int totalCount =0;
 	
@@ -39,7 +38,7 @@ public class BBPosition implements Position {
 	public final int moveCount [] = new int[2];
 	public long untouched=EMPTY_MASK;
 	public long enPassanteMask=EMPTY_MASK;
-	public int zobristHash=0;
+	public long zobristHash=0;
 	public boolean rochades = false;
 
 	public BBAnalyzer analyzer = new BBAnalyzer(this);
@@ -66,7 +65,7 @@ public class BBPosition implements Position {
 		
 		for (int i = 0; i < randomBitStr.length; i++) {
 	        for (int j = 0; j < randomBitStr[i].length; j++) {
-	        	randomBitStr[i][j] = (int) ((long) (Long.MAX_VALUE*random.nextLong()) & 0xFFFFFFFF);
+	        	randomBitStr[i][j] = Long.MAX_VALUE*random.nextLong();
 
 	        }
 		}
@@ -212,17 +211,20 @@ public class BBPosition implements Position {
 		}
 		//list.remove(list.size()-1);
 	}
-
+	public static String moveNotation="";
 	@Override
 	public void setMove(int index) {
 		
 		totalCount++;
 		Move move = getMove(index);
-		//list.add(move.toString()+this.toStringDebug());
-		//if("b3a2".equals(move.getNotation())) {
-		//	System.out.println("Help");
-		//	System.out.println(list);
-		//}
+		/*
+		moveNotation = move.getNotation();
+		list.add(totalCount+"\n"+move.toString()+this.toStringDebug()+"MoveCount:"+this.getMoveCount());
+		System.out.println(totalCount);
+		if(totalCount == 382) {
+			System.out.println("Help");
+			System.out.println(list);
+		}*/
 		
 		//System.out.println(this);
 		
@@ -269,9 +271,7 @@ public class BBPosition implements Position {
 		}
 	}
 	
-	
 	private void setMove(Move move,ContextLevel context ) {	
-	
 		//@todo use masks for move
 		
 		int oldPos = move.getOldPos();
@@ -659,56 +659,64 @@ public class BBPosition implements Position {
 					
 			
 		//@TODO WTF: Combine E1 and combine with nonPawn stuff
-		long oldE1Mask=this.moveMasks[_E1];
+		if(fields[_E1]==PIECE_TYPE_WHITE_KING) {
+				
+			long oldE1Mask=this.moveMasks[_E1];
+			
+			if((untouched & MASK_E1)!=EMPTY_MASK||(oldE1Mask&MASK_CASTLE_KING_KQkq)!=EMPTY_MASK) {
+				long oldCastleMovesKQ=oldE1Mask&MASK_CASTLE_KING_KQkq;
+				int oldCastleMovesKQCount= Long.bitCount(oldCastleMovesKQ);
+				long newCastleMovesKQ=EMPTY_MASK;
+				
+				context.trigger(_E1);
+				
+				if (((ntchdOcc^MASK_E1_H1)& MASK_CASTLE_ALL_K)==EMPTY_MASK) {
+					if(((this.tCallBacks[_E1]|this.tCallBacks[_F1]|this.tCallBacks[_G1])&allOfOneColor[COLOR_BLACK])==0) {
+						newCastleMovesKQ|= MASK_CASTLE_KING_K;
+					}
+				}
+				if (((ntchdOcc^MASK_E1_A1)& MASK_CASTLE_ALL_Q)==EMPTY_MASK) {
+					if(((this.tCallBacks[_C1]|this.tCallBacks[_D1]|this.tCallBacks[_E1])&allOfOneColor[COLOR_BLACK])==0) {
+							newCastleMovesKQ|= MASK_CASTLE_KING_Q;
+					}
+				}
+				long mask = (oldE1Mask&MASK_NOT_CASTLE_KING_KQkq)|newCastleMovesKQ;
+				moveMasks[_E1]=mask;
+				if(oldCastleMovesKQ !=newCastleMovesKQ) {
+					this.moveCount[COLOR_WHITE]+=Long.bitCount(newCastleMovesKQ)-oldCastleMovesKQCount;
+				}
+			}
+		}
 		
-		if((untouched & MASK_E1)!=EMPTY_MASK||(oldE1Mask&MASK_CASTLE_KING_KQkq)!=EMPTY_MASK) {
-			long oldCastleMovesKQ=oldE1Mask&MASK_CASTLE_KING_KQkq;
-			int oldCastleMovesKQCount= Long.bitCount(oldCastleMovesKQ);
-			long newCastleMovesKQ=EMPTY_MASK;
-			
-			context.trigger(_E1);
-			
-			if (((ntchdOcc^MASK_E1_H1)& MASK_CASTLE_ALL_K)==EMPTY_MASK) {
-				if(((this.tCallBacks[_E1]|this.tCallBacks[_F1]|this.tCallBacks[_G1])&allOfOneColor[COLOR_BLACK])==0) {
-					newCastleMovesKQ|= MASK_CASTLE_KING_K;
+		if(fields[_E8]==PIECE_TYPE_BLACK_KING) {
+				
+			long oldE8Mask=this.moveMasks[_E8];		
+			if((untouched & MASK_E8)!=EMPTY_MASK ||(oldE8Mask&MASK_CASTLE_KING_KQkq)!=EMPTY_MASK) {
+				long oldCastleMoveskq=oldE8Mask&MASK_CASTLE_KING_KQkq;;
+				int oldCastleMoveskqCount= Long.bitCount(oldCastleMoveskq);
+				long newCastleMoveskq=EMPTY_MASK;
+				
+				context.trigger(_E8);
+	
+				if (((ntchdOcc^MASK_E8_H8)& MASK_CASTLE_ALL_k)==EMPTY_MASK) {
+					if(((this.tCallBacks[_E8]|this.tCallBacks[_F8]|this.tCallBacks[_G8])&allOfOneColor[COLOR_WHITE])==0) {
+						newCastleMoveskq|= MASK_CASTLE_KING_k;
+					}
 				}
-			}
-			if (((ntchdOcc^MASK_E1_A1)& MASK_CASTLE_ALL_Q)==EMPTY_MASK) {
-				if(((this.tCallBacks[_C1]|this.tCallBacks[_D1]|this.tCallBacks[_E1])&allOfOneColor[COLOR_BLACK])==0) {
-						newCastleMovesKQ|= MASK_CASTLE_KING_Q;
+				if (((ntchdOcc^MASK_E8_A8)& MASK_CASTLE_ALL_q)==EMPTY_MASK) {
+					if(((this.tCallBacks[_C8]|this.tCallBacks[_D8]|this.tCallBacks[_E8])&allOfOneColor[COLOR_WHITE])==0) {
+						newCastleMoveskq|= MASK_CASTLE_KING_q;
+					}
 				}
-			}
-			long mask = (oldE1Mask&MASK_NOT_CASTLE_KING_KQkq)|newCastleMovesKQ;
-			moveMasks[_E1]=mask;
-			if(oldCastleMovesKQ !=newCastleMovesKQ) {
-				this.moveCount[COLOR_WHITE]+=Long.bitCount(newCastleMovesKQ)-oldCastleMovesKQCount;
+				long mask = (oldE8Mask&MASK_NOT_CASTLE_KING_KQkq)|newCastleMoveskq;
+				moveMasks[_E8]=mask;
+				
+				if(oldCastleMoveskq !=newCastleMoveskq) {
+					this.moveCount[COLOR_BLACK]+=Long.bitCount(newCastleMoveskq)-oldCastleMoveskqCount;
+				}
 			}
 		}
-		long oldE8Mask=this.moveMasks[_E8];		
-		if((untouched & MASK_E8)!=EMPTY_MASK ||(oldE8Mask&MASK_CASTLE_KING_KQkq)!=EMPTY_MASK) {
-			long oldCastleMoveskq=oldE8Mask&MASK_CASTLE_KING_KQkq;;
-			int oldCastleMoveskqCount= Long.bitCount(oldCastleMoveskq);
-			long newCastleMoveskq=EMPTY_MASK;
-			
-			context.trigger(_E8);
-
-			if (((ntchdOcc^MASK_E8_H8)& MASK_CASTLE_ALL_k)==EMPTY_MASK) {
-				if(((this.tCallBacks[_E8]|this.tCallBacks[_F8]|this.tCallBacks[_G8])&allOfOneColor[COLOR_WHITE])==0) {
-					newCastleMoveskq|= MASK_CASTLE_KING_k;
-				}
-			}
-			if (((ntchdOcc^MASK_E8_A8)& MASK_CASTLE_ALL_q)==EMPTY_MASK) {
-				if(((this.tCallBacks[_C8]|this.tCallBacks[_D8]|this.tCallBacks[_E8])&allOfOneColor[COLOR_WHITE])==0) {
-					newCastleMoveskq|= MASK_CASTLE_KING_q;
-				}
-			}
-			long mask = (oldE8Mask&MASK_NOT_CASTLE_KING_KQkq)|newCastleMoveskq;
-			moveMasks[_E8]=mask;
-			
-			if(oldCastleMoveskq !=newCastleMoveskq) {
-				this.moveCount[COLOR_BLACK]+=Long.bitCount(newCastleMoveskq)-oldCastleMoveskqCount;
-			}
-		}
+		
 		if(untouched==EMPTY_MASK) {
 			rochades =false;
 		}
@@ -933,7 +941,7 @@ public class BBPosition implements Position {
   		int retVal = Long.bitCount(bits);
   		for(int i=0;i<retVal;i++) {
   			int pos = Long.numberOfTrailingZeros(bits);
-			bits &= bits - 1;
+  			bits &= bits - 1;
 		
 			long moveMask = this.moveMasks[pos];
 			long pinMask = _pinMasks[pos];
@@ -944,13 +952,17 @@ public class BBPosition implements Position {
 			}
 			
 			int typeColor = fields[pos];
+			Move[] moves=null;
+			/*
 			if(context.checkForReuseMoves(pos, moveMask, typeColor)) {
 				continue;
 			}
-			Move[] moves = oldContext.getMoves(pos, moveMask, typeColor);
+			
+			moves = oldContext.getMoves(pos, moveMask, typeColor);
 			if(moves==null) {
 				moves = oldestContext.getMoves(pos, moveMask, typeColor);
 			}
+			*/
 			if(moves==null) {
 				moves =BBMoveManager.moves[pos+typeColor];
 				context.extractFromRawMoves(pos, moveMask, typeColor, moves);
@@ -986,7 +998,7 @@ public class BBPosition implements Position {
 
 	
 	@Override
-	public int getHash() {
+	public long getHash() {
 		return this.zobristHash;
 	}
 	
@@ -1507,7 +1519,6 @@ public class BBPosition implements Position {
 		if(_kingOnly) {
 			//calculate the final amount 
 			moveDelta =Long.bitCount(moveMasks[kingPos]&_pinMasks[kingPos]);
-			return;
 		}else {
 			//calculate the delta but neglect the rochades!
 			moveDelta =Long.bitCount(KING_MASKS[kingPos]&moveMasks[kingPos]&~_pinMasks[kingPos]);
@@ -1642,54 +1653,55 @@ public class BBPosition implements Position {
 		long ntchdOcc= _occ & MASK_NOT_ALL_ROOKS_KINGS |untouched;
 		
 		if(!isWhite) {
-			
-			//@TODO WTF: Combine E1 and combine with nonPawn stuff
-			
-			long oldE1Mask=this.moveMasks[_E1];
-			long oldCastleMovesKQ=oldE1Mask&MASK_CASTLE_KING_KQkq;
-			if((untouched & MASK_E1)!=EMPTY_MASK||oldCastleMovesKQ!=EMPTY_MASK) {
-				int oldCastleMovesKQCount= Long.bitCount(oldCastleMovesKQ);
-				long newCastleMovesKQ=EMPTY_MASK;
+			if(fields[_E1]==PIECE_TYPE_WHITE_KING) {
+				//@TODO WTF: Combine E1 and combine with nonPawn stuff
 				
-				context.trigger(_E1);
-				
-				if (((ntchdOcc^MASK_E1_H1)& MASK_CASTLE_ALL_K)==EMPTY_MASK) {
-					if(((this.tCallBacks[_E1]|this.tCallBacks[_F1]|this.tCallBacks[_G1])&allOfOneColor[COLOR_BLACK])==0) {
-						newCastleMovesKQ|= MASK_CASTLE_KING_K;
+				long oldE1Mask=this.moveMasks[_E1];
+				long oldCastleMovesKQ=oldE1Mask&MASK_CASTLE_KING_KQkq;
+				if((untouched & MASK_E1)!=EMPTY_MASK||oldCastleMovesKQ!=EMPTY_MASK) {
+					int oldCastleMovesKQCount= Long.bitCount(oldCastleMovesKQ);
+					long newCastleMovesKQ=EMPTY_MASK;
+					
+					context.trigger(_E1);
+					
+					if (((ntchdOcc^MASK_E1_H1)& MASK_CASTLE_ALL_K)==EMPTY_MASK) {
+						if(((this.tCallBacks[_E1]|this.tCallBacks[_F1]|this.tCallBacks[_G1])&allOfOneColor[COLOR_BLACK])==0) {
+							newCastleMovesKQ|= MASK_CASTLE_KING_K;
+						}
 					}
-				}
-				if (((ntchdOcc^MASK_E1_A1)& MASK_CASTLE_ALL_Q)==EMPTY_MASK) {
-					if(((this.tCallBacks[_C1]|this.tCallBacks[_D1]|this.tCallBacks[_E1])&allOfOneColor[COLOR_BLACK])==0) {
-							newCastleMovesKQ|= MASK_CASTLE_KING_Q;
+					if (((ntchdOcc^MASK_E1_A1)& MASK_CASTLE_ALL_Q)==EMPTY_MASK) {
+						if(((this.tCallBacks[_C1]|this.tCallBacks[_D1]|this.tCallBacks[_E1])&allOfOneColor[COLOR_BLACK])==0) {
+								newCastleMovesKQ|= MASK_CASTLE_KING_Q;
+						}
 					}
-				}
-				if(oldCastleMovesKQ !=newCastleMovesKQ) {
-					this.moveCount[COLOR_WHITE]+=Long.bitCount(newCastleMovesKQ)-oldCastleMovesKQCount;
+					if(oldCastleMovesKQ !=newCastleMovesKQ) {
+						this.moveCount[COLOR_WHITE]+=Long.bitCount(newCastleMovesKQ)-oldCastleMovesKQCount;
+					}
 				}
 			}
-		}else{
-			
-			
-			long oldE8Mask=this.moveMasks[_E8];
-			long oldCastleMoveskq=oldE8Mask&MASK_CASTLE_KING_KQkq;;
-			if((untouched & MASK_E8)!=EMPTY_MASK||oldCastleMoveskq!=EMPTY_MASK) {
-				int oldCastleMoveskqCount= Long.bitCount(oldCastleMoveskq);
-				long newCastleMoveskq=EMPTY_MASK;
-				
-				context.trigger(_E8);
-	
-				if (((ntchdOcc^MASK_E8_H8)& MASK_CASTLE_ALL_k)==EMPTY_MASK) {
-					if(((this.tCallBacks[_E8]|this.tCallBacks[_F8]|this.tCallBacks[_G8])&allOfOneColor[COLOR_WHITE])==0) {
-						newCastleMoveskq|= MASK_CASTLE_KING_k;
+		}else {
+			if(fields[_E8]==PIECE_TYPE_BLACK_KING){
+				long oldE8Mask=this.moveMasks[_E8];
+				long oldCastleMoveskq=oldE8Mask&MASK_CASTLE_KING_KQkq;;
+				if((untouched & MASK_E8)!=EMPTY_MASK||oldCastleMoveskq!=EMPTY_MASK) {
+					int oldCastleMoveskqCount= Long.bitCount(oldCastleMoveskq);
+					long newCastleMoveskq=EMPTY_MASK;
+					
+					context.trigger(_E8);
+		
+					if (((ntchdOcc^MASK_E8_H8)& MASK_CASTLE_ALL_k)==EMPTY_MASK) {
+						if(((this.tCallBacks[_E8]|this.tCallBacks[_F8]|this.tCallBacks[_G8])&allOfOneColor[COLOR_WHITE])==0) {
+							newCastleMoveskq|= MASK_CASTLE_KING_k;
+						}
 					}
-				}
-				if (((ntchdOcc^MASK_E8_A8)& MASK_CASTLE_ALL_q)==EMPTY_MASK) {
-					if(((this.tCallBacks[_C8]|this.tCallBacks[_D8]|this.tCallBacks[_E8])&allOfOneColor[COLOR_WHITE])==0) {
-						newCastleMoveskq|= MASK_CASTLE_KING_q;
+					if (((ntchdOcc^MASK_E8_A8)& MASK_CASTLE_ALL_q)==EMPTY_MASK) {
+						if(((this.tCallBacks[_C8]|this.tCallBacks[_D8]|this.tCallBacks[_E8])&allOfOneColor[COLOR_WHITE])==0) {
+							newCastleMoveskq|= MASK_CASTLE_KING_q;
+						}
 					}
-				}
-				if(oldCastleMoveskq !=newCastleMoveskq) {
-					this.moveCount[COLOR_BLACK]+=Long.bitCount(newCastleMoveskq)-oldCastleMoveskqCount;
+					if(oldCastleMoveskq !=newCastleMoveskq) {
+						this.moveCount[COLOR_BLACK]+=Long.bitCount(newCastleMoveskq)-oldCastleMoveskqCount;
+					}
 				}
 			}
 		}

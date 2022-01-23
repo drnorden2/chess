@@ -79,7 +79,7 @@ public class MBPosition implements Position{
 		this.enPassantePos = new BLVariableInt(bl,-1);
 	}
 	
-	public int getHash() {
+	public long getHash() {
 		return 0;//zobrist.getHash();
 	}
 	

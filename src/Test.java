@@ -28,18 +28,37 @@ public class Test {
 
 	public static void main(String[] args) {
 		ChessGameFactory.bitBoard=true;
+		test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		//test(7, 3195901860L,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		//test(6,179862938,"r3k2r/8/8/8/8/8/8/R3K2R w KQkq -");
+		//test(6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		
+		/*
+		//test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		
+		
+		test(2,1866,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - -");
+		test(3,86677,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - -");
+		test(4,3504849,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - -");
+		test(5,161724713,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - -");
+		test(6,6554868204L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w - -");
+		
+		
+		test(2,2039,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		test(3,97862,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		test(4,4085603,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		test(5,193690690,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		test(6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		*/
+		
 		//test(10, 2, "8/P7/8/8/8/8/8/K1k5 b - - 0 1");
 		
-		debug (6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
+		//debug (6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 		
 		//test(4,4085603L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		//test(5,193690690L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-		//test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 		
-		//if(true)return;
-		//test(2, 3, "4PKR1/4PPP1/8/8/8/r7/8/7k w - -");
+		if(true)return;
 		
-		//test(1, 2, "7K/7N/8/8/8/8/8/k6r w - -");
 		
 		test(1, 2, "7K/8/8/8/8/8/8/k6r w - -");
 		
@@ -114,7 +133,7 @@ public class Test {
 		test(5, 18135, "8/P1k5/K7/8/8/8/8/8 w - - 0 1");
 
 
-		debug(4, 23527, "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1");
+		test(4, 23527, "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1");
 
 		test(6, 92683, "8/P1k5/K7/8/8/8/8/8 w - - 0 1");
 		
@@ -128,7 +147,7 @@ public class Test {
 				
 		test(6, 803711, "3k4/8/8/8/8/8/8/R3K3 w Q - 0 1");
 		
-		debug(5, 1004658, "8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1");
+		test(5, 1004658, "8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1");
 		
 		test(4, 1720476, "r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1");
 		
@@ -161,7 +180,7 @@ public class Test {
 		Game game = new Game(factory,fen,depth);
 		
 		System.out.println("After loading:\n"+game);
-		int hash1 = game.getBoard().getHash();
+		long hash1 = game.getBoard().getHash();
 		System.out.println("DIE SPIELE SIND ERÖFFNET!");
 		MBPosition.registerCount =0;
 		MBPosition.unRegisterCount =0;
@@ -184,7 +203,7 @@ public class Test {
 		System.out.print("game\n"+game.toString());
 		System.out.println("");
 		System.out.println("  Delta:"+MBPosition.counter);
-		int hash2= game.getBoard().getHash();
+		long hash2= game.getBoard().getHash();
 		System.out.println("  Hashes:"+hash1+"/"+hash2);
 		System.out.println("");
 		/*
@@ -218,7 +237,7 @@ public class Test {
 		System.out.println("Loading:"+fen+":");
 		Game game = new Game(factory,fen,depth);
 		System.out.println(game);
-		int hash1 = game.getBoard().getHash();
+		long hash1 = game.getBoard().getHash();
 		
 		
 		MBPosition.registerCount =0;
@@ -247,7 +266,7 @@ public class Test {
 
 		System.out.println("");
 		System.out.println("  Delta:"+MBPosition.counter);
-		int hash2= game.getBoard().getHash();
+		long hash2= game.getBoard().getHash();
 		System.out.println("  Hashes:"+hash1+"/"+hash2);
 		System.out.println("");
 		/*

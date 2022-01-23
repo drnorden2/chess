@@ -57,7 +57,7 @@ abstract public class Board {
 	
 	abstract public int getMoves();
 	abstract public String getMoveStr(int move);
-	abstract public int getHash();
+	abstract public long getHash();
 	abstract public boolean isWon();
 	abstract public void setMove(int move);
 	abstract public int getTotalCount();

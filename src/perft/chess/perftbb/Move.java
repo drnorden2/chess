@@ -11,7 +11,8 @@ public class Move {
 	private final String notation;
 	private final int oldPos;
 	private final int newPos;
-	
+
+	private final int typeColor;
 	private final int moveType;
 	private final int promotePieceType;
 	private final int dirOfRochade;
@@ -44,6 +45,7 @@ public class Move {
 	
 	public Move(int type, int typeColor, int color, int callbackType, int oldPos, int newPos, int moveType,int dirX, int dirY,int promotePieceType, int rookPos, int dirOfRochade) {
 		this.type = type;
+		this.typeColor= typeColor;
 		this.color = color;
 		this.oldPos= oldPos;
 		this.newPos = newPos;
@@ -216,7 +218,7 @@ public class Move {
 		return this.pawnNewAttackMask;
 	}
 	public String toString () {
-		String val =getPieceCharForTypeColor(type*64+color) + " : "+getNotation()+  "   From "+oldPos+" to "+newPos+" : Promotion:"+this.getPromotePieceType();	
+		String val =getPieceCharForTypeColor(typeColor) + " : "+getNotation()+  "   From "+oldPos+" to "+newPos+" : Promotion:"+this.getPromotePieceType();	
 		return val;
 	}
 	

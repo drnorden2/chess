@@ -34,6 +34,6 @@ public interface Position {
 
 	int[] getAttacks(int color);
 
-	public int getHash();
+	public long getHash();
 
 }

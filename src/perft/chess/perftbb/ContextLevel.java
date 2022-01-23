@@ -22,7 +22,7 @@ public class ContextLevel {
 	private final int moveCount [] = new int[2];
 	private long untouched=EMPTY_MASK;
 	private long enPassanteMask=EMPTY_MASK;//@todo WTF -stack
-	private int zobristHash=0;
+	private long zobristHash=0;
 	private long fcmTouched=EMPTY_MASK;
 
 	public long[] _mLeft=new long[2];
@@ -93,7 +93,7 @@ public class ContextLevel {
 		this.enPassanteMask=position.enPassanteMask;
 		this.zobristHash=position.zobristHash;
 		this.rochades = position.rochades;
-		//this.moveDelta = position.moveDelta;
+		this.moveDelta = position.moveDelta;
 		
 		/*
 		System.arraycopy(position.fields, 0, this.fields, 0, 64);
@@ -129,7 +129,7 @@ public class ContextLevel {
 		position.enPassanteMask=this.enPassanteMask;//@todo WTF -stack		
 		position.zobristHash = this.zobristHash;
 		position.rochades = this.rochades;
-		//position.moveDelta = this.moveDelta;
+		position.moveDelta = this.moveDelta;
 
 		/*
 		System.arraycopy(this.fields, 0, this.fields, 0, 64);
@@ -187,6 +187,7 @@ public class ContextLevel {
 		
 		}
 		*/
+		
 		
 		Move[]newMoves = allMoves[pos];
 		int ii=0;
