@@ -69,8 +69,8 @@ public class ChessBoard extends Board{
 		// TODO Auto-generated method stub
 		return position.isCheck();
 	}	
-	public double evaluate() {
-		return position.evaluate();
+	public double evaluate(int i) {
+		return position.evaluate(i);
 	}
 
 	@Override

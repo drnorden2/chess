@@ -9,8 +9,8 @@ public class ChessPlayer extends Player{
 
 	public ChessPlayer (PlayerType playerType) {
 		super(playerType);
-		// TODO Auto-generated constructor stub
 	}
+
 	public void initPlayer() {
 		
 	}
@@ -18,4 +18,5 @@ public class ChessPlayer extends Player{
 	public int play(Board board) {
 		return 0;
 	}
+
 }

@@ -28,7 +28,7 @@ final public class Game {
 				chessFactory.getPlayer(PlayerType.RANDOM),
 				chessFactory.getBoardUI()
 			);		
-		this.depth= 4;
+		this.depth= 6;
 		hashMap= new HashMap[depth+1];	
 		hashMap2= new HashMap[depth+1];	
 		hashScore= new HashMap[depth+1];	
@@ -339,16 +339,15 @@ final private void mlPerft(long[] counts, int deep,int depth, boolean bulk) {
 		for(int i=0;i<moves;i++) {
 			board.doMove(i);
 			long hash = board.getHash();
-			Double score = hashScore[deep].get(hash);
-			if(score  ==null) {
-				score = score(deep-1);
-				hashScore[deep].put(hash,score);			
-			
+			//Double score = hashScore[deep].get(hash);
+			//if(score  ==null) {
+				Double score = score(deep-1);
+				//hashScore[deep].put(hash,score);			
 				if(bestScore==null||bestScore<score) {
 					bestScore = score;
 					bestMove=i;
 				}
-			}
+			//}
 			board.undoMove();
 		}
 		return bestMove;
@@ -376,25 +375,35 @@ final private void mlPerft(long[] counts, int deep,int depth, boolean bulk) {
 	
 	
 	final private double score(int deep) {
-		if(deep==0) {
-			return (board.evaluate())*-1;
-		}
 		int moves = board.getMoves();
 		if(moves==0) {
-			return board.evaluate()*-1;
+			return board.evaluate(-1)*-1;
 		}
+
 		Double bestScore=null;
+			
 		for(int i=0;i<moves;i++) {
-			board.doMove(i);
-			double score = score(deep-1);
+			//long hash = board.getHash();
+			//Double score = hashScore[deep].get(hash);
+			//if(score  ==null) {
+			
+			Double score =null;
+			if(deep>1) {
+				board.doMove(i);
+				score = score(deep-1);
+				board.undoMove();
+			}else {
+				score = board.evaluate(i);
+			}
+			//hashScore[deep].put(hash,score);			
+			//}
 			if(bestScore==null||bestScore<score) {
 				bestScore = score;
 			}
-			board.undoMove();
-		}
 		
+		}		
 		return bestScore*-1;
+		}
 	}
-}
 
 

@@ -441,7 +441,7 @@ public class MBPosition implements Position{
 	public boolean isCheck() {
 		return false;
 	}
-	public double evaluate() {
+	public double evaluate(int i) {
 		return -1;
 	}
 

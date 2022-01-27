@@ -31,7 +31,7 @@ public interface Position {
 	void checkGameState(int colorAtTurn);
 
 	void checkLegalMoves();
-	public double evaluate();
+	public double evaluate(int i);
 	
 	int getColorAtTurn();
 

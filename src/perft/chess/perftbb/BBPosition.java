@@ -325,6 +325,7 @@ public class BBPosition implements Position {
 
 		if(move.isPromotion()) {
 			typeColor = move.getPromotePieceType();
+			this.material[color]-=NAIVE_MATERIAL_COUNT[PIECE_TYPE_PAWN];		
 			pieceType = typeColor>>7;
 			pawns[color]&=~oldPosMask;
 			if(pieceType ==PIECE_TYPE_KNIGHT) {
@@ -1094,6 +1095,7 @@ public class BBPosition implements Position {
 
 		if(move.isPromotion()) {
 			typeColor = move.getPromotePieceType();
+			this.material[color]-=NAIVE_MATERIAL_COUNT[PIECE_TYPE_PAWN];		
 			pieceType = typeColor>>7;
 			pawns[color]&=~oldPosMask;
 			if(pieceType ==PIECE_TYPE_KNIGHT) {
@@ -1745,15 +1747,28 @@ public class BBPosition implements Position {
 	public boolean isCheck() {
 		return this.tCallBacks[Long.numberOfLeadingZeros(this.kings[colorAtTurn])]!=0;
 	}
-	public double evaluate() {
-		if(getMoveCount()==0) {
+	public double evaluate(int i) {
+		if(i==-1) {
 			if(isCheck()) {
 				return Integer.MIN_VALUE;
 			}else {
-				return (material[colorAtTurn]-material[OTHER_COLOR[colorAtTurn]]+2.0);
+				return +1.5;//Patt
 			}
 		}else {
-			return (material[colorAtTurn]-material[OTHER_COLOR[colorAtTurn]])*(double)(Math.random()*0.1);
+			Move move = this.getMove(i);
+			int delta = 0;
+			if(this.enPassanteMask!=EMPTY_MASK && Long.bitCount(this.enPassanteMask)== move.getEnPassanteSquare()) {
+				delta =1;
+			}else if(move.isPromotion()){
+				delta = NAIVE_MATERIAL_COUNT[move.getPromotePieceType()]-NAIVE_MATERIAL_COUNT[PIECE_TYPE_PAWN];
+			}else {
+				int typeColor = fields[move.getNewPos()];
+				if(typeColor!=-1) {
+					delta = NAIVE_MATERIAL_COUNT[typeColor>>7];
+				}
+			}
+			double score = (material[colorAtTurn]-material[OTHER_COLOR[colorAtTurn]])*(double)(Math.random()*0.1);
+			return score+delta;
 		}
 	}
 

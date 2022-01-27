@@ -78,6 +78,6 @@ abstract public class Board {
 	}
 	abstract public void unSetMove(int move);
 	abstract public boolean isCheck();
-	abstract public double evaluate();
+	abstract public double evaluate(int i);
 	
 }
