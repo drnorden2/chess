@@ -21,9 +21,8 @@ abstract public class Board {
 		return movesPlayed;
 	}
 	
-	public final int getTurn() {
-		return movesPlayed%2;
-	}
+	abstract public int getTurn();
+
 	
 	public final boolean isGameOver() {
 		return isWon()||isDraw();
@@ -78,5 +77,7 @@ abstract public class Board {
 		return false;
 	}
 	abstract public void unSetMove(int move);
-
+	abstract public boolean isCheck();
+	abstract public double evaluate();
+	
 }

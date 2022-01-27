@@ -23,12 +23,15 @@ public interface Position {
 
 	void initialEval();
 
+	public boolean isCheck();
+
 
 	
 	
 	void checkGameState(int colorAtTurn);
 
 	void checkLegalMoves();
+	public double evaluate();
 	
 	int getColorAtTurn();
 

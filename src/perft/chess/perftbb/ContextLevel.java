@@ -36,6 +36,7 @@ public class ContextLevel {
 	public long castleMoveskq;
 	private int level;
 	private final BBPosition position;
+	public final int[] material = new int[2];
 	
 	
 	
@@ -83,7 +84,7 @@ public class ContextLevel {
 			this.allOfOneColor[i]=position.allOfOneColor[i];
 			this.kings[i]=position.kings[i];
 			this.knights[i]=position.knights[i];
-			
+			this.material[i]= position.material[i];
 			this.pawns[i]=position.pawns[i];
 			this.moveCount[i]=position.moveCount[i];
 		}		
@@ -121,7 +122,7 @@ public class ContextLevel {
 			position.allOfOneColor[i]=this.allOfOneColor[i];
 			position.kings[i]=this.kings[i];
 			position.knights[i]=this.knights[i];
-			
+			position.material[i]= this.material[i];
 			position.pawns[i]=this.pawns[i];
 			position.moveCount[i]=this.moveCount[i];
 		}

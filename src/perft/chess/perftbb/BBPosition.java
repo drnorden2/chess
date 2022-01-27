@@ -40,6 +40,8 @@ public class BBPosition implements Position {
 	public long enPassanteMask=EMPTY_MASK;
 	public long zobristHash=0;
 	public boolean rochades = false;
+	public final int[] material = new int[2];
+	
 
 	public BBAnalyzer analyzer = new BBAnalyzer(this);
 	public BBMoveManager moveManager = new BBMoveManager();
@@ -87,6 +89,7 @@ public class BBPosition implements Position {
 		
 		zobristHash^=randomBitStr[pos][typeColor];
 		this.fields[pos]= typeColor;
+		this.material[color]+=NAIVE_MATERIAL_COUNT[type];		
 		
 		allOfOneColor[color]|=SHIFT[pos];
 		if(type==PIECE_TYPE_KING) {
@@ -102,7 +105,6 @@ public class BBPosition implements Position {
 		for(int i=0;i<64;i++) {
 			this._pinMasks[i]=FULL_MASK;
 		}
-		
 	}
 
 	@Override
@@ -292,7 +294,8 @@ public class BBPosition implements Position {
 /*E*/	int otherTypeColor = fields[newPos];
 		if(otherTypeColor!=-1) {
 			zobristHash^=randomBitStr[newPos][otherTypeColor];
-				
+			this.material[otherColor]-=NAIVE_MATERIAL_COUNT[otherTypeColor>>7];		
+					
 			//alter moves(ok), moveCount(ok), allOfOneColor(ok), fields(later), callbacks(ok), tcallbacks(ok) and if neccessary pawns!(ok)
 /*!!!*/		removePseudoMoves(otherColor,newPos);
 			allOfOneColor[otherColor]^=newPosMask;
@@ -315,8 +318,9 @@ public class BBPosition implements Position {
 		int typeColor = fields[oldPos];
 	
 		zobristHash^=randomBitStr[oldPos][typeColor];
+		this.material[color]-=NAIVE_MATERIAL_COUNT[typeColor>>7];		
 		fields[oldPos]=-1;
-
+		
 /*!!!*/	removePseudoMoves(color,oldPos);
 
 		if(move.isPromotion()) {
@@ -338,6 +342,7 @@ public class BBPosition implements Position {
 
 		fields[newPos]=typeColor;
 		zobristHash^=randomBitStr[newPos][typeColor];
+		this.material[color]+=NAIVE_MATERIAL_COUNT[typeColor>>7];		
 
 		this.allOfOneColor[color]^=moveMask;
 		
@@ -356,6 +361,8 @@ public class BBPosition implements Position {
 				cbs|= this.tCallBacks[enpPawnPos]; 	
 				
 				zobristHash^=randomBitStr[enpPawnPos][fields[enpPawnPos]];
+				this.material[otherColor]-=NAIVE_MATERIAL_COUNT[PIECE_TYPE_PAWN];		
+
 				fields[enpPawnPos]=	-1;
 /*u*/			
 				this.allOfOneColor[otherColor]&=~SHIFT[enpPawnPos];// might be empty anyways
@@ -1057,6 +1064,8 @@ public class BBPosition implements Position {
 		cbs= this.tCallBacks[newPos];
 		int otherTypeColor = fields[newPos];
 		if(otherTypeColor!=-1) {
+			this.material[otherColor]-=NAIVE_MATERIAL_COUNT[otherTypeColor>>7];		
+
 			zobristHash^=randomBitStr[newPos][otherTypeColor];
 			last_removeOtherPseudoMoves(otherColor,newPos);
 			//removePseudoMoves(otherColor,newPos);//!!!!!!!!!!!!!!!!!!!!!!!!!!11
@@ -1077,7 +1086,7 @@ public class BBPosition implements Position {
 		//int typeColor = context.getAndSetFields(oldPos,-1);
 		int typeColor = fields[oldPos];
 		
-		
+		this.material[color]-=NAIVE_MATERIAL_COUNT[typeColor>>7];		
 		zobristHash^=randomBitStr[oldPos][typeColor];
 		fields[oldPos]=-1;
 		
@@ -1100,6 +1109,7 @@ public class BBPosition implements Position {
 			}
 		}
 		
+		this.material[color]+=NAIVE_MATERIAL_COUNT[typeColor>>7];		
 		zobristHash^=randomBitStr[newPos][typeColor];
 		fields[newPos]=typeColor;
 		
@@ -1120,6 +1130,7 @@ public class BBPosition implements Position {
 				context.trigger(enpPawnPos);
 				cbs|= this.tCallBacks[enpPawnPos]; 
 				zobristHash^=randomBitStr[enpPawnPos][fields[enpPawnPos]];
+				this.material[otherColor]-=NAIVE_MATERIAL_COUNT[PIECE_TYPE_PAWN];		
 				fields[enpPawnPos]=	-1;
 /*u*/			this.allOfOneColor[otherColor]&=~SHIFT[enpPawnPos];// might be empty anyways
 				pawns[otherColor]&=~SHIFT[enpPawnPos];
@@ -1731,4 +1742,20 @@ public class BBPosition implements Position {
 			}
 		}
 	}
+	public boolean isCheck() {
+		return this.tCallBacks[Long.numberOfLeadingZeros(this.kings[colorAtTurn])]!=0;
+	}
+	public double evaluate() {
+		if(getMoveCount()==0) {
+			if(isCheck()) {
+				return Integer.MIN_VALUE;
+			}else {
+				return (material[colorAtTurn]-material[OTHER_COLOR[colorAtTurn]]+2.0);
+			}
+		}else {
+			return (material[colorAtTurn]-material[OTHER_COLOR[colorAtTurn]])*(double)(Math.random()*0.1);
+		}
+	}
+
+
 }

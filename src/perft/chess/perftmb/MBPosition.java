@@ -438,4 +438,11 @@ public class MBPosition implements Position{
 	public int getTotalCount() {
 		return totalCount;
 	}
+	public boolean isCheck() {
+		return false;
+	}
+	public double evaluate() {
+		return -1;
+	}
+
 }

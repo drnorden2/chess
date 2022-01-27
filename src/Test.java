@@ -28,7 +28,7 @@ public class Test {
 
 	public static void main(String[] args) {
 		ChessGameFactory.bitBoard=true;
-		test(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		play(4, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 		//test(7, 3195901860L,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 		//test(6,179862938,"r3k2r/8/8/8/8/8/8/R3K2R w KQkq -");
 		//test(6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
@@ -232,6 +232,12 @@ public class Test {
 			System.exit(-1);
 		}
 	}
+	private static void play(int depth, long nodes, String fen) {
+		//O.N=false;
+		System.out.println("Loading:"+fen+":");
+		Game game = new Game(factory,fen,depth);
+		game.play();
+	}
 	private static void test(int depth, long nodes, String fen) {
 		//O.N=false;
 		System.out.println("Loading:"+fen+":");
@@ -289,7 +295,8 @@ public class Test {
 			System.out.print("[FAILED]: ");
 		}
 		System.out.println("("+games+" of "+nodes+")");
-				
+		System.out.println("Hits:"+game.hits);
+		
 			
 		if(!correct) {
 			System.exit(-1);

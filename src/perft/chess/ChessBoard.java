@@ -1,12 +1,13 @@
 package perft.chess;
 
-
 import perft.Board;
 import perft.chess.fen.Fen;
+
 import perft.chess.Position;
 
 public class ChessBoard extends Board{
 	private Position position;
+
 	public ChessBoard(Position position) {
 		Fen fen = new Fen();
 		fen.loadInitialPosition(position);
@@ -17,7 +18,6 @@ public class ChessBoard extends Board{
 		this.position = position;
 		fen.loadCustomPosition(position,fenStr);
 	}
-	
 
 	@Override
 	public void setMove(int move) {
@@ -28,15 +28,12 @@ public class ChessBoard extends Board{
 		return position.getAttacks(color);
 	}
 
-	
-
 	@Override
 	public void unSetMove(int move) {
 		position.unSetMove(move);
 	}
-
 	
-	
+	@Override
 	public String toString() {
 		return position.toString();
 	}
@@ -45,6 +42,7 @@ public class ChessBoard extends Board{
 	public int getMoves() {
 		return position.getMoveCount();
 	}
+	
 	@Override
 	public boolean isWon() {
 		// TODO Auto-generated method stub
@@ -55,12 +53,30 @@ public class ChessBoard extends Board{
 	public String getMoveStr(int index) {
 		return position.getNotation(index);
 	}
+	
 	@Override
 	public long getHash() {
 		return position.getHash();
 	}
+	
 	@Override
 	public int getTotalCount() {
 		return position.getTotalCount();
 	}
+
+	@Override
+	public boolean isCheck() {
+		// TODO Auto-generated method stub
+		return position.isCheck();
+	}	
+	public double evaluate() {
+		return position.evaluate();
+	}
+
+	@Override
+	public int getTurn() {
+		// TODO Auto-generated method stub
+		return position.getColorAtTurn();
+	}
+	
 }

@@ -15,7 +15,7 @@ public class Definitions {
 	public static final int PIECE_TYPE_QUEEN = 5;
 	public static final int PIECE_TYPE_ANY = 6;
 	public static final int PIECE_TYPE_PAWN_ENPASSANTE_OFFER= 7;
-	
+	public static final int[] NAIVE_MATERIAL_COUNT=new int[] {1,0,3,3,5,9};
 	public static final int COLOR_BLACK= 0;
 	public static final int COLOR_WHITE= 1;
 
@@ -92,7 +92,7 @@ public class Definitions {
 	public final static long MASK_H_FILE = fileMask(_H);
 	public final static long MASK_NONE = EMPTY_MASK;
 	public final static long MASK_ALL = ~MASK_NONE;
-	
+	public final static int[] COLOR_AS_SIGN = new int[] {-1,1};
 	public static final int _A1=0;
 	public static final int _B1=1;
 	public static final int _C1=2;
