@@ -7,7 +7,6 @@ import java.util.Arrays;
 
 public class ContextLevel {
 	
-	private boolean lastLevel;
 	private Move lastMove =null;;
 
 	private final int[] fields = new int[64];
@@ -58,10 +57,9 @@ public class ContextLevel {
 	private boolean rochades=true;
 	private int moveDelta=0;
 	
-	public ContextLevel(BBPosition position,int level, boolean lastLevel) {
+	public ContextLevel(BBPosition position,int level) {
 		this.position = position;
 		this.level = level;
-		this.lastLevel = lastLevel;
 		for(int i=0;i<64;i++) {
 			fieldList[i]=-1;
 		}
@@ -139,7 +137,6 @@ public class ContextLevel {
 		*/
 
 	}
-	
 	public void extractFromRawMoves(int pos, long idMask,int idTypeColor, Move[] rawMoves) {
 		idsMask[pos]=idMask;
 		idsTypeColor[pos]=idTypeColor;
@@ -150,7 +147,7 @@ public class ContextLevel {
 			int mPos = Long.numberOfTrailingZeros(idMask);
 			moves[i]=rawMoves[mPos];
 			if(moves[i]==null) {
-				throw new RuntimeException("There was no move at pos("+mPos+") for mask:\n"+toStr(idsMask[pos]));
+				throw new RuntimeException("There was no move at pos("+mPos+") for mask("+idsMask[pos]+"):\n"+toStr(idsMask[pos]));
 			}
 			idMask&= idMask- 1;			
 		}
@@ -256,11 +253,18 @@ public class ContextLevel {
 		if(index ==lastIndex) {
 			return lastMove;
 		}
-		
+		//@todo WTF
+		/*
 		if(index>=limit) {
-			//@todo WTF
 			throw new RuntimeException("Index("+index+")Off Limit:"+limit +"in level:"+level);
 		}
+		if(cursorFieldList==-1) {
+			throw new RuntimeException("CursorFieldList==-1");
+		}
+		if(fieldList[cursorFieldList]==-1) {
+			throw new RuntimeException("fieldList["+cursorFieldList+"]==-1 in ContextLevel "+level);
+		}
+		*/
 		lastMove = allMoves[fieldList[cursorFieldList]][cursorMoves++];
 		if(index-1==lastIndex) {
 			if(lastMove==null) {

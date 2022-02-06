@@ -32,13 +32,13 @@ public class BLArrayStackLong {
 		return addAndTouched(val);
 	}
 	
-	//get::((bits >> bitIndex) & 1L)==1L;
+	//get::((bits >>> bitIndex) & 1L)==1L;
 	public boolean getBit(int bitIndex) {
-		return ((stack[head] >> bitIndex) & 1L)==1L;
+		return ((stack[head] >>> bitIndex) & 1L)==1L;
 	}
 	
 	public int getBitAsInt(int bitIndex) {
-		return(int)((stack[head] >> bitIndex) & 1);
+		return(int)((stack[head] >>> bitIndex) & 1);
 	}
 	
 	public int updateIndices(int[] indices) {

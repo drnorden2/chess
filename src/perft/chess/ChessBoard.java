@@ -20,8 +20,8 @@ public class ChessBoard extends Board{
 	}
 
 	@Override
-	public void setMove(int move) {
-		position.setMove(move);
+	public void setMove(int move,boolean isSim, boolean isLast) {
+		position.setMove(move, isSim, isLast);
 	}
 	
 	public int[] getAttacks(int color) {

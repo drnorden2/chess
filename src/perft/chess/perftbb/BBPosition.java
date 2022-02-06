@@ -73,9 +73,9 @@ public class BBPosition implements Position {
 		}
 		this.depth = depth;
 		System.out.println("Depth:"+depth);
-		contextLevels = new ContextLevel[depth+4+1];//WTF (-1)
+		contextLevels = new ContextLevel[1000];//WTF (-1)
 		for(int i=0;i<this.contextLevels.length;i++) {
-			this.contextLevels[i]=new ContextLevel(this,i, i==depth-1);
+			this.contextLevels[i]=new ContextLevel(this,i);
 		}
 		for(int i=0;i<64;i++) {
 			fields[i]=-1;
@@ -146,7 +146,7 @@ public class BBPosition implements Position {
 				own &= own- 1;			
 				int typeColor = fields[pos];
 				// if there is no combination remaining set to 0
-				updateNonPawnPseudoMoves(typeColor,typeColor>>7,i, pos,true);
+				updateNonPawnPseudoMoves(typeColor,typeColor>>>7,i, pos,true);
 			}
 			retVal = Long.bitCount(pawn);
 			for(int j=0;j<retVal;j++) {
@@ -215,7 +215,7 @@ public class BBPosition implements Position {
 	}
 	public static String moveNotation="";
 	@Override
-	public void setMove(int index) {
+	public void setMove(int index,boolean isSim, boolean isLast) {
 		
 		totalCount++;
 		Move move = getMove(index);
@@ -238,7 +238,7 @@ public class BBPosition implements Position {
 		level++;
 		ContextLevel context = this.contextLevels[level];
 		
-		if(level!=depth+3) {
+		if(!isLast) {
 			setMove(move,context);
 			
 			int color = this.colorAtTurn;
@@ -271,6 +271,18 @@ public class BBPosition implements Position {
 			_calcDone=false;
 			
 		}
+		//evaluate(index);
+		if(!isSim) {
+			/*for(int i=4;i<1;i--) {
+				ContextLevel tmp = this.contextLevels[level-i];
+				this.contextLevels[level-i]= this.contextLevels[level-(i-1)];
+				this.contextLevels[level-(i-1)]=tmp;
+			}
+			level=4;
+			*/
+			
+		}
+		
 	}
 	
 	private void setMove(Move move,ContextLevel context ) {	
@@ -294,15 +306,15 @@ public class BBPosition implements Position {
 /*E*/	int otherTypeColor = fields[newPos];
 		if(otherTypeColor!=-1) {
 			zobristHash^=randomBitStr[newPos][otherTypeColor];
-			this.material[otherColor]-=NAIVE_MATERIAL_COUNT[otherTypeColor>>7];		
+			this.material[otherColor]-=NAIVE_MATERIAL_COUNT[otherTypeColor>>>7];		
 					
 			//alter moves(ok), moveCount(ok), allOfOneColor(ok), fields(later), callbacks(ok), tcallbacks(ok) and if neccessary pawns!(ok)
 /*!!!*/		removePseudoMoves(otherColor,newPos);
 			allOfOneColor[otherColor]^=newPosMask;
-			if(otherTypeColor>>7==PIECE_TYPE_PAWN) {
+			if(otherTypeColor>>>7==PIECE_TYPE_PAWN) {
 				this.pawns[otherColor]^=newPosMask;
 			}
-			if(otherTypeColor>>7==PIECE_TYPE_KNIGHT) {
+			if(otherTypeColor>>>7==PIECE_TYPE_KNIGHT) {
 				this.knights[otherColor]^=newPosMask;
 			}
 
@@ -318,7 +330,7 @@ public class BBPosition implements Position {
 		int typeColor = fields[oldPos];
 	
 		zobristHash^=randomBitStr[oldPos][typeColor];
-		this.material[color]-=NAIVE_MATERIAL_COUNT[typeColor>>7];		
+		this.material[color]-=NAIVE_MATERIAL_COUNT[typeColor>>>7];		
 		fields[oldPos]=-1;
 		
 /*!!!*/	removePseudoMoves(color,oldPos);
@@ -326,7 +338,7 @@ public class BBPosition implements Position {
 		if(move.isPromotion()) {
 			typeColor = move.getPromotePieceType();
 			this.material[color]-=NAIVE_MATERIAL_COUNT[PIECE_TYPE_PAWN];		
-			pieceType = typeColor>>7;
+			pieceType = typeColor>>>7;
 			pawns[color]&=~oldPosMask;
 			if(pieceType ==PIECE_TYPE_KNIGHT) {
 				this.knights[color]|=newPosMask;
@@ -343,7 +355,7 @@ public class BBPosition implements Position {
 
 		fields[newPos]=typeColor;
 		zobristHash^=randomBitStr[newPos][typeColor];
-		this.material[color]+=NAIVE_MATERIAL_COUNT[typeColor>>7];		
+		this.material[color]+=NAIVE_MATERIAL_COUNT[typeColor>>>7];		
 
 		this.allOfOneColor[color]^=moveMask;
 		
@@ -410,8 +422,8 @@ public class BBPosition implements Position {
 			int cbPos = Long.numberOfTrailingZeros(cbs);
 			cbs &= cbs- 1;
 			int tC=fields[cbPos];
-			int type = tC>>7;
-			int col = tC >> 6 & 1;
+			int type = tC>>>7;
+			int col = tC >>> 6 & 1;
 		
 			if(type>PIECE_TYPE_KNIGHT || (emptyBefore&SHIFT[cbPos])==0) { //@todo WTF check performance
 				this.updateNonPawnPseudoMoves(tC, type, col, cbPos,false);
@@ -525,15 +537,15 @@ public class BBPosition implements Position {
 			//out(mOneUp);
 			//out(mTwoUp);
 		
-			delta = (mLeft^oldContext._mLeft[color])>>DIR_UP_LEFT;
+			delta = (mLeft^oldContext._mLeft[color])>>>DIR_UP_LEFT;
 			//out(oldContext._mLeft[color]);
 			//out(delta);
-			delta |= (mRight^oldContext._mRight[color])>>DIR_UP_RIGHT;
+			delta |= (mRight^oldContext._mRight[color])>>>DIR_UP_RIGHT;
 			//out(oldContext._mRight[color]);
 			//out(delta);
-			delta |= (mOneUp^oldContext._mOneUp[color])>>DIR_UP;
+			delta |= (mOneUp^oldContext._mOneUp[color])>>>DIR_UP;
 			//out(delta);
-			delta |= (mTwoUp^oldContext._mTwoUp[color])>>DIR_2_UP;
+			delta |= (mTwoUp^oldContext._mTwoUp[color])>>>DIR_2_UP;
 
 			// only pawns that existed in the first place
 			delta&=ownPawns;
@@ -563,9 +575,9 @@ public class BBPosition implements Position {
 					long last =mask& MASK_8_RANK;
 					
 					if((last)!=EMPTY_MASK)  {
-						last|= last>>DIR_UP;
-						last|= last>>DIR_UP;
-						mask|= last>>DIR_UP;
+						last|= last>>>DIR_UP;
+						last|= last>>>DIR_UP;
+						mask|= last>>>DIR_UP;
 					}
 					//long oldMask = context.getAndSetMoveMasks(pos,mask);
 					long oldMask = moveMasks[pos];
@@ -588,13 +600,13 @@ public class BBPosition implements Position {
 			//out(ownPawns);
 			other|=(this.enPassanteMask & MASK_3_RANK);
 			//out(other);
-			mLeft= (ownPawns >>DIR_UP_LEFT) & MASK_NOT_A_FILE&other;
+			mLeft= (ownPawns >>>DIR_UP_LEFT) & MASK_NOT_A_FILE&other;
 			//out(mLeft);
-			mRight=(ownPawns >>DIR_UP_RIGHT) & MASK_NOT_H_FILE&other;
+			mRight=(ownPawns >>>DIR_UP_RIGHT) & MASK_NOT_H_FILE&other;
 			//out(mRight);
-			mOneUp = (ownPawns >> DIR_UP) & _notOcc ;
+			mOneUp = (ownPawns >>> DIR_UP) & _notOcc ;
 			//out(mOneUp);
-			mTwoUp = (((mOneUp & MASK_6_RANK) >> DIR_UP)& _notOcc ) ;
+			mTwoUp = (((mOneUp & MASK_6_RANK) >>> DIR_UP)& _notOcc ) ;
 			//out(mTwoUp);
 			delta = (mLeft^oldContext._mLeft[color])<<DIR_UP_LEFT;
 			//out(oldContext._mLeft[color]);
@@ -853,7 +865,7 @@ public class BBPosition implements Position {
 					for(int j=0;j<counter;j++) {
 						int attacker = Long.numberOfTrailingZeros(attackAfterENP);
 						attackAfterENP&=attackAfterENP-1;
-						if((this.fields[attacker]>>7)!=PIECE_TYPE_ROOK) {
+						if((this.fields[attacker]>>>7)!=PIECE_TYPE_ROOK) {
 							//hit
 							_pinMasks[pos]&=~this.enPassanteMask ;
 							all|=SHIFT[pos];
@@ -869,7 +881,7 @@ public class BBPosition implements Position {
 					for(int j=0;j<counter;j++) {
 						int attacker = Long.numberOfTrailingZeros(attackAfterENP);
 						attackAfterENP&=attackAfterENP-1;
-						if(this.fields[attacker]>>7!=PIECE_TYPE_BISHOP) {
+						if(this.fields[attacker]>>>7!=PIECE_TYPE_BISHOP) {
 							_pinMasks[pos]&=~this.enPassanteMask ;
 							all|=SHIFT[pos];
 							found=true;
@@ -901,9 +913,9 @@ public class BBPosition implements Position {
 					_pinMasks[pos]&=MASK_8_RANK;
 					long last =moveMasks[pos]&_pinMasks[pos] ;
 					if((last)!=EMPTY_MASK)  {
-						last|= last>>DIR_UP;
-						last|= last>>DIR_UP;
-						last|= last>>DIR_UP;
+						last|= last>>>DIR_UP;
+						last|= last>>>DIR_UP;
+						last|= last>>>DIR_UP;
 						_pinMasks[pos]|=last;
 					}
 				}
@@ -926,10 +938,9 @@ public class BBPosition implements Position {
 		
 	}
   	
-	
+	int cnt=0;
 	public void calcNewMoves(int color) {
 		if(_calcDone) return;
-  		//System.out.print("Calculating MoveCount in step:"+this.wtfcount);
 		_calcDone = true;
 		
 		
@@ -961,7 +972,7 @@ public class BBPosition implements Position {
 			
 			int typeColor = fields[pos];
 			Move[] moves=null;
-			/*
+			
 			if(context.checkForReuseMoves(pos, moveMask, typeColor)) {
 				continue;
 			}
@@ -970,7 +981,7 @@ public class BBPosition implements Position {
 			if(moves==null) {
 				moves = oldestContext.getMoves(pos, moveMask, typeColor);
 			}
-			*/
+			
 			if(moves==null) {
 				moves =BBMoveManager.moves[pos+typeColor];
 				context.extractFromRawMoves(pos, moveMask, typeColor, moves);
@@ -979,6 +990,7 @@ public class BBPosition implements Position {
 			}
 		}
   		context.setLimit(this.getMoveCount());
+		//System.out.println("Level"+level+" Calced w."+this.getMoveCount());
   	}
 
 	@Override
@@ -1065,17 +1077,17 @@ public class BBPosition implements Position {
 		cbs= this.tCallBacks[newPos];
 		int otherTypeColor = fields[newPos];
 		if(otherTypeColor!=-1) {
-			this.material[otherColor]-=NAIVE_MATERIAL_COUNT[otherTypeColor>>7];		
+			this.material[otherColor]-=NAIVE_MATERIAL_COUNT[otherTypeColor>>>7];		
 
 			zobristHash^=randomBitStr[newPos][otherTypeColor];
 			last_removeOtherPseudoMoves(otherColor,newPos);
 			//removePseudoMoves(otherColor,newPos);//!!!!!!!!!!!!!!!!!!!!!!!!!!11
 		
 			allOfOneColor[otherColor]^=newPosMask;
-			if(otherTypeColor>>7==PIECE_TYPE_PAWN) {
+			if(otherTypeColor>>>7==PIECE_TYPE_PAWN) {
 				this.pawns[otherColor]^=newPosMask;
 			}
-			if(otherTypeColor>>7==PIECE_TYPE_KNIGHT) {
+			if(otherTypeColor>>>7==PIECE_TYPE_KNIGHT) {
 				this.knights[otherColor]^=newPosMask;
 			}
 		}else {
@@ -1087,7 +1099,7 @@ public class BBPosition implements Position {
 		//int typeColor = context.getAndSetFields(oldPos,-1);
 		int typeColor = fields[oldPos];
 		
-		this.material[color]-=NAIVE_MATERIAL_COUNT[typeColor>>7];		
+		this.material[color]-=NAIVE_MATERIAL_COUNT[typeColor>>>7];		
 		zobristHash^=randomBitStr[oldPos][typeColor];
 		fields[oldPos]=-1;
 		
@@ -1096,7 +1108,7 @@ public class BBPosition implements Position {
 		if(move.isPromotion()) {
 			typeColor = move.getPromotePieceType();
 			this.material[color]-=NAIVE_MATERIAL_COUNT[PIECE_TYPE_PAWN];		
-			pieceType = typeColor>>7;
+			pieceType = typeColor>>>7;
 			pawns[color]&=~oldPosMask;
 			if(pieceType ==PIECE_TYPE_KNIGHT) {
 				this.knights[color]|=newPosMask;
@@ -1111,7 +1123,7 @@ public class BBPosition implements Position {
 			}
 		}
 		
-		this.material[color]+=NAIVE_MATERIAL_COUNT[typeColor>>7];		
+		this.material[color]+=NAIVE_MATERIAL_COUNT[typeColor>>>7];		
 		zobristHash^=randomBitStr[newPos][typeColor];
 		fields[newPos]=typeColor;
 		
@@ -1180,8 +1192,8 @@ public class BBPosition implements Position {
 			int cbPos = Long.numberOfTrailingZeros(cbs);
 			cbs &= cbs- 1;
 			int tC = fields[cbPos];
-			int type  = tC>>7;
-			int col = tC >> 6 & 1;
+			int type  = tC>>>7;
+			int col = tC >>> 6 & 1;
 			
 			if(col==color) {
 				if(type>PIECE_TYPE_KNIGHT) {
@@ -1344,15 +1356,15 @@ public class BBPosition implements Position {
 			//out(mOneUp);
 			//out(mTwoUp);
 		
-			delta = (mLeft^oldContext._mLeft[color])>>DIR_UP_LEFT;
+			delta = (mLeft^oldContext._mLeft[color])>>>DIR_UP_LEFT;
 			//out(oldContext._mLeft[color]);
 			//out(delta);
-			delta |= (mRight^oldContext._mRight[color])>>DIR_UP_RIGHT;
+			delta |= (mRight^oldContext._mRight[color])>>>DIR_UP_RIGHT;
 			//out(oldContext._mRight[color]);
 			//out(delta);
-			delta |= (mOneUp^oldContext._mOneUp[color])>>DIR_UP;
+			delta |= (mOneUp^oldContext._mOneUp[color])>>>DIR_UP;
 			//out(delta);
-			delta |= (mTwoUp^oldContext._mTwoUp[color])>>DIR_2_UP;
+			delta |= (mTwoUp^oldContext._mTwoUp[color])>>>DIR_2_UP;
 
 			// only pawns that existed in the first place
 			delta&=ownPawns;
@@ -1382,9 +1394,9 @@ public class BBPosition implements Position {
 					long last =mask& MASK_8_RANK;
 					
 					if((last)!=EMPTY_MASK)  {
-						last|= last>>DIR_UP;
-						last|= last>>DIR_UP;
-						mask|= last>>DIR_UP;
+						last|= last>>>DIR_UP;
+						last|= last>>>DIR_UP;
+						mask|= last>>>DIR_UP;
 					}
 					//long oldMask = context.getAndSetMoveMasks(pos,mask);
 					long oldMask = moveMasks[pos];
@@ -1402,13 +1414,13 @@ public class BBPosition implements Position {
 			//out(ownPawns);
 			other|=(this.enPassanteMask & MASK_3_RANK);
 			//out(other);
-			mLeft= (ownPawns >>DIR_UP_LEFT) & MASK_NOT_A_FILE&other;
+			mLeft= (ownPawns >>>DIR_UP_LEFT) & MASK_NOT_A_FILE&other;
 			//out(mLeft);
-			mRight=(ownPawns >>DIR_UP_RIGHT) & MASK_NOT_H_FILE&other;
+			mRight=(ownPawns >>>DIR_UP_RIGHT) & MASK_NOT_H_FILE&other;
 			//out(mRight);
-			mOneUp = (ownPawns >> DIR_UP) & _notOcc ;
+			mOneUp = (ownPawns >>> DIR_UP) & _notOcc ;
 			//out(mOneUp);
-			mTwoUp = (((mOneUp & MASK_6_RANK) >> DIR_UP)& _notOcc ) ;
+			mTwoUp = (((mOneUp & MASK_6_RANK) >>> DIR_UP)& _notOcc ) ;
 			//out(mTwoUp);
 			delta = (mLeft^oldContext._mLeft[color])<<DIR_UP_LEFT;
 			//out(oldContext._mLeft[color]);
@@ -1590,7 +1602,7 @@ public class BBPosition implements Position {
 					for(int j=0;j<counter;j++) {
 						int attacker = Long.numberOfTrailingZeros(attackAfterENP);
 						attackAfterENP&=attackAfterENP-1;
-						if((this.fields[attacker]>>7)!=PIECE_TYPE_ROOK) {
+						if((this.fields[attacker]>>>7)!=PIECE_TYPE_ROOK) {
 							//hit
 							_pinMasks[pos]&=~this.enPassanteMask ;
 							all|=SHIFT[pos];
@@ -1606,7 +1618,7 @@ public class BBPosition implements Position {
 					for(int j=0;j<counter;j++) {
 						int attacker = Long.numberOfTrailingZeros(attackAfterENP);
 						attackAfterENP&=attackAfterENP-1;
-						if(this.fields[attacker]>>7!=PIECE_TYPE_BISHOP) {
+						if(this.fields[attacker]>>>7!=PIECE_TYPE_BISHOP) {
 							_pinMasks[pos]&=~this.enPassanteMask ;
 							all|=SHIFT[pos];
 							found=true;
@@ -1638,9 +1650,9 @@ public class BBPosition implements Position {
 					_pinMasks[pos]&=MASK_8_RANK;
 					long last =moveMasks[pos]&_pinMasks[pos] ;
 					if((last)!=EMPTY_MASK)  {
-						last|= last>>DIR_UP;
-						last|= last>>DIR_UP;
-						last|= last>>DIR_UP;
+						last|= last>>>DIR_UP;
+						last|= last>>>DIR_UP;
+						last|= last>>>DIR_UP;
 						_pinMasks[pos]|=last;
 					}
 				}
@@ -1745,32 +1757,126 @@ public class BBPosition implements Position {
 		}
 	}
 	public boolean isCheck() {
-		return this.tCallBacks[Long.numberOfLeadingZeros(this.kings[colorAtTurn])]!=0;
+		return this.tCallBacks[Long.numberOfLeadingZeros(this.kings[OTHER_COLOR[colorAtTurn]])]!=0;
 	}
+	/*
+	
 	public double evaluate(int i) {
 		if(i==-1) {
+			//for current color
 			if(isCheck()) {
-				return Integer.MIN_VALUE;
+				return SIGN_BY_COLOR[colorAtTurn]* (level - 10_000);//keep in mind this is one level before the nxt move
 			}else {
-				return +1.5;//Patt
+				return SIGN_BY_COLOR[colorAtTurn]* 1.5;//Patt
 			}
 		}else {
 			Move move = this.getMove(i);
 			int delta = 0;
 			if(this.enPassanteMask!=EMPTY_MASK && Long.bitCount(this.enPassanteMask)== move.getEnPassanteSquare()) {
-				delta =1;
+				delta = 1;
 			}else if(move.isPromotion()){
-				delta = NAIVE_MATERIAL_COUNT[move.getPromotePieceType()]-NAIVE_MATERIAL_COUNT[PIECE_TYPE_PAWN];
+				delta = NAIVE_MATERIAL_COUNT[move.getPromotePieceType()>>>7]-NAIVE_MATERIAL_COUNT[PIECE_TYPE_PAWN];
 			}else {
 				int typeColor = fields[move.getNewPos()];
 				if(typeColor!=-1) {
-					delta = NAIVE_MATERIAL_COUNT[typeColor>>7];
+					delta = NAIVE_MATERIAL_COUNT[typeColor>>>7];
 				}
 			}
-			double score = (material[colorAtTurn]-material[OTHER_COLOR[colorAtTurn]])*(double)(Math.random()*0.1);
-			return score+delta;
+			
+			//test(delta, delta+material[colorAtTurn]-material[OTHER_COLOR[colorAtTurn]]);
+			
+			return SIGN_BY_COLOR[colorAtTurn]* (material[OTHER_COLOR[colorAtTurn]]-material[colorAtTurn]-delta);//+(double)(Math.random()*0.1);
+		}
+	}
+	private void test(int delta, int ref) {
+		int sum = delta;
+		for(int i=0;i<fields.length;i++) {
+			
+			int typeColor = fields[i];
+			if(typeColor==-1)continue;
+			int color = typeColor >>> 6 & 1;
+			int type = typeColor>>>7;
+ 			if(color==colorAtTurn) {
+				sum += NAIVE_MATERIAL_COUNT[type];
+			}else {
+				sum -= NAIVE_MATERIAL_COUNT[type];
+			}
+		}
+		if(sum!=ref) {
+			System.out.println("HEy: "+sum +"!="+ref);
+		}
+	}*/
+	
+
+	public double evaluate1(int i) {
+		double retVal;
+		if(i==-1) {
+			//for current color
+			if(isCheck()) {
+				retVal= (10_000-(level));
+			}else {
+				retVal= 1.5;//Patt
+			}
+			return SIGN_BY_COLOR[colorAtTurn]*retVal;
+		}else {
+			Move move = this.getMove(i);
+			int delta = 0;
+			if(this.enPassanteMask!=EMPTY_MASK && Long.bitCount(this.enPassanteMask)== move.getEnPassanteSquare()) {
+				delta = 1;
+			}else if(move.isPromotion()){
+				delta = NAIVE_MATERIAL_COUNT[move.getPromotePieceType()>>>7]-NAIVE_MATERIAL_COUNT[PIECE_TYPE_PAWN];
+			}else {
+				int typeColor = fields[move.getNewPos()];
+				if(typeColor!=-1) {
+					delta = NAIVE_MATERIAL_COUNT[typeColor>>>7];
+				}
+			}
+			retVal=(material[0]-material[1]);//+(double)(Math.random()*0.1);
+			return SIGN_BY_COLOR[colorAtTurn]*(retVal+delta);
 		}
 	}
 
+	public double evaluateX(int i) {
+		double retVal;
+		if(this.getMoveCount()==0) {
+			//for current color
+			if(isCheck()) {
+				retVal= (10_000-(level));
+			}else {
+				retVal= 1.5;//Patt
+			}
+		}else {
+			retVal=(material[0]-material[1]);//+(double)(Math.random()*0.1);
+		}
+		return SIGN_BY_COLOR[colorAtTurn]*retVal;
+	}
 
+	public double evaluate(int i) {
+		double retVal;
+		if(i==-1) {
+			//for current color
+			if(isCheck()) {
+				retVal= (10_000-(level));
+			}else {
+				retVal= 1.5;//Patt
+			}
+		} else {
+			Move move = this.getMove(i);
+			retVal=(material[1]-material[0]);//+(double)(Math.random()*0.1);
+			int delta = 0;
+			if(this.enPassanteMask!=EMPTY_MASK && Long.bitCount(this.enPassanteMask)== move.getEnPassanteSquare()) {
+				delta = 1;
+			}else if(move.isPromotion()){
+				delta = NAIVE_MATERIAL_COUNT[move.getPromotePieceType()>>>7]-NAIVE_MATERIAL_COUNT[PIECE_TYPE_PAWN];
+			}else {
+				int typeColor = fields[move.getNewPos()];
+				if(typeColor!=-1) {
+					delta = NAIVE_MATERIAL_COUNT[typeColor>>>7];
+				}
+			}
+			delta*=SIGN_BY_COLOR[colorAtTurn];
+			retVal-=delta;
+		}
+		return SIGN_BY_COLOR[colorAtTurn]*(retVal+(Math.random()*0.01));
+	}
 }

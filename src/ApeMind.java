@@ -6,16 +6,23 @@ import java.util.Scanner;
 import perft.Game;
 import perft.chess.ChessGameFactory;
 
-public class ChessterS {
-	private static final String idName = "Chesster S. 0.2";
+public class ApeMind {
+	private static final String idName = "ApeMind 0.2";
 	private Game game; 
-	private int depth=5;
+	private int depth=4;
 	private ChessGameFactory factory  = new ChessGameFactory();
 
 	
 	public static void main(String[] args) {
-		new ChessterS().run();
+		new ApeMind().run();
 	}
+		
+		
+		
+		
+		
+		
+		
 		
 	private void run() {	
 		Scanner input = new Scanner(System.in);
@@ -52,7 +59,7 @@ public class ChessterS {
 
 	public void cmdUCI() {
 		System.out.println("id name " + idName);
-		System.out.println("id author Alexandr Malura & Andre Fischer");
+		System.out.println("id author Andre Fischer");
 		// list supported options
 		System.out.println("uciok");
 	}

@@ -149,8 +149,8 @@ public class MagicNumberFinder {
 		for (int j = 0; j < 8; j++) {
 			nw = (nw << DIR_UP_LEFT) & MASK_NOT_1_RANK & MASK_NOT_H_FILE;
 			no = (no << DIR_UP_RIGHT) & MASK_NOT_1_RANK & MASK_NOT_A_FILE;
-			sw = (sw >> DIR_UP_LEFT) & MASK_NOT_8_RANK & MASK_NOT_A_FILE;
-			so = (so >> DIR_UP_RIGHT) & MASK_NOT_8_RANK & MASK_NOT_H_FILE;
+			sw = (sw >>> DIR_UP_LEFT) & MASK_NOT_8_RANK & MASK_NOT_A_FILE;
+			so = (so >>> DIR_UP_RIGHT) & MASK_NOT_8_RANK & MASK_NOT_H_FILE;
 
 			bishopAttack |= nw | no | sw | so;
 			nw &= (nw & ~bits);
@@ -227,8 +227,8 @@ public class MagicNumberFinder {
 		long rookAttack = 0L;
 		for (int j = 1; j <= 8; j++) {
 			n = (n << DIR_UP & MASK_NOT_1_RANK);
-			w = (w >> DIR_RIGHT & MASK_NOT_H_FILE);
-			s = (s >> DIR_UP & MASK_NOT_8_RANK);
+			w = (w >>> DIR_RIGHT & MASK_NOT_H_FILE);
+			s = (s >>> DIR_UP & MASK_NOT_8_RANK);
 			e = (e << DIR_RIGHT & MASK_NOT_A_FILE);
 			rookAttack |= n | w | s | e;
 			n &= (n & ~bits);

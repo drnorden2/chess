@@ -41,7 +41,7 @@ public class BitBoard {
 
 	}
 	public boolean get(int pos) {
-		return ((bits >> pos) & 1L)==1L;
+		return ((bits >>> pos) & 1L)==1L;
 	}
 
 	public void toggle(int pos) {

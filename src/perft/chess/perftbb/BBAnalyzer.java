@@ -20,7 +20,7 @@ public class BBAnalyzer {
 		char[] snapshot = new char[64];
 		for (int j = 0; j < 64; j++) {
 			long cb = position.tCallBacks[j];
-			if(((cb >> pos) & 1L)==1L) {
+			if(((cb >>> pos) & 1L)==1L) {
 				snapshot[j]=(char)('1');
 			}
 		}
@@ -32,7 +32,7 @@ public class BBAnalyzer {
 		long moves = 0L;///position.allMoves[pos];
 
 		for (int j = 0; j < 64; j++) {
-			if(((moves>> j) & 1L)==1L) {
+			if(((moves>>> j) & 1L)==1L) {
 				snapshot[j]=(char)('1');
 			}
 		}
@@ -137,7 +137,7 @@ public class BBAnalyzer {
 		char[] charBoard = new char[64];
 		getCharBoard(charBoard );
 		for (int j = 0; j < 64; j++) {
-			if(((untouched >> j) & 1L)==1L) {
+			if(((untouched >>> j) & 1L)==1L) {
 				snapshot[j]=charBoard[j];
 			}
 		}
@@ -174,7 +174,7 @@ public class BBAnalyzer {
 		String[] posG = this.getUntouchedToString();
 		
 		String str="\n";
-		for(int i=0;i<board.length;i++) {
+		for(int i=board.length-1;i>=0;i--) {
 			str +=board[i]
 					+" | " +
 				attackW[i]+" | " +

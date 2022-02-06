@@ -28,7 +28,20 @@ public class Test {
 
 	public static void main(String[] args) {
 		ChessGameFactory.bitBoard=true;
-		play(4, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		play(2, 0,"rnb1k1nr/p2p2Bp/1pp5/3P1p2/8/32N2/PPP1KPPP/R4B1R b KQkq - 1 "); 
+		//play(3, 0,"rnb1k1nr/p2p2pp/1pp5/3P1p2/8/2B2N2/PPP1KPPP/R4B1R w KQkq - 1 "); 
+		//play(4, 0,"rnb1k1nr/pp1p2pp/2p5/3P1p2/8/2B2N2/PPP1KPPP/R4B1R b KQkq - 1 "); 
+		//play(5, 0,"rnb1k1nr/pp1p2pp/2p5/3P1p2/8/2B2N2/PPP1qPPP/R3KB1R w KQkq - 1 "); 
+		//play(6, 0,"rnb1k1nr/pp1pq1pp/2p5/3P1p2/8/2B2N2/PPP1QPPP/R3KB1R b KQkq - 1 "); 
+		//play(2, 0,"rnbqkbnr/3p1ppp/1pp1p3/8/p2PP3/3B1N2/PPP2PPP/RNBQR1K1 b kq - 1 "); 
+		//play(5, 119060324,"8/8/8/8/7k/7p/8/7K b - - 0 1");
+		
+		//play(8, 0,"7k/p7/1P6/1r1r4/8/8/r7/7K b - - 0 1"); 
+		//test(6, 119060324,"1bb1k1nr/3q4/r7/1p3P1p/4B3/P1NPBQP1/1PP3PP/R4R1K w k - 0 1 "); 
+		//play(8, 119060324,"7k/8/8/1p1p4/8/1PPP4/8/1K6 w - - 0 1"); 
+		//play(6, 119060324,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		//play(6, 119060324,"k7/8/8/8/8/8/8/7K w - - 0 1");
+		if(true)return;
 		//test(7, 3195901860L,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 		//test(6,179862938,"r3k2r/8/8/8/8/8/8/R3K2R w KQkq -");
 		//test(6,8031647685L,"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
@@ -119,7 +132,7 @@ public class Test {
 		test(4, 1329, "8/P1k5/K7/8/8/8/8/8 w - - 0 1");
 
 		test(2, 1797,"r4knr/p1ppqPb1/bn4p1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQ - 0 1");
-			
+		
 		test(6, 2217, "K1k5/8/P7/8/8/8/8/8 w - - 0 1");
 
 		test(3, 2958, "r3k3/8/8/8/8/8/8/R3K3 w - - 0 1");
@@ -136,6 +149,8 @@ public class Test {
 		test(4, 23527, "8/8/2k5/5q2/5n2/8/5K2/8 b - - 0 1");
 
 		test(6, 92683, "8/P1k5/K7/8/8/8/8/8 w - - 0 1");
+
+		test(6, 111324,"8/7P/7k/8/8/7K/8/8 w k - 0 1 "); 
 		
 		test(5, 151107, "5R2/7k/8/8/K7/8/8/6R1 w - - 0 1");
 		
@@ -232,12 +247,13 @@ public class Test {
 			System.exit(-1);
 		}
 	}
+	
 	private static void play(int depth, long nodes, String fen) {
-		//O.N=false;
 		System.out.println("Loading:"+fen+":");
 		Game game = new Game(factory,fen,depth);
 		game.play();
 	}
+	
 	private static void test(int depth, long nodes, String fen) {
 		//O.N=false;
 		System.out.println("Loading:"+fen+":");

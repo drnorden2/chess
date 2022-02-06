@@ -8,7 +8,7 @@ public interface Position {
 
 	public void unSetMove(int move);
 
-	public void setMove(int move);
+	public void setMove(int move,boolean isSim, boolean isLast);
 
 	public String getNotation(int index);
 

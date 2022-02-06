@@ -184,7 +184,7 @@ public class LegalMoveTester {
 			for(int ii=0;ii<pseudoMoveCount ;ii++) {
 				Move move= field.pseudoMoves.getElement(ii);
 				//enpassante case relevant!
-				if(((this.rescueMap >> move.getNewPos()) & 1L)==1L 
+				if(((this.rescueMap >>> move.getNewPos()) & 1L)==1L 
 						||(move.getNewPos()==enpassantePos && move.isEnpassanteMove() && attacker.getElementIndex()==move.getEnPassantePawnPos() )) {		
 					if(!(move.getNewPos()==enpassantePos && move.isEnpassanteMove()  && isEnpassanteDiscovery(field, oldPosRegToKing, oldPos, otherColor, kingPos, move, enpassantePos))) {
 						// does the enpassante create a self check by discovery?
@@ -198,7 +198,7 @@ public class LegalMoveTester {
 			return;// no pinned move can prevent a check because it cannot be within XRAY!
 		}else {
 			// only remaining:
-			//if(pinner!=null && kingAttacks ==0) >> check slider Moves
+			//if(pinner!=null && kingAttacks ==0) >>> check slider Moves
 			//calculate sliding moves in XRay all are fine just check enpassante case
 			
 			int xCB=pinner.getDirX();

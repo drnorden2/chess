@@ -174,7 +174,7 @@ public class MBPosition implements Position{
 	public static int counter=0;
 	boolean experimental = false;
 
-	public void setMove(int index) {
+	public void setMove(int index, boolean isSim, boolean isLast) {
 		totalCount++;
 		Move move= getMove(index);
 		/*

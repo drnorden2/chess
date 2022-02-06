@@ -2,6 +2,7 @@ package perft;
 
 
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import perft.Player.PlayerType;
@@ -23,12 +24,12 @@ final public class Game {
 	
 	public Game(GameFactory chessFactory,String fen,int depth) {
 		this(
-				chessFactory.getSpecificBoard(fen,depth=300),
+				chessFactory.getSpecificBoard(fen,depth),
 				chessFactory.getPlayer(PlayerType.RANDOM),
 				chessFactory.getPlayer(PlayerType.RANDOM),
 				chessFactory.getBoardUI()
 			);		
-		this.depth= 6;
+		this.depth= depth;
 		hashMap= new HashMap[depth+1];	
 		hashMap2= new HashMap[depth+1];	
 		hashScore= new HashMap[depth+1];	
@@ -57,16 +58,6 @@ final public class Game {
 		this.board = board;
 		this.boardUI = boardUI;
 	}
-	final public void play() {
-		boardUI.show(board);
-		while(!board.isGameOver()){
-			//Player playerAtTurn = players[turn];
-			int move = play(depth);
-			int turn = board.getTurn();
-			board.setMove(move);
-			boardUI.show(board);
-		}
-	}
 	public static long getMoveCounter() {
 		return moveCounter;
 	}
@@ -88,7 +79,7 @@ final public class Game {
 		}
 		for(int i=0;i<moves;i++) {
 			moveCounter++;
-			board.doMove(i);
+			board.doMove(i,true,deep==2);
 			moveCount +=bulkPerft(deep-1);
 			board.undoMove();
 		}
@@ -134,10 +125,10 @@ final public class Game {
 			if(base && !"d5d6".equals(moveStr)) {
 				continue;
 			}*/
-			board.doMove(i);
+			board.doMove(i,true,deep==2);
 			String moveStr = board.getMoveStr(i);
 			//String moveStr = BBPosition.moveNotation;
-			boolean worked = ref.setMoveByMoveStr(moveStr);
+			boolean worked = ref.setMoveByMoveStr(moveStr,true,deep==2);
 			if(!worked) {
 				System.out.println("MoveStr not found!"+moves+" vs"+other +" in iteration:"+board.getTotalCount());
 				for(int j=0;i<moveList.size();j++) {
@@ -221,7 +212,7 @@ final private void mlPerft(long[] counts, int deep,int depth, boolean bulk) {
 					moveStr = board.getMoveStr(i);
 				}				
 
-				board.doMove(i);
+				board.doMove(i,true,deep==2);
 			 
 				long hash = this.board.getHash();
 				Long curMoveCount  = 0L;
@@ -272,7 +263,7 @@ final private void mlPerft(long[] counts, int deep,int depth, boolean bulk) {
 		int moves = board.getMoves();
 		long counter = 0;
 		for(int i=0;i<moves;i++) {
-			board.doMove(i);
+			board.doMove(i,true,deep==2);
 			if(deep==2) {
 				counter += board.getMoves();
 			}else {
@@ -305,7 +296,7 @@ final private void mlPerft(long[] counts, int deep,int depth, boolean bulk) {
 	final private void mlPerft(long[] counts, int deep,int depth) {
 		int moves = board.getMoves();
 		for(int i=0;i<moves;i++) {
-			board.doMove(i);
+			board.doMove(i,true,deep==2);
 			if(deep==2) {
 				counts[0/*deep-2*/]+= board.getMoves();
 			}else {
@@ -331,34 +322,54 @@ final private void mlPerft(long[] counts, int deep,int depth, boolean bulk) {
 	}
 	
 	
+	final public void play() {
+		boardUI.show(board);
+		int i=0;
+		while(!board.isGameOver()){
+			//Player playerAtTurn = players[turn];
+			System.out.println("Play deep:"+depth);
+			int move = play(depth);
+			board.setMove(move,false,false);
+			boardUI.show(board);
+			if(i++==0)break;
+		}
+	}
+	
 	private int play(int deep) {
 		int moves = board.getMoves();
 		Double bestScore=null;
 		int bestMove=-1;
+		String bestStr = null;
+		String[] bestStrs=new String [deep+1];
 		
 		for(int i=0;i<moves;i++) {
-			board.doMove(i);
-			long hash = board.getHash();
+			String str = board.getMoveStr(i);
+			board.doMove(i,true,false);
+			//long hash = board.getHash();
 			//Double score = hashScore[deep].get(hash);
 			//if(score  ==null) {
-				Double score = score(deep-1);
+			String[] allStrs=new String [deep];
+				
+			Double score = score(deep-1,allStrs)*-1;
 				//hashScore[deep].put(hash,score);			
-				if(bestScore==null||bestScore<score) {
-					bestScore = score;
-					bestMove=i;
-				}
+
+			if(bestScore==null||bestScore<score) {
+				bestScore = score;
+				bestMove=i;
+				bestStr= str;
+				bestStrs = allStrs;
+				allStrs[deep-1]= bestStr;
+			}
+			System.out.println("   Score: "+score+" for "+ str);
 			//}
 			board.undoMove();
+
 		}
+		System.out.println("Score: "+bestScore+" for "+ bestStr);
+		System.out.println(Arrays.toString(bestStrs));
 		return bestMove;
 	}
 	
-	public void go(int depth) {
-		int move = this.play(depth);
-		System.out.println("OINK: Found this with my ApeMind:"+this.getBoard().getMoveStr(move));
-		System.out.println("bestmove "+this.getBoard().getMoveStr(move));
-		
-	}
 	
 	/*
 	 * int negaMax( int depth ) {
@@ -372,38 +383,127 @@ final private void mlPerft(long[] counts, int deep,int depth, boolean bulk) {
     return max;
 }
 	 */
+	final private double score3(int deep, String[] moveStr) {
+		int moves = board.getMoves();
+		if ( deep == 0||moves ==0) {
+	    	return board.evaluate(-1);
+	    }
+		double max=-1_000_000;
+		for(int i=0;i<moves;i++) {
+			//String[] curMoveStr = new String[deep#];
+			String str = board.getMoveStr(i);
+	        board.doMove(i,true,false);
+			double score = score(deep-1,moveStr)*-1;
+			//System.out.println("     ".substring(deep,4)+" "+str+":"+score);
+			board.undoMove();
+	        if( score > max) {
+	        	max = score;
+	        	/*
+	        	for(int j=0;j<deep-1;j++) {
+					moveStr[j]=curMoveStr[j];
+				}
+				moveStr[deep-1]=str;
+				*/ 
+			}
+		}
+		return max;
+	}
+	final private double score2(int deep, String[] moveStr) {
+		int moves = board.getMoves();
+		if ( moves ==0) {
+	    	return board.evaluate(-1);
+	    }
+		double max=-1_000_000;
+		for(int i=0;i<moves;i++) {
+			//String[] curMoveStr = new String[deep#];
+			String str = board.getMoveStr(i);
+			double score =0;
+			if(deep>1) {
+				board.doMove(i,true,deep==2);
+				score = score(deep-1,moveStr)*-1;
+				board.undoMove();
+		    }else {
+				score = board.evaluate(i)*-1;
+			}
+			if( score > max) {
+	        	max = score;
+	        }
+		}
+		return max;
+	}
+	final private double score(int deep, String[] moveStr) {
+		int moves = board.getMoves();
+		if (moves ==0) {
+	    	return board.evaluate(-1);
+	    }
+		double max=-1_000_000;
+		for(int i=0;i<moves;i++) {
+			String[] curMoveStr = new String[deep-1];
+			String str = board.getMoveStr(i);
+			double score = 0;
+			if(deep>1) { 
+				board.doMove(i,true,false);
+				score= score(deep-1,curMoveStr)*-1;
+				board.undoMove();
+			}else {
+				//board.doMove(i,true,false);
+				score= board.evaluate(i)*-1;
+				//board.undoMove();
+			}
+	        if( score > max) {
+	        	max = score;
+	        	for(int j=0;j<deep-1;j++) {
+					moveStr[j]=curMoveStr[j];
+				}
+				moveStr[deep-1]=str; 
+			
+	        }
+		}
+		return max;
+	}
 	
-	
-	final private double score(int deep) {
+/*
+	final private double score(int deep, String[] moveStr) {
 		int moves = board.getMoves();
 		if(moves==0) {
 			return board.evaluate(-1)*-1;
 		}
 
 		Double bestScore=null;
-			
+		
 		for(int i=0;i<moves;i++) {
 			//long hash = board.getHash();
 			//Double score = hashScore[deep].get(hash);
 			//if(score  ==null) {
-			
+			String[] curMoveStr = new String[deep-1];
+			String str = board.getMoveStr(i);
 			Double score =null;
 			if(deep>1) {
-				board.doMove(i);
-				score = score(deep-1);
+				board.doMove(i,true,deep==2);
+				score = score(deep-1,curMoveStr);
 				board.undoMove();
 			}else {
+				//doMove flips it once evaluate flips it again 
 				score = board.evaluate(i);
 			}
 			//hashScore[deep].put(hash,score);			
 			//}
 			if(bestScore==null||bestScore<score) {
 				bestScore = score;
+				for(int j=0;j<deep-1;j++) {
+					moveStr[j]=curMoveStr[j];
+				}
+				moveStr[deep-1]=str; 
 			}
-		
-		}		
-		return bestScore*-1;
 		}
+		return bestScore*-1;
 	}
-
+	*/
+	public void go(int depth) {
+		int move = this.play(depth);
+		System.out.println("OINK: Found this with my ApeMind:"+this.getBoard().getMoveStr(move));
+		System.out.println("bestmove "+this.getBoard().getMoveStr(move));
+		
+	}
+}
 

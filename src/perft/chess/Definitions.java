@@ -1,6 +1,5 @@
 package perft.chess;
 
-
 import perft.chess.core.datastruct.BitBoard;
 
 public class Definitions {
@@ -8,6 +7,8 @@ public class Definitions {
 	public static final long FULL_MASK =~EMPTY_MASK;
 
 	public static final int PIECE_TYPE_PAWN = 0;
+	public static final int[] SIGN_BY_COLOR = new int[] {1,-1};
+	
 	public static final int PIECE_TYPE_KING= 1;
 	public static final int PIECE_TYPE_KNIGHT = 2;
 	public static final int PIECE_TYPE_BISHOP = 3;
@@ -385,8 +386,8 @@ public class Definitions {
 	
 	public static char getPieceCharForTypeColor(int typeColor) {
 		//PIECE * 2 + COLOR) * 64
-		int color = typeColor >> 6 & 1;
-		int type = typeColor >> 7;
+		int color = typeColor >>> 6 & 1;
+		int type = typeColor >>> 7;
 		return CHESS_MAN_CHARS.charAt(type+6*color);
 	}
 	public static char getPieceCharForPieceType(int type) {

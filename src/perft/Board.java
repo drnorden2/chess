@@ -31,9 +31,9 @@ abstract public class Board {
 		return getMoves() ==0;
 	}
 	
-	public final void doMove(int move) {
+	public final void doMove(int move,boolean isSim, boolean isLast) {
 		lastMoves.add(move); 
-		setMove(move);
+		setMove(move,isSim,isLast);
 		movesPlayed++;
 	}
 	
@@ -58,14 +58,14 @@ abstract public class Board {
 	abstract public String getMoveStr(int move);
 	abstract public long getHash();
 	abstract public boolean isWon();
-	abstract public void setMove(int move);
+	abstract public void setMove(int move,boolean isSim, boolean isLast);
 	abstract public int getTotalCount();
 
-	public boolean setMoveByMoveStr(String notation) {
+	public boolean setMoveByMoveStr(String notation,boolean isSim, boolean isLast) {
 		int count = this.getMoves();
 		for(int i=0;i<count;i++) {
 			if(this.getMoveStr(i).equals(notation)) {
-				this.doMove(i);
+				this.doMove(i,isSim, isLast);
 				return true;
 			}
 		}
