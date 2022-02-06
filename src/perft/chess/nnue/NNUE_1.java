@@ -252,6 +252,7 @@ public class NNUE_1 {
 	    int sq = pos.squares[i];
 	    int pc = pos.pieces[i];
 	    active.values[active.size++] = make_index(c, sq, pc, ksq);
+	    System.out.println("active.values["+(active.size-1)+"] = "+active.values[active.size-1] );
 	  }
 	}
 
@@ -322,9 +323,9 @@ public class NNUE_1 {
 //	static uint8_t /*weight_t*/ hidden1_weights alignas(64) [32 * 512];
 //	static uint8_t /*weight_t*/ hidden2_weights alignas(64) [32 * 32];
 //	static uint8_t /*weight_t*/ output_weights alignas(64) [1 * 32];
-	static int[] hidden1_weights = new int[32 * 512];
-	static int[] hidden2_weights = new int[32 * 32];
-	static int[] output_weights = new int[1 * 32];
+	static short[] hidden1_weights = new short[32 * 512];
+	static short[] hidden2_weights = new short[32 * 32];
+	static short[] output_weights = new short[1 * 32];
 
 //	static int32_t hidden1_biases alignas(64) [32];
 //	static int32_t hidden2_biases alignas(64) [32];
@@ -334,7 +335,7 @@ public class NNUE_1 {
 	static int[] output_biases = new int[1];
 
 	//int32_t affine_propagate(uint8_t /*clipped_t*/ *input, int32_t *biases, uint8_t /*weight_t*/ *weights)
-	int affine_propagate(int[] input, int[] biases, int[] weights)
+	int affine_propagate(short[] input, int[] biases, short[] weights)
 	{
 	  int /*int32_t*/ sum = biases[0];
 	  for (int /*unsigned*/ j = 0; j < 32; j++)
@@ -370,22 +371,32 @@ public class NNUE_1 {
 
 
 
-	private final void affine_txfm(int[] input, int[] output, int inDims, int outDims, int[] biases, int[] weights,int[] inMask, int[] outMask, boolean pack8_and_calc_mask){
+	private final void affine_txfm(short[] input, short[] output, int inDims, int outDims, int[] biases, short[] weights,short[] inMask, short[] outMask, boolean pack8_and_calc_mask){
 	  //(void)inMask; (void)outMask; (void)pack8_and_calc_mask;
 
 	  int[] tmp = new int[outDims];
 
-	  for (int /*unsigned*/ i = 0; i < outDims; i++)
-	    tmp[i] = biases[i];
-
-	  for (int /*unsigned*/ idx = 0; idx < inDims; idx++)
-	    if (input[idx]!=0)
-	      for (int /*unsigned*/ i = 0; i < outDims; i++)
-	        tmp[i] += input[idx] * weights[outDims * idx + i];
-
-	  int[] outVec = output;
 	  for (int /*unsigned*/ i = 0; i < outDims; i++) {
-	    outVec[i] = clamp(tmp[i] >> SHIFT, 0, 127);
+	    tmp[i] = biases[i];
+	 	System.out.println("v-bias["+i+"]="+biases[i]);
+	  }
+	  for (int /*unsigned*/ idx = 0; idx < inDims; idx++) {
+		  
+	    if (input[idx]!=0) {
+	    	//System.out.println("input["+idx+"]="+input[idx]);
+	      for (int /*unsigned*/ i = 0; i < outDims; i++) {
+	    	//System.out.println("n-bias["+i+"]="+biases[i]);
+		  	//System.out.println("v-tmp["+i+"]="+tmp[i]);
+	  		    tmp[i] += (short)(input[idx] * weights[outDims * idx + i]);
+	  		//System.out.println("n-tmp["+i+"]="+tmp[i]);	
+	      }
+	    }
+	  }
+ 	  short[] outVec = output;
+	  for (int /*unsigned*/ i = 0; i < outDims; i++) {
+		//System.out.println("tmp["+i+"]="+tmp[i]);
+		outVec[i] = clamp(tmp[i] >> SHIFT, 0, 127);
+	   // System.out.println("outVec["+i+"]="+outVec[i]);
 	  }
 	}
 
@@ -412,9 +423,14 @@ public class NNUE_1 {
 		// System.arraycopy(src, srcPos, dest, destPos, length);
 		// void* memcpy( void* dest, const void* src, std::size_t count );
 		// memcpy(accumulator.accumulation[c], ft_biases,kHalfDimensions * sizeof(int16_t));
-		System.arraycopy(ft_biases, 0, accumulator.accumulation[c], 0, kHalfDimensions);
-			
-	    for (int/*size_t*/ k = 0; k < activeIndices[c].size; k++) {
+		  for(int i=0;i<255;i++) {
+				System.out.println("accumulator.accumulation[0]["+i+"]="+accumulator.accumulation[0][i]);
+			 }
+		  System.arraycopy(ft_biases, 0, accumulator.accumulation[c], 0, kHalfDimensions);
+		for(int i=0;i<255;i++) {
+			System.out.println("accumulator.accumulation[0]["+i+"]="+accumulator.accumulation[c][i] +" "+ft_biases[i]);
+		 }
+		for (int/*size_t*/ k = 0; k < activeIndices[c].size; k++) {
 	      int /*unsigned*/ index = activeIndices[c].values[k];
 	      int /*unsigned*/offset = kHalfDimensions * index;
 
@@ -422,7 +438,13 @@ public class NNUE_1 {
 	        accumulator.accumulation[c][j] += ft_weights[offset + j];
 	    }
 	  }
-
+	  /*
+	  for(int i=0;i<255;i++) {
+		  System.out.println("accumulator.accumulation[0]["+i+"]="+accumulator.accumulation[0][i]);
+	  }
+	  for(int i=0;i<255;i++) {
+		  System.out.println("accumulator.accumulation[1]["+i+"]="+accumulator.accumulation[1][i]);
+	  }*/
 	  accumulator.computedAccumulation = 1;
 	}
 
@@ -489,7 +511,7 @@ public class NNUE_1 {
 
 	// Convert input features
 	//void transform(Position *pos, uint8_t /*clipped_t*/ *output, uint8_t /*mask_t*/ *outMask)
-	void transform(Position pos, int[]  output, int[] outMask){
+	void transform(Position pos, short[]  output, short[] outMask){
 	  if (!update_accumulator(pos))
 	    refresh_accumulator(pos);
 
@@ -506,9 +528,8 @@ public class NNUE_1 {
 	      //int16_t sum = (*accumulation)[perspectives[p]][i];
 	    	int sum =accumulation[perspectives[p]][i];
 		    output[offset + i] = clamp(sum, 0, 127);
+		    System.out.println("output["+(offset + i)+"]="+output[offset + i]);
 	    }
-
-
 	  }
 	}
 
@@ -516,9 +537,9 @@ public class NNUE_1 {
 //	  alignas(64) uint8_t /*clipped_t*/ input[FtOutDims];
 //	  uint8_t /*clipped_t*/ hidden1_out[32];
 //	  int8_t hidden2_out[32];
-	  int[] input = new int[FtOutDims];
-	  int[] hidden1_out = new int[32];
-	  int[] hidden2_out = new int[32];
+	  short[] input = new short[FtOutDims];
+	  short[] hidden1_out = new short[32];
+	  short[] hidden2_out = new short[32];
 
 	}
 
@@ -529,8 +550,9 @@ public class NNUE_1 {
 //	  alignas(8) uint8_t /*mask_t*/ input_mask[FtOutDims / (8 * sizeof(uint8_t /*mask_t*/))];
 //	  alignas(8) uint8_t /*mask_t*/ hidden1_mask[8 / sizeof(uint8_t /*mask_t*/)] = { 0 };
 //	  struct NetData buf;
-		int[] input_mask = new int[FtOutDims / (8 * 8/* sizeof(uint8_t mask_t) */)];
-		int[] hidden1_mask/* [8 / sizeof(uint8_t mask_t)] */ = new int[] { 0 };
+		short[] input_mask = new short[64];
+		short[] hidden1_mask = new short[8];
+		
 		NetData buf = new NetData();
 		
 		transform(pos, buf.input, input_mask);
@@ -538,11 +560,9 @@ public class NNUE_1 {
 		affine_txfm(buf.input, buf.hidden1_out, FtOutDims, 32, hidden1_biases, hidden1_weights, input_mask,
 				hidden1_mask, true);
 		
-		affine_txfm(buf.hidden1_out, buf.hidden2_out, 32, 32, hidden2_biases, hidden2_weights, hidden1_mask, null,
-				false);
+		affine_txfm(buf.hidden1_out, buf.hidden2_out, 32, 32, hidden2_biases, hidden2_weights, hidden1_mask, null,false);
 		
-		int out_value = affine_propagate((int[]) buf.hidden2_out, output_biases, output_weights);
-	
+		int out_value = affine_propagate((short[]) buf.hidden2_out, output_biases, output_weights);
 		return out_value / FV_SCALE;
 	}
 
@@ -552,8 +572,9 @@ public class NNUE_1 {
 	  return c * 32 + r;
 	}
 	
-	int clamp(int a, int b, int c) {
-		return 	a < b ? b : (a > c ? c : a);
+	short clamp(int a, int b, int c) {
+		//System.out.println(a+" < "+b+" ? "+b+ " : ("+a+" > "+c+" ? "+c+" : "+a+")"+(a < b ? b : (a > c ? c : a)));
+		return (short)(	a < b ? b : (a > c ? c : a));
 	}
 	
 	
@@ -746,8 +767,10 @@ public class NNUE_1 {
 
 	  // Read network
 	  pointer += 4;
-	  for (int /*unsigned*/ i = 0; i < 32; i++, pointer += 4)
+	  for (int /*unsigned*/ i = 0; i < 32; i++, pointer += 4) {
 	    hidden1_biases[i] = readu_le_u32(evalData,pointer);
+	    System.out.println("HiddenBias:"+hidden1_biases[i]);
+	  }
 	  pointer = read_hidden_weights(hidden1_weights, 512, evalData,pointer);
 	  for (int /*unsigned*/ i = 0; i < 32; i++, pointer += 4)
 	    hidden2_biases[i] = readu_le_u32(evalData,pointer);
@@ -759,7 +782,7 @@ public class NNUE_1 {
 	
 
 	//static const char *read_hidden_weights(uint8_t /*weight_t*/ *w, unsigned dims, const char *d)
-	static int read_hidden_weights(int[] w, int dims, byte[] eval, int pointer)
+	static int read_hidden_weights(short[] w, int dims, byte[] eval, int pointer)
 	{
 	  for (int /*unsigned*/ r = 0; r < 32; r++)
 	    for (int /*unsigned*/  c = 0; c < dims; c++)
@@ -772,7 +795,7 @@ public class NNUE_1 {
 
 	
 //	static void read_output_weights(uint8_t /*weight_t*/ *w, const char *d)
-	static int read_output_weights(int w[], byte[] eval, int pointer)
+	static int read_output_weights(short w[], byte[] eval, int pointer)
 	{
 	  for (int /*unsigned*/ i = 0; i < 32; i++) {
 	    /*unsigned*/ //int c = i;
@@ -790,9 +813,14 @@ public class NNUE_1 {
 	 return ((evalData[pointer+0]&0xFF) | ((evalData[pointer+1]&0xFF) << 8) | ((evalData[pointer+2]&0xFF) << 16) | ((evalData[pointer+3]&0xFF) << 24));
 	}
 
-	private final int readu_le_u16(byte[] evalData, int pointer)
+	private final short readu_le_u16(byte[] evalData, int pointer)
 	{
-		return (int)((evalData[pointer+0]&0xFF) | ((evalData[pointer+1]&0xFF) << 8));
+//		System.out.println(String.format("0x%08X", evalData[pointer+0]&0xFF));
+//		System.out.println(String.format("0x%08X", evalData[pointer+1]&0xFF));
+//		System.out.println(String.format("0x%08X", (int)((evalData[pointer+0]&0xFF) | ((evalData[pointer+1]&0xFF) << 8))));
+// 		System.out.println((short)((evalData[pointer+0]&0xFF) | ((evalData[pointer+1]&0xFF) << 8)));
+//		
+		return (short)((evalData[pointer+0]&0xFF) | ((evalData[pointer+1]&0xFF) << 8));
 	}
 
 	/************************************************************************
@@ -850,7 +878,6 @@ public class NNUE_1 {
 	public final int nnue_evaluate(int player, int[] pieces, int[] squares){
 	  NNUEdata nnue= new NNUEdata();
 	  nnue.accumulator.computedAccumulation = 0;
-
 	  Position pos=new Position();
 	  	  pos.nnue[0] = /*&*/nnue;
 	  	  pos.nnue[1] = null;//=0;
@@ -920,7 +947,9 @@ public class NNUE_1 {
 	 */
 	public static void main(String[] args) {
 		NNUE_1 nnue = new NNUE_1();
-		nnue.nnue_init("C:/Users/andre/eclipse-workspace6/chess/nn-eba324f53044.nnue");
+		//nnue.nnue_init("C:/Users/andre/eclipse-workspace6/chess/nn-eba324f53044.nnue");
+		nnue.nnue_init("/home/linux-ml/git/chess/my.nnue");
+		
 		int score = nnue.nnue_evaluate_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 		System.out.println(score);
 	}
