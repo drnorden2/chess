@@ -250,49 +250,50 @@ public class Fen {
 
 	
 		
-	/*
-	public void printFEN(Position position, Move lastMove) {
-		System.out.println(getFEN(config,lastMove));
+	
+	public void printFEN(Position position) {
+		System.out.println(getFEN(position));
 	}	
 	
-	public String getFEN(Configuration config, Move lastMove) {
+	public String getFEN(Position position) {
 		StringBuffer sb = new StringBuffer();
 		// rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 		for (int i = 0; i < 8; i++) {
 			int gap = 0;
 			for (int j = 0; j < 8; j++) {
-				Stone stone = config.getBoardMap().getStone(new Coordinate(i, j));
-				if (stone == null) {
+				int typeColor = position.getPiece(getPosForFileRank(j, 7-i));
+				int type = typeColor >> 7;
+				int color = typeColor >>> 6 & 1;
+
+				if (typeColor == -1) {
 					gap++;
 				} else {
 					if (gap != 0) {
 						sb.append(gap);
 						gap = 0;
 					}
-					int type = stone.getType();
 					String s = null;
 					switch (type) {
-					case Stone.TYPE_PEON:
+					case PIECE_TYPE_PAWN:
 						s = "p";
 						break;
-					case Stone.TYPE_BISHOP:
+					case PIECE_TYPE_BISHOP:
 						s = "b";
 						break;
-					case Stone.TYPE_HORSE:
+					case PIECE_TYPE_KNIGHT:
 						s = "n";
 						break;
-					case Stone.TYPE_ROOK:
+					case PIECE_TYPE_ROOK:
 						s = "r";
 						break;
-					case Stone.TYPE_QUEEN:
+					case PIECE_TYPE_QUEEN:
 						s = "q";
 						break;
-					case Stone.TYPE_KING:
+					case PIECE_TYPE_KING:
 						s = "k";
 						break;
 					}
-
-					if (stone.getColor() == Stone.WHITE) {
+					if (color == COLOR_WHITE) {
 						s = s.toUpperCase();
 					}
 					sb.append(s);
@@ -301,66 +302,58 @@ public class Fen {
 			if (gap != 0) {
 				sb.append(gap);
 			}
+			if(i!=7) {
 			sb.append("/");
+			}
 		}
 
 		// Move?
-		if (config.getBoardMap().getCurColor() == Stone.WHITE) {
+		if (position.getColorAtTurn() == COLOR_WHITE) {
 			sb.append(" w ");
 		} else {
 			sb.append(" b ");
 		}
 
-		boolean wK =  config.getBoardMap().isUntouched(new Coordinate(Game._1, Game._E));
-		boolean bK = config.getBoardMap().isUntouched(new Coordinate(Game._8, Game._E));
-		boolean wTq = config.getBoardMap().isUntouched(new Coordinate(Game._1, Game._A));
-		boolean wTk = config.getBoardMap().isUntouched(new Coordinate(Game._1, Game._H));
-		boolean bTq = config.getBoardMap().isUntouched(new Coordinate(Game._8, Game._A));
-		boolean bTk = config.getBoardMap().isUntouched(new Coordinate(Game._8, Game._H));
-		
-		String rochade ="";
+		boolean wK = position.isUntouched(_E1);
+		boolean bK = position.isUntouched(_E8);
+		boolean wTq = position.isUntouched(_A1);
+		boolean wTk = position.isUntouched(_H1);
+		boolean bTq = position.isUntouched(_A8);
+		boolean bTk = position.isUntouched(_H8);
+
+		String rochade = "";
 		if (wK) {
 			if (wTk) {
-				rochade+="K";
+				rochade += "K";
 			}
 			if (wTq) {
-				rochade+="Q";
+				rochade += "Q";
 			}
 		}
 
 		if (bK) {
 			if (bTk) {
-				rochade+="k";
+				rochade += "k";
 			}
 			if (bTq) {
-				rochade+="q";
+				rochade += "q";
 			}
 		}
-		if("".equals(rochade)) {
-			rochade ="-";
+		if ("".equals(rochade)) {
+			rochade = "-";
+		}
+
+		sb.append(rochade);
+
+		int pos = position.getEnpassantePos();
+		
+		if (pos != 0 &&pos!=-1) {
+			sb.append(" " + "" + ((char) ('a' + getFileForPos(pos))) + "" + (1 + getRankForPos(pos)) + "");
+		}else {
+			sb.append(" -");
 		}
 		
-		sb.append(" " + rochade);
-		
-		String enpassant = "-";
-		if (lastMove != null) {
-			Coordinate target = lastMove.getTarget();
-			Stone stone = config.getBoardMap().getStone(target);
-			if (stone.getType() == Stone.TYPE_PEON) {
-				Coordinate source = lastMove.getSource();
-				if (stone.getColor() == Stone.WHITE) {
-					if (source.getX() == Stone._2 && target.getX() == Stone._4) {
-						enpassant = "" + (char) ('a' + (char) source.getY()) + "3";
-					}
-				} else {
-					if (source.getX() == Stone._7 && target.getX() == Stone._5) {
-						enpassant = "" + (char) ('a' + (char) source.getY()) + "6";
-					}
-				}
-			}
-		}
-		sb.append(" " + enpassant);
 		return sb.toString();
+		
 	}
-	*/
 }

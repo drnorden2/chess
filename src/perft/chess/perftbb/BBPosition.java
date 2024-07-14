@@ -1,11 +1,14 @@
 package perft.chess.perftbb;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import static perft.chess.Definitions.*;
 
 
 import perft.chess.Position;
+import perft.chess.fen.Fen;
+import perft.chess.nnue.NNUE;
 import perft.chess.perftbb.gen.MagicNumberFinder;
 
 
@@ -60,11 +63,16 @@ public class BBPosition implements Position {
 	private boolean _calcDone = false;
 	private final long[] fullMaskArray = new long[64];
 	
+	private NNUE nnue = new NNUE();
+	private NNUE nnue2 = new NNUE();
 	
 	public BBPosition(int depth) {
 		// generate an array of random bitStrings
 		Random random = new Random(1648119808);
+		nnue.nnue_init("C:/Users/afisc/eclipse-workspace6/chess/nn-eba324f53044.nnue");
+		//nnue.nnue_init("/home/linux-ml/git/chess/my.nnue");
 		
+	
 		for (int i = 0; i < randomBitStr.length; i++) {
 	        for (int j = 0; j < randomBitStr[i].length; j++) {
 	        	randomBitStr[i][j] = Long.MAX_VALUE*random.nextLong();
@@ -219,6 +227,7 @@ public class BBPosition implements Position {
 		
 		totalCount++;
 		Move move = getMove(index);
+		evaluate(index);
 		/*
 		moveNotation = move.getNotation();
 		list.add(totalCount+"\n"+move.toString()+this.toStringDebug()+"MoveCount:"+this.getMoveCount());
@@ -1759,6 +1768,17 @@ public class BBPosition implements Position {
 	public boolean isCheck() {
 		return this.tCallBacks[Long.numberOfLeadingZeros(this.kings[OTHER_COLOR[colorAtTurn]])]!=0;
 	}
+	public boolean isUntouched(int index) {
+		return (this.untouched&SHIFT[index])!=0;
+	}
+
+	public int getEnpassantePos(){
+		return Long.bitCount(this.enPassanteMask);
+	}
+		
+	public int getPiece(int index) {
+		return fields[index];
+	}
 	/*
 	
 	public double evaluate(int i) {
@@ -1851,7 +1871,7 @@ public class BBPosition implements Position {
 		return SIGN_BY_COLOR[colorAtTurn]*retVal;
 	}
 
-	public double evaluate(int i) {
+	public double evaluateClassic(int i) {
 		double retVal;
 		if(i==-1) {
 			//for current color
@@ -1879,4 +1899,110 @@ public class BBPosition implements Position {
 		}
 		return SIGN_BY_COLOR[colorAtTurn]*(retVal+(Math.random()*0.01));
 	}
+	/* Moves are only simulated
+	public double evaluate(int i) {
+		double retVal;
+		if(i==-1) {
+			//for current color
+			if(isCheck()) {
+				retVal= (10_000-(level));
+			}else {
+				retVal= 1.5;//Patt
+			}
+		} else {
+			Move move = this.getMove(i);
+			int oldTypeColor =fields[move.getOldPos()];
+			int newTypeColor =fields[move.getNewPos()];
+			fields[move.getOldPos()]=-1;
+			fields[move.getNewPos()]=oldTypeColor;
+			
+			
+			int[] pieces = new int[35];
+			int[] squares=new int[35];
+			int counter =2;
+			for(int j=0;j<64;j++) {
+				int typeColor = fields[j];
+				if(typeColor!=-1) {
+					int nnuePiece = NNUE_PIECE_LOOKUP[typeColor];
+					if(nnuePiece == 1) {
+						pieces[0]=1;
+						squares[0]=j;
+					}else if(nnuePiece == 7) {
+						pieces[1]=7;
+						squares[1]=j;
+					}else {
+						pieces[counter]= nnuePiece;
+						squares[counter]=j;
+						counter++;
+					}
+				}
+			}
+			//System.out.println(Arrays.toString(pieces));
+			
+			fields[move.getOldPos()]=oldTypeColor;
+			fields[move.getNewPos()]=newTypeColor;
+			//@TODO: enpassante, promotion, rochade
+			
+			//if(!nnue.testInitialFEN(this.colorAtTurn, pieces, squares)) {
+			//	System.exit(-1);
+			//}
+			retVal= nnue.nnue_evaluate(OTHER_COLOR[this.colorAtTurn], pieces, squares);
+			//System.out.println("NNUE"+retVal);		
+			
+		}
+		return SIGN_BY_COLOR[colorAtTurn]*retVal; //Needed because of negamax 
+	}*/
+	
+	
+	public double evaluate(int i) {
+		double retVal;
+		if(i==-1) {
+			//for current color
+			if(isCheck()) {
+				retVal= SIGN_BY_COLOR[colorAtTurn]*((1_000_000-(level))*-1);
+			}else {
+				retVal= SIGN_BY_COLOR[colorAtTurn]*100*-1;//Patt
+			}
+		} else {
+			
+			
+			int[] pieces = new int[35];
+			int[] squares=new int[35];
+			int counter =2;
+			for(int j=0;j<64;j++) {
+				int typeColor = fields[j];
+				if(typeColor!=-1) {
+					int nnuePiece = NNUE_PIECE_LOOKUP[typeColor];
+
+					
+					if(nnuePiece == 1) {
+						pieces[0]=1;
+						squares[0]=j;
+					}else if(nnuePiece == 7) {
+						pieces[1]=7;
+						squares[1]=j;
+					}else {
+						pieces[counter]= nnuePiece;
+						squares[counter]=j;
+						counter++;
+					}
+				}
+			}
+			if(this._enpPos!=-1) {
+				squares[counter]= Long.bitCount(this.enPassanteMask);
+			}
+			retVal= nnue.nnue_evaluate(OTHER_COLOR[this.colorAtTurn], pieces, squares)*-1;
+			//int retVal2 = nnue2.nnue_evaluate_incremental(OTHER_COLOR[this.colorAtTurn], pieces, squares)*-1;
+			
+			/*String fenStr = fen.getFEN(this);
+			int retVal2=nnue.nnue_evaluate_fen(fenStr);
+			
+			if(retVal!=retVal2) {
+				System.out.println("Mismatch:"+retVal +" vs "+retVal2);
+			}
+			//System.out.println("\n\n");*/
+		}
+		return SIGN_BY_COLOR[colorAtTurn]*retVal; //Needed because of negamax 
+	}
+	Fen fen = new Fen();
 }

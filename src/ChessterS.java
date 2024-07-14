@@ -7,9 +7,9 @@ import perft.Game;
 import perft.chess.ChessGameFactory;
 
 public class ChessterS {
-	private static final String idName = "Chesster S. 0.2";
+	private static final String idName = "Chesster S. 0.2 nnue";
 	private Game game; 
-	private int depth=5;
+	private int depth=3;
 	private ChessGameFactory factory  = new ChessGameFactory();
 
 	
@@ -19,6 +19,7 @@ public class ChessterS {
 		
 	private void run() {	
 		Scanner input = new Scanner(System.in);
+		
        	boolean exit = false;
 			while (!exit) {
 		        String cmd=input.nextLine();

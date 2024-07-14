@@ -321,21 +321,23 @@ final private void mlPerft(long[] counts, int deep,int depth, boolean bulk) {
 		counts[deep-1]=moves;
 	}
 	
-	
 	final public void play() {
+		play(-1);
+	}
+	final public void play(int maxMoves) {
 		boardUI.show(board);
 		int i=0;
 		while(!board.isGameOver()){
 			//Player playerAtTurn = players[turn];
 			System.out.println("Play deep:"+depth);
-			int move = play(depth);
+			int move = playDeep(depth);
 			board.setMove(move,false,false);
 			boardUI.show(board);
-			if(i++==0)break;
+			if(i++==maxMoves)break;
 		}
 	}
 	
-	private int play(int deep) {
+	private int playDeep(int deep) {
 		int moves = board.getMoves();
 		Double bestScore=null;
 		int bestMove=-1;
@@ -351,6 +353,7 @@ final private void mlPerft(long[] counts, int deep,int depth, boolean bulk) {
 			String[] allStrs=new String [deep];
 				
 			Double score = score(deep-1,allStrs)*-1;
+			System.out.println("Score:"+score);
 				//hashScore[deep].put(hash,score);			
 
 			if(bestScore==null||bestScore<score) {
@@ -446,9 +449,9 @@ final private void mlPerft(long[] counts, int deep,int depth, boolean bulk) {
 				score= score(deep-1,curMoveStr)*-1;
 				board.undoMove();
 			}else {
-				//board.doMove(i,true,false);
+				board.doMove(i,true,false);
 				score= board.evaluate(i)*-1;
-				//board.undoMove();
+				board.undoMove();
 			}
 	        if( score > max) {
 	        	max = score;
@@ -500,7 +503,7 @@ final private void mlPerft(long[] counts, int deep,int depth, boolean bulk) {
 	}
 	*/
 	public void go(int depth) {
-		int move = this.play(depth);
+		int move = this.playDeep(depth);
 		System.out.println("OINK: Found this with my ApeMind:"+this.getBoard().getMoveStr(move));
 		System.out.println("bestmove "+this.getBoard().getMoveStr(move));
 		

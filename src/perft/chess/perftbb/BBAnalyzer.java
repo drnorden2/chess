@@ -214,7 +214,7 @@ public class BBAnalyzer {
 				if((i+j)%2==0) {
 					charBoard[i][j] = ' ';
 				}else {
-					charBoard[i][j] = '▒';	
+					charBoard[i][j] = 'W';	
 				}
 			}
 		}

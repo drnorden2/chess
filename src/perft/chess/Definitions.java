@@ -6,9 +6,9 @@ public class Definitions {
 	public static final long EMPTY_MASK =0L;
 	public static final long FULL_MASK =~EMPTY_MASK;
 
-	public static final int PIECE_TYPE_PAWN = 0;
 	public static final int[] SIGN_BY_COLOR = new int[] {1,-1};
 	
+	public static final int PIECE_TYPE_PAWN = 0;
 	public static final int PIECE_TYPE_KING= 1;
 	public static final int PIECE_TYPE_KNIGHT = 2;
 	public static final int PIECE_TYPE_BISHOP = 3;
@@ -381,6 +381,7 @@ public class Definitions {
 	public static final long[][] NOT_LINE_FOR_2_POINTS=not(LINE_FOR_2_POINTS);
 	public static final long[][] CHECK_MASKS=getCheckMask();
 	public static final long[] ENP_PAWN_MASK_FOR_X = getEnpassantePawnPos();
+	public static final int[] NNUE_PIECE_LOOKUP = getPieceLookupForNNUE();
 	
 	public static final String CHESS_MAN_CHARS = "pknbrqPKNBRQ";
 	
@@ -390,6 +391,60 @@ public class Definitions {
 		int type = typeColor >>> 7;
 		return CHESS_MAN_CHARS.charAt(type+6*color);
 	}
+	
+	public static int[] getPieceLookupForNNUE() {
+		//PIECE * 2 + COLOR) * 64
+		int[] lookup = new int[(5 * 2 + 1) * 64+1];
+		//"_KQRBNPkqrbnp_"
+		for(int i=0;i<2;i++) {
+			for(int j=0;j<6;j++) {
+				int typeColor = (j*2+ i)*64;
+				int nnuePiece = -1;
+				switch (typeColor) {
+				case (PIECE_TYPE_KING*2+COLOR_WHITE)*64:
+					nnuePiece=1;
+					break;
+				case (PIECE_TYPE_QUEEN*2+COLOR_WHITE)*64:
+					nnuePiece=2;
+					break;
+				case (PIECE_TYPE_ROOK*2+COLOR_WHITE)*64:
+					nnuePiece=3;
+					break;
+				case (PIECE_TYPE_BISHOP*2+COLOR_WHITE)*64:
+					nnuePiece=4;
+					break;
+				case (PIECE_TYPE_KNIGHT*2+COLOR_WHITE)*64:
+					nnuePiece=5;
+					break;
+				case (PIECE_TYPE_PAWN*2+COLOR_WHITE)*64:
+					nnuePiece=6;
+					break;
+				case (PIECE_TYPE_KING*2+COLOR_BLACK)*64:
+					nnuePiece=7;
+					break;
+				case (PIECE_TYPE_QUEEN*2+COLOR_BLACK)*64:
+					nnuePiece=8;
+					break;
+				case (PIECE_TYPE_ROOK*2+COLOR_BLACK)*64:
+					nnuePiece=9;
+					break;
+				case (PIECE_TYPE_BISHOP*2+COLOR_BLACK)*64:
+					nnuePiece=10;
+					break;
+				case (PIECE_TYPE_KNIGHT*2+COLOR_BLACK)*64:
+					nnuePiece=11;
+					break;
+				case (PIECE_TYPE_PAWN*2+COLOR_BLACK)*64:
+					nnuePiece=12;
+				
+				}
+				lookup[typeColor]=nnuePiece;
+			}
+		}
+		return lookup;
+	}
+		
+	
 	public static char getPieceCharForPieceType(int type) {
 		return CHESS_MAN_CHARS.charAt(type);
 	}

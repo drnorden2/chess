@@ -12,6 +12,7 @@ public interface Position {
 
 	public String getNotation(int index);
 
+	public int getPiece(int index);
 	
 	void initialUntouched(int i, int h);
 
@@ -36,7 +37,9 @@ public interface Position {
 	int getColorAtTurn();
 
 	int[] getAttacks(int color);
-
+	
+	public boolean isUntouched(int index);
+	
 	public long getHash();
-
+	public int getEnpassantePos();
 }

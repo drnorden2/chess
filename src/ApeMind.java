@@ -9,7 +9,7 @@ import perft.chess.ChessGameFactory;
 public class ApeMind {
 	private static final String idName = "ApeMind 0.2";
 	private Game game; 
-	private int depth=4;
+	private int depth=3;
 	private ChessGameFactory factory  = new ChessGameFactory();
 
 	

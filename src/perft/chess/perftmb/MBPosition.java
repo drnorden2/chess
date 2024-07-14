@@ -444,5 +444,15 @@ public class MBPosition implements Position{
 	public double evaluate(int i) {
 		return -1;
 	}
+	public int getPiece(int index) {
+		return -1;//this.fields[index].getPiece().getType() *this.fields[index].getColor;
+	}
+	public boolean isUntouched(int index) {
+		return false;
+	}
 
+	public int getEnpassantePos(){
+		return -1;
+	}
+		
 }

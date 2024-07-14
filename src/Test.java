@@ -6,6 +6,7 @@ import perft.chess.ChessGameFactory;
 import perft.chess.perftmb.MBPosition;
 
 public class Test {
+	
 	/*
 	Perft(1) = 20 in 0.001312 sec
 	Perft(2) = 400 in 0.001263 sec
@@ -28,7 +29,10 @@ public class Test {
 
 	public static void main(String[] args) {
 		ChessGameFactory.bitBoard=true;
-		play(2, 0,"rnb1k1nr/p2p2Bp/1pp5/3P1p2/8/32N2/PPP1KPPP/R4B1R b KQkq - 1 "); 
+		
+		//play(4, 151107, "5R2/7k/8/8/K7/8/8/6R1 w - - 0 1");
+		play(4, 1,"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+		//play(2, 0,"rnb1k1nr/p2p2Bp/1pp5/3P1p2/8/32N2/PPP1KPPP/R4B1R b KQkq - 1 "); 
 		//play(3, 0,"rnb1k1nr/p2p2pp/1pp5/3P1p2/8/2B2N2/PPP1KPPP/R4B1R w KQkq - 1 "); 
 		//play(4, 0,"rnb1k1nr/pp1p2pp/2p5/3P1p2/8/2B2N2/PPP1KPPP/R4B1R b KQkq - 1 "); 
 		//play(5, 0,"rnb1k1nr/pp1p2pp/2p5/3P1p2/8/2B2N2/PPP1qPPP/R3KB1R w KQkq - 1 "); 
